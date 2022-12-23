@@ -1,35 +1,24 @@
 CXX:=c++
-CXXFLAGS :=-std=c++98 #-Wall -Wextra -Werror
-NAME:=sample
-SRC_DIR:=.
-SRC:=$(wildcard $(SRC_DIR)/*.cpp $(SRC_DIR)/*/*.cpp)
+CXXFLAGS:=-MMD -MP --std=c++98 #-fsanitize=address
+#SRCS:=$(wildcard *.cpp)
+SRCS:=$(wildcard *.cpp)
 OBJ_DIR:=obj
-OBJ:=$(addprefix $(OBJ_DIR)/, $(notdir $(SRC:.cpp=.o)))
 DEP_DIR:=dep
-DEP:= $(addprefix $(DEP_DIR)/, $(notdir $(SRC:.cpp=.d)))
-VPATH:=$(sort $(dir $(SRC)))
-ifeq ($(MAKECMDGOALS), debug)
-CXXFLAGS += -D DEBUG -g -fsanitize=address -fsanitize=leak
-endif
+OBJS:= $(addprefix $(OBJ_DIR)/, $(SRCS:.cpp=.o))
+DEPS:= $(addprefix $(DEP_DIR)/, $(SRCS:.cpp=.d))
+NAME:=server
 
-all : $(NAME)
+all: $(NAME)
 
--include $(DEP)
+$(NAME): $(OBJS)
+	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJS)
 
-debug: $(NAME)
-
-$(NAME) : $(OBJ_DIR) $(DEP_DIR) $(OBJ)
-	$(CXX) $(CXXFLAGS) -o $(NAME) $(OBJ)
+$(OBJ_DIR)/%.o: %.cpp $(OBJ_DIR)
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+	@mv $(OBJ_DIR)/*.d $(DEP_DIR)/
 
 $(OBJ_DIR):
-	mkdir $(OBJ_DIR)
-
-$(DEP_DIR):
-	mkdir $(DEP_DIR)
-
-$(OBJ_DIR)/%.o : %.cpp
-	$(CXX) $(CXXFLAGS) -MMD -MP -c -o $@ $<
-	@mv $(OBJ_DIR)/*.d $(DEP_DIR)/
+	mkdir -p $(OBJ_DIR) $(DEP_DIR)
 
 clean:
 	rm -fR $(OBJ_DIR) $(DEP_DIR)
