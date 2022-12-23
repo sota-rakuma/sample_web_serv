@@ -16,7 +16,7 @@ docker ps -a
 ```
 - nginxコンテナの中に入る
 ```sh
-docker exec -it ngnix /bin/bash
+docker exec -it nginx /bin/bash
 ```
 
 **以下の項目はコンテナが起動した状態であれば、使用可能です。**
