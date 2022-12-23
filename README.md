@@ -4,7 +4,7 @@
 
 - nginxコンテナの起動
 ```sh
-docker-compose up -d
+docker-compose up -d --build
 ```
 - dockerコンテナの終了
 ```sh
