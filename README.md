@@ -39,3 +39,10 @@ curl localhost:80/www/
 ```bash
 curl -I localhost:80/www/
 ```
+- HTTPメソッドの指定
+examples
+```bash
+curl http://localhost:80/www/ -XPOST -d 'title=TEST id=111'
+```
+-Xでメソッドの指定ができ、-d でデータの送信ができる
+
