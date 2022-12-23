@@ -33,7 +33,7 @@ Host: localhost
 ```
 
 ## curlでCGIを呼び出す方法
-**a.conf のtest.cgiと書かれてる箇所を適当なファイルに書き換えて、コンテナを実行したのちにアクセスすると、任意のcgiスクリプトをnginxで呼び出すせる**
+**a.conf のtest.cgiと書かれてる箇所を適当なファイルに書き換えて、コンテナを実行したのちにアクセスすると、任意のcgiスクリプトをnginxで呼び出せる**
 ```bash
 curl localhost:8080/www/
 ```
