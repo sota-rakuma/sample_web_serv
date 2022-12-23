@@ -19,9 +19,11 @@ docker ps -a
 docker exec -it ngnix /bin/bash
 ```
 
+**以下の項目はコンテナが起動した状態であれば、使用可能です。**
+
 ## TELNETの使い方
 ```bash
-telnet 127.0.0.1 80
+telnet 127.0.0.1 8080
 ```
 example
 ```
@@ -33,16 +35,16 @@ Host: localhost
 ## curlでCGIを呼び出す方法
 **a.conf のtest.cgiと書かれてる箇所を適当なファイルに書き換えて、コンテナを実行したのちにアクセスすると、任意のcgiスクリプトをnginxで呼び出すせる**
 ```bash
-curl localhost:80/www/
+curl localhost:8080/www/
 ```
 - header の内容だけ欲しい場合
 ```bash
-curl -I localhost:80/www/
+curl -I localhost:8080/www/
 ```
 - HTTPメソッドの指定
 examples
 ```bash
-curl http://localhost:80/www/ -XPOST -d 'title=TEST id=111'
+curl http://localhost:8080/www/ -XPOST -d 'title=TEST id=111'
 ```
 -Xでメソッドの指定ができ、-d でデータの送信ができる
 
