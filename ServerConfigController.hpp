@@ -19,6 +19,7 @@ public:
 	/*
 	ServerConfigParser _p;
 	setServerConfig(const SyntaxTree &);
+	↑default_serverの設定も必須
 	*/
 private:
 	std::vector<ServerConfig> _infos;
