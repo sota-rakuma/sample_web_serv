@@ -1,4 +1,5 @@
 #include "HeaderField.hpp"
+#include "utils/utils.hpp"
 
 HeaderField::HeaderField()
 :_name(),
@@ -9,7 +10,8 @@ _val()
 HeaderField::HeaderField(
 	const std::string & name
 )
-:_name(name)
+:_name(name),
+_val()
 {
 }
 
@@ -52,4 +54,12 @@ HeaderField & HeaderField::setValue(const std::string & val)
 {
 	_val = val;
 	return *this;
+}
+
+std::ostream &operator<<(std::ostream & os, const HeaderField & rhs)
+{
+	os << addColorText("HEADER FIELD", RED) << std::endl
+	<< "NAME: " << rhs.getName() << std::endl
+	<< "VALUE: " << rhs.getValue();
+	return os;
 }

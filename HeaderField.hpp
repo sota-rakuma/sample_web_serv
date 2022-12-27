@@ -2,6 +2,7 @@
 #define HEADERFIELD_HPP
 
 #include <string>
+#include <iostream>
 
 class HeaderField
 {
@@ -22,5 +23,7 @@ public:
 	HeaderField & setName(const std::string &);
 	HeaderField & setValue(const std::string &);
 };
+
+std::ostream &operator<<(std::ostream &, const HeaderField &);
 
 #endif /* HEADERFIELD_HPP */
