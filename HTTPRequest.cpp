@@ -79,11 +79,11 @@ HTTPRequest::RequestLine::setHTTPVersion(
 }
 
 HTTPRequest::RequestLine &
-HTTPRequest::RequestLine::operator=(const RequestLine & another)
+HTTPRequest::RequestLine::operator=(const RequestLine & rhs)
 {
-	_method = another._method;
-	_target = another._target;
-	_version = another._version;
+	_method = rhs._method;
+	_target = rhs._target;
+	_version = rhs._version;
 	return *this;
 }
 
@@ -136,9 +136,9 @@ HTTPRequest::setRequestLine(
 	const std::string & version
 )
 {
-	_reql.setMethod(method);
-	_reql.setTarget(target);
-	_reql.setHTTPVersion(version);
+	_reql.setMethod(method)
+	.setTarget(target)
+	.setHTTPVersion(version);
 	return *this;
 }
 

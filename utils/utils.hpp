@@ -15,5 +15,6 @@ enum color {
 };
 
 const std::string addColorText(const std::string &, enum color);
+const std::string addColorText(int raw, enum color kind);
 
 #endif /* UTILS_HPP */
