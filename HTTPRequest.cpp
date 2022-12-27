@@ -1,4 +1,6 @@
 #include "HTTPRequest.hpp"
+#include "utils/utils.hpp"
+#include <vector>
 
 HTTPRequest::RequestLine::RequestLine()
 :_method(),
@@ -165,4 +167,32 @@ HTTPRequest::setMessageBody(
 {
 	_body = body;
 	return *this;
+}
+
+std::ostream &operator<<(
+	std::ostream & os,
+	const HTTPRequest & req
+)
+{
+	os << addColorText("HTTPREQUEST", GREEN) << std::endl;
+
+	const HTTPRequest::RequestLine & reql = req.getRequestLine();
+	os << "REQUEST LINE" << std::endl
+	<< "Method: " << addColorText(reql.getMethod(), BLUE) << std::endl
+	<< "Target: " << reql.getTarget() << std::endl
+	<< "HTTPVersion: " << reql.getHTTPVersion() << std::endl << std::endl;
+
+	const std::map<std::string, std::string> & hf = req.getHeaderField();
+	for (std::map<std::string, std::string>::const_iterator it = hf.begin();
+		it != hf.end();
+		it++)
+	{
+		os << "" << it->first << ": " << it->second << std::endl;
+	}
+	os << std::endl;
+
+	os << "Message" << std::endl
+	<< req.getMessageBody();
+
+	return os;
 }
