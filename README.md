@@ -52,3 +52,8 @@ curl http://localhost:8080/www/ -XPOST -d 'title=TEST id=111'
 ```bash
 curl -H "Host: test.com" 
 ```
+## ブラウザ上でリクエストを確認する方法
+- Google Chrome
+1. デベロッパーツール(開発者ツールを開く)
+1. ネットワークと書かれた箇所をクリック
+1. 真ん中あたりに出てくる名前の欄から見たいファイルをクリック
