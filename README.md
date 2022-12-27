@@ -2,6 +2,11 @@
 
 ## nginxでのテスト方法
 
+- expディレクトリに移動
+```sh
+cd exp
+```
+
 - nginxコンテナの起動
 ```sh
 docker-compose up -d --build
