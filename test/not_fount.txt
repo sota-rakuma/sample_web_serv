@@ -1,2 +1,2 @@
 GET /rtcp/p00/test.aaa HTTP/1.1
-Host: ait-sample.list.jp
+Host: localhost
