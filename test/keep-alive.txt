@@ -1,9 +1,9 @@
-GET /rtcp/p00/test.html HTTP/1.1
-Host: ait-sample.list.jp
+GET / HTTP/1.1
+Host: localhost
 
 GET /rtcp/p00/ HTTP/1.1
-Host: ait-sample.list.jp
+Host: localhost
 Connection: close
 
-GET /rtcp/p00/test.html HTTP/1.1
-Host: ait-sample.list.jp
+GET / HTTP/1.1
+Host: localhost
