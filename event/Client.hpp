@@ -10,17 +10,23 @@
 class Client : public Reciever
 {
 private:
+	int _sockfd;
 	sockaddr_in _info;
 	HTTPRequest _req;
 	HTTPResponse _res;
 public:
 	Client();
-	Client(const sockaddr_in &);
 	Client(
+		int ,
+		const sockaddr_in &
+	);
+	Client(
+		int ,
 		const sockaddr_in &,
 		const HTTPRequest &
 	);
 	Client(
+		int ,
 		const sockaddr_in &,
 		const HTTPRequest &,
 		const HTTPResponse &
@@ -29,10 +35,12 @@ public:
 	~Client();
 	EventHandler::Status specialRead(int fd);
 	EventHandler::Status specialWrite(int fd);
+	int getSockFd() const;
 	const sockaddr_in &getInfo() const;
 	const HTTPRequest &getRequset() const;
 	const HTTPResponse &getResponse() const;
-	Client & setInfo(
+	Client & setClientInfo(
+		int sockfd,
 		const sockaddr_in &
 	);
 	Client & setRequset(
