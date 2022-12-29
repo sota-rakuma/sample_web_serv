@@ -10,6 +10,11 @@ Write::Write(Reciever * r)
 {
 }
 
+Write::Write(const Write & another)
+:_r(another._r)
+{
+}
+
 EventHandler::Status Write::execute()
 {
 	if (_r == static_cast<Reciever *>(NULL)) {

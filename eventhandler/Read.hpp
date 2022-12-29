@@ -11,6 +11,7 @@ private:
 public:
 	Read();
 	Read(Reciever * r);
+	Read(const Read &);
 	virtual Status execute();
 	~Read();
 };

@@ -11,6 +11,7 @@ private:
 public:
 	Write();
 	Write(Reciever * r);
+	Write(const Write & );
 	virtual Status execute();
 	~Write();
 };

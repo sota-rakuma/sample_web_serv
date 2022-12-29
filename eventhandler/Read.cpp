@@ -10,6 +10,13 @@ Read::Read(Reciever * r)
 {
 }
 
+Read::Read(
+	const Read & another
+)
+:_r(another._r)
+{
+}
+
 EventHandler::Status Read::execute()
 {
 	if (_r == static_cast<Reciever *>(NULL)) {
