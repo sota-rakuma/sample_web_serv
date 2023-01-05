@@ -1,27 +1,27 @@
-#include "ServerConfigController.hpp"
+#include "ServerConfigFinder.hpp"
 #include <fstream>
 
-ServerConfigController::FileError::FileError()
+ServerConfigFinder::FileError::FileError()
 :std::runtime_error("file error")
 {
 }
 
-ServerConfigController::FileError::FileError(
+ServerConfigFinder::FileError::FileError(
 	const std::string & err
 )
 :std::runtime_error(err)
 {
 }
 
-ServerConfigController::FileError::~FileError()
+ServerConfigFinder::FileError::~FileError()
 {
 }
 
-ServerConfigController::ServerConfigController()
+ServerConfigFinder::ServerConfigFinder()
 {
 }
 
-ServerConfigController::ServerConfigController(
+ServerConfigFinder::ServerConfigFinder(
 	const std::string & filename
 )
 {
@@ -36,32 +36,32 @@ ServerConfigController::ServerConfigController(
 	}
 }
 
-ServerConfigController::ServerConfigController(
-	const ServerConfigController & another
+ServerConfigFinder::ServerConfigFinder(
+	const ServerConfigFinder & another
 )
 :_infos(another._infos),
 _keys(another._keys)
 {
 }
 
-ServerConfigController::~ServerConfigController()
+ServerConfigFinder::~ServerConfigFinder()
 {
 }
 
 const std::vector<ServerConfig> &
-ServerConfigController::getConfigVec() const
+ServerConfigFinder::getConfigVec() const
 {
 	return _infos;
 }
 
 const std::map<std::string, size_t>
-ServerConfigController::getKeyMap() const
+ServerConfigFinder::getKeyMap() const
 {
 	return _keys;
 }
 
 const ServerConfig &
-ServerConfigController::getConfig(
+ServerConfigFinder::getConfig(
 	const std::string & server_name
 ) const
 {

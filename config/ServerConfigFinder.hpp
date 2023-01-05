@@ -1,12 +1,13 @@
-#ifndef SERVERCONFIGCONTROLLER_HPP
-#define SERVERCONFIGCONTROLLER_HPP
+#ifndef SERVERCONFIGFINDER_HPP
+#define SERVERCONFIGFINDER_HPP
 
 #include "ServerConfig.hpp"
 #include <stdexcept>
 #include <vector>
 #include <map>
 
-class ServerConfigController
+// listen socketに入れるのを想定
+class ServerConfigFinder
 {
 public:
 	class FileError : std::runtime_error
@@ -23,17 +24,18 @@ public:
 	*/
 private:
 	std::vector<ServerConfig> _infos;
+	// server-name : ↑のindex
 	std::map<std::string, size_t> _keys;
 public:
-	ServerConfigController();
-	ServerConfigController(const std::string &);
-	ServerConfigController(
-		const ServerConfigController &
+	ServerConfigFinder();
+	ServerConfigFinder(const std::string &);
+	ServerConfigFinder(
+		const ServerConfigFinder &
 	);
-	~ServerConfigController();
+	~ServerConfigFinder();
 	const std::vector<ServerConfig> & getConfigVec() const;
 	const std::map<std::string, size_t> getKeyMap() const;
 	const ServerConfig & getConfig(const std::string &) const;
 };
 
-#endif /* SERVERCONFIGCONTROLLER_HPP */
+#endif /*SERVERCONFIGFINDER_HPP*/
