@@ -1,8 +1,10 @@
 #include "CGI.hpp"
+#include <unistd.h>
 
 CGI::CGI()
-:_read(new Read(this)),
-_write(new Write(this))
+:_get(new Get(this)),
+_post(new Post(this)),
+_delete(new Delete(this))
 {
 }
 
@@ -10,12 +12,20 @@ _write(new Write(this))
 CGI::CGI(
 	const std::string & path
 )
-:_path(path)
+:_get(new Get(this)),
+_post(new Post(this)),
+_delete(new Delete(this)),
+_is_exist(false),
+_path(path)
 {
 }
 
 CGI::CGI(const CGI & another)
-:_path(another._path)
+:_get(new Get(this)),
+_post(new Post(this)),
+_delete(new Delete(this)),
+_is_exist(false),
+_path(another._path)
 {
 }
 
@@ -23,7 +33,21 @@ CGI::~CGI()
 {
 }
 
-ICommand* CGI::getHandler(int event) const
+int CGI::httpPost()
 {
-	// 例外処理
+	if (_is_exist == false) {
+		executeCGI(OUT);
+		_is_exist = true;
+		return 1;
+	}
+	ssize_t nb = write(_out_fd, _buff.c_str(), _buff.size());
+	if (nb < _nb + _buff.size()) {
+		_nb += nb;
+		return 1;
+	}
+	return httpGet();
+}
+
+void CGI::executeCGI(int event)
+{
 }

@@ -2,24 +2,25 @@
 #define POST_HPP
 
 #include "ICommand.hpp"
-#include "../handler/EventHandler.hpp"
+#include "../handler/HTTPMethodReciever.hpp"
 
 class Post : public ICommand
 {
 private:
-	EventHandler *_reciever;
+	HTTPMethodReciever *_reciever;
 public:
 	Post();
-	Post(EventHandler *);
+	Post(HTTPMethodReciever *);
 	~Post();
 	virtual int execute();
 };
 
 Post::Post()
+:_reciever(static_cast<HTTPMethodReciever *>(NULL))
 {
 }
 
-Post::Post(EventHandler *eh)
+Post::Post(HTTPMethodReciever *eh)
 :_reciever(eh)
 {
 }

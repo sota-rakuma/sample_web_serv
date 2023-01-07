@@ -4,11 +4,7 @@
 #include "ISubject.hpp"
 #include "../HTTP/HTTPRequest.hpp"
 #include "../HTTP/HTTPResponse.hpp"
-#include "../handler/File.hpp"
-#include "../handler/CGI.hpp"
-#include "../command/Get.hpp"
-#include "../command/Post.hpp"
-#include "../command/Delete.hpp"
+#include "../handler/HTTPMethodReciever.hpp"
 #include "../config/ServerConfigFinder.hpp"
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -21,11 +17,7 @@ private:
 	sockaddr_in _info;
 	HTTPRequest _req;
 	HTTPResponse _res;
-	File *_file;
-	CGI *_cgi;
-	Get *_get;
-	Post *_post;
-	Delete *_delete;
+	HTTPMethodReciever *_reciever;
 	ServerConfigFinder *_configs;
 public:
 	AcceptedSocket();

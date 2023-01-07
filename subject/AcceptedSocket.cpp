@@ -1,10 +1,7 @@
 #include "AcceptedSocket.hpp"
 
 AcceptedSocket::AcceptedSocket()
-:ISubject(),
-_get(new Get(this)),
-_post(new Post(this)),
-_delete(new Delete(this))
+:ISubject()
 {
 }
 
@@ -17,9 +14,6 @@ AcceptedSocket::AcceptedSocket(
 :ISubject(observer),
 _sockfd(sockfd),
 _info(info),
-_get(new Get(this)),
-_post(new Post(this)),
-_delete(new Delete(this)),
 _configs(configs)
 {
 }
@@ -27,18 +21,12 @@ _configs(configs)
 AcceptedSocket::AcceptedSocket(const AcceptedSocket &another)
 :ISubject(another.getObserver()),
 _sockfd(another._sockfd),
-_info(another._info),
-_get(new Get(this)),
-_post(new Post(this)),
-_delete(new Delete(this))
+_info(another._info)
 {
 }
 
 AcceptedSocket::~AcceptedSocket()
 {
-	delete _get;
-	delete _post;
-	delete _delete;
 }
 
 AcceptedSocket &AcceptedSocket::setInfo(const sockaddr_in & info)

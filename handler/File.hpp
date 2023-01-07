@@ -1,13 +1,19 @@
 #ifndef FILE_HPP
 #define FILE_HPP
 
-#include "EventHandler.hpp"
+#include "HTTPMethodReciever.hpp"
+#include "../subject/AcceptedSocket.hpp"
 #include "../command/Read.hpp"
 #include "../command/Write.hpp"
 #include <string>
 #include <stdexcept>
+#include <list>
 
-class File : public EventHandler
+#ifndef BUFSIZE
+#define BUFSIZE 1024
+#endif
+
+class File : public HTTPMethodReciever, public ISubject
 {
 public:
 	class FileError : public std::runtime_error
@@ -19,9 +25,12 @@ public:
 	};
 private:
 	int _fd;
+	bool _is_exist;
 	std::string _path;
+	std::string _buff;
 	Read *_read;
 	Write *_write;
+	std::list<AcceptedSocket *> _as;
 public:
 	File();
 	File(
@@ -35,7 +44,10 @@ public:
 	);
 	File(const File &);
 	virtual ~File();
-	virtual ICommand *getHandler(int) const;
+	virtual int httpGet();
+	virtual int httpPost();
+	virtual int httpDelete();
+	virtual void notify(int, int, ISubject *);
 };
 
 #endif /* FILE_HPP */

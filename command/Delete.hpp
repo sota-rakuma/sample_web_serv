@@ -2,24 +2,25 @@
 #define DELETE_HPP
 
 #include "ICommand.hpp"
-#include "../handler/EventHandler.hpp"
+#include "../handler/HTTPMethodReciever.hpp"
 
 class Delete : public ICommand
 {
 private:
-	EventHandler *_reciever;
+	HTTPMethodReciever *_reciever;
 public:
 	Delete();
-	Delete(EventHandler *);
+	Delete(HTTPMethodReciever *);
 	~Delete();
 	virtual int execute();
 };
 
 Delete::Delete()
+:_reciever(static_cast<HTTPMethodReciever *>(NULL))
 {
 }
 
-Delete::Delete(EventHandler *eh)
+Delete::Delete(HTTPMethodReciever *eh)
 :_reciever(eh)
 {
 }

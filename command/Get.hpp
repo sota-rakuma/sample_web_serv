@@ -2,30 +2,36 @@
 #define GET_HPP
 
 #include "ICommand.hpp"
-#include "../handler/EventHandler.hpp"
+#include "../handler/HTTPMethodReciever.hpp"
 
 class Get : public ICommand
 {
 private:
-	EventHandler *_reciever;
+	HTTPMethodReciever *_reciever;
 public:
 	Get();
-	Get(EventHandler *);
+	Get(HTTPMethodReciever *);
 	~Get();
 	virtual int execute();
 };
 
 Get::Get()
+:_reciever(static_cast<HTTPMethodReciever *>(NULL))
 {
 }
 
-Get::Get(EventHandler *eh)
+Get::Get(HTTPMethodReciever *eh)
 :_reciever(eh)
 {
 }
 
 Get::~Get()
 {
+}
+
+int Get::execute()
+{
+	return _reciever->httpGet();
 }
 
 #endif /* GET_HPP */
