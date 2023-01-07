@@ -16,8 +16,9 @@ File::FileError::FileError(const std::string &func_name)
 }
 
 File::File()
-:_read(new Read(this)),
-_write(new Write(this)),
+:_get(new Get(this)),
+_post(new Post(this)),
+_delete(new Delete(this)),
 _is_exist(false)
 {
 }
@@ -26,8 +27,9 @@ File::File(
 	const std::string & path,
 	int oflag
 )
-:_read(new Read(this)),
-_write(new Write(this)),
+:_get(new Get(this)),
+_post(new Post(this)),
+_delete(new Delete(this)),
 _path(path),
 _is_exist(false)
 {
@@ -49,8 +51,9 @@ File::File(
 	int oflag,
 	int mode
 )
-:_read(new Read(this)),
-_write(new Write(this)),
+:_get(new Get(this)),
+_post(new Post(this)),
+_delete(new Delete(this)),
 _path(path),
 _is_exist(false)
 {
@@ -62,6 +65,9 @@ _is_exist(false)
 
 File::~File()
 {
+	delete _get;
+	delete _post;
+	delete _delete;
 	::close(_fd);
 }
 

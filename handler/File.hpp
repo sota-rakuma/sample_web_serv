@@ -3,8 +3,9 @@
 
 #include "HTTPMethodReciever.hpp"
 #include "../subject/AcceptedSocket.hpp"
-#include "../command/Read.hpp"
-#include "../command/Write.hpp"
+#include "../command/Get.hpp"
+#include "../command/Post.hpp"
+#include "../command/Delete.hpp"
 #include <string>
 #include <stdexcept>
 #include <list>
@@ -28,8 +29,9 @@ private:
 	bool _is_exist;
 	std::string _path;
 	std::string _buff;
-	Read *_read;
-	Write *_write;
+	Get *_get;
+	Post *_post;
+	Delete *_delete;
 	std::list<AcceptedSocket *> _as;
 public:
 	File();

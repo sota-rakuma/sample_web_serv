@@ -5,6 +5,8 @@
 #include "../HTTP/HTTPRequest.hpp"
 #include "../HTTP/HTTPResponse.hpp"
 #include "../handler/HTTPMethodReciever.hpp"
+#include "../command/Read.hpp"
+#include "../command/Write.hpp"
 #include "../config/ServerConfigFinder.hpp"
 #include <sys/types.h>
 #include <sys/socket.h>

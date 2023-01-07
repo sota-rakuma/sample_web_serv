@@ -31,6 +31,9 @@ _path(another._path)
 
 CGI::~CGI()
 {
+	delete _get;
+	delete _post;
+	delete _delete;
 }
 
 int CGI::httpPost()
