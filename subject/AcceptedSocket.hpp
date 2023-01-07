@@ -19,6 +19,8 @@ private:
 	sockaddr_in _info;
 	HTTPRequest _req;
 	HTTPResponse _res;
+	Read *_read;
+	Write *_write;
 	HTTPMethodReciever *_reciever;
 	ServerConfigFinder *_configs;
 public:
