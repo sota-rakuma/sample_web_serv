@@ -15,18 +15,4 @@ public:
 	virtual int execute();
 };
 
-Delete::Delete()
-:_reciever(static_cast<HTTPMethodReciever *>(NULL))
-{
-}
-
-Delete::Delete(HTTPMethodReciever *eh)
-:_reciever(eh)
-{
-}
-
-Delete::~Delete()
-{
-}
-
 #endif /* DELETE_HPP */

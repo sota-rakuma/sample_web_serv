@@ -1,6 +1,8 @@
 #ifndef ICOMMAND_HPP
 #define ICOMMAND_HPP
 
+#include <cstddef>
+
 class ICommand
 {
 public:
