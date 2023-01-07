@@ -2,7 +2,7 @@
 #define POST_HPP
 
 #include "ICommand.hpp"
-#include "../subject/EventHandler.hpp"
+#include "../handler/EventHandler.hpp"
 
 class Post : public ICommand
 {

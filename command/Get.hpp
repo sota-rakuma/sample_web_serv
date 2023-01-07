@@ -2,7 +2,7 @@
 #define GET_HPP
 
 #include "ICommand.hpp"
-#include "../subject/EventHandler.hpp"
+#include "../handler/EventHandler.hpp"
 
 class Get : public ICommand
 {

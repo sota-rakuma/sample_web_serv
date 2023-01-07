@@ -21,7 +21,6 @@ public:
 	);
 	CGI(const CGI &);
 	virtual ~CGI();
-	virtual void notify(int, int, EventHandler *);
 	virtual ICommand *getHandler(int) const;
 };
 

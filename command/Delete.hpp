@@ -2,7 +2,7 @@
 #define DELETE_HPP
 
 #include "ICommand.hpp"
-#include "../subject/EventHandler.hpp"
+#include "../handler/EventHandler.hpp"
 
 class Delete : public ICommand
 {

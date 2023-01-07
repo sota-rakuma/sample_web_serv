@@ -1,7 +1,6 @@
 #ifndef FILE_HPP
 #define FILE_HPP
 
-
 #include "EventHandler.hpp"
 #include "../command/Read.hpp"
 #include "../command/Write.hpp"

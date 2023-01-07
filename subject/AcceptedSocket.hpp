@@ -1,12 +1,11 @@
 #ifndef ACCEPTEDSOCKET_HPP
 #define ACCEPTEDSOCKET_HPP
 
-#include "EventHandler.hpp"
 #include "ISubject.hpp"
 #include "../HTTP/HTTPRequest.hpp"
 #include "../HTTP/HTTPResponse.hpp"
-#include "CGI.hpp"
-#include "File.hpp"
+#include "../handler/File.hpp"
+#include "../handler/CGI.hpp"
 #include "../command/Get.hpp"
 #include "../command/Post.hpp"
 #include "../command/Delete.hpp"
