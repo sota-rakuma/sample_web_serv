@@ -5,7 +5,7 @@
 #include <list>
 #include <poll.h>
 #include <stdexcept>
-#include "ServerConfigController.hpp"
+#include "ServerConfigFinder.hpp"
 
 
 #define READ 1
