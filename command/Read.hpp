@@ -2,31 +2,18 @@
 #define READ_HPP
 
 #include "ICommand.hpp"
-#include "../handler/EventHandler.hpp"
+//#include "../subject/AcceptedSocket.hpp"
+class AcceptedSocket;
 
 class Read : public ICommand
 {
 private:
-	EventHandler *_reciever;
+	AcceptedSocket *_reciever;
 public:
 	Read();
-	Read(EventHandler *);
+	Read(AcceptedSocket *);
 	~Read();
 	virtual int execute();
 };
-
-Read::Read()
-{
-}
-
-Read::Read(EventHandler *eh)
-:_reciever(eh)
-{
-}
-
-Read::~Read()
-{
-}
-
 
 #endif /* READ_HPP */

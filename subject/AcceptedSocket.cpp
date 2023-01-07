@@ -41,4 +41,13 @@ AcceptedSocket &AcceptedSocket::setFd(int sockfd)
 	return *this;
 }
 
+void AcceptedSocket::notify(
+	int fd,
+	int event,
+	ISubject *subject
+)
+{
+	getObserver()->update(fd, event, subject);
+}
+
 // リクエストのchain of responsibility から
