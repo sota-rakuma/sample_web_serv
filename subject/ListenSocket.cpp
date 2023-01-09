@@ -48,7 +48,7 @@ _configs(conifgs)
 	for (addrinfo *rep = res; rep != (addrinfo *)NULL; rep = rep->ai_next) {
 		// create socket
 		fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-		if (fd == -1){
+		if (fd == -1) {
 			perror("socket");
 			continue;
 		}
