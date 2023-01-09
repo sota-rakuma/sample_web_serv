@@ -76,7 +76,6 @@ _ip(another._ip),
 _port(another._port),
 _sockfd(another._sockfd),
 _accept(new Accept(this)),
-_info(another._info),
 _configs(another._configs)
 {
 }
@@ -84,7 +83,6 @@ _configs(another._configs)
 ListenSocket::~ListenSocket()
 {
 	delete _accept;
-	freeaddrinfo(_info);
 }
 
 void ListenSocket::notify(
@@ -114,6 +112,7 @@ void ListenSocket::accept()
 	if (fd = ::accept(_sockfd, (sockaddr *)&client_info, &len) == -1) {
 		throw ListenSockError("accept");
 	}
+	// acceptedsocketでnotifyしたほうがいいのかもしれない。
 	notify(fd, IN, new AcceptedSocket(getObserver(), fd, client_info, _configs));
 }
 

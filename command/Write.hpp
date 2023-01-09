@@ -8,7 +8,7 @@ class AcceptedSocket;
 class Write : public ICommand
 {
 private:
-	AcceptedSocket *_reciever;
+	AcceptedSocket *_receiver;
 public:
 	Write();
 	Write(AcceptedSocket *);

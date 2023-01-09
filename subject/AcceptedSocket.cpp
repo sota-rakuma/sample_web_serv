@@ -50,4 +50,19 @@ void AcceptedSocket::notify(
 	getObserver()->update(fd, event, subject);
 }
 
-// リクエストのchain of responsibility から
+int AcceptedSocket::processRequest(Level level)
+{
+	switch (level)
+	{
+	case RECEIVERESPONSE:
+	case PARSERESPONSE:
+	case CREATEREQUEST:
+	case CHECKREQUEST:
+	case ROUTETARGET:
+	case EXECUTEMETHOD:
+		// eventlist.add(_re)
+	//case CREATERESPONSE:
+	default:
+		break;
+	}
+}

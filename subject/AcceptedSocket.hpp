@@ -4,13 +4,23 @@
 #include "ISubject.hpp"
 #include "../HTTP/HTTPRequest.hpp"
 #include "../HTTP/HTTPResponse.hpp"
-#include "../handler/HTTPMethodReciever.hpp"
+#include "../handler/HTTPMethodReceiver.hpp"
 #include "../command/Read.hpp"
 #include "../command/Write.hpp"
 #include "../config/ServerConfigFinder.hpp"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+
+enum Level {
+	RECEIVERESPONSE,
+	PARSERESPONSE,
+	CREATEREQUEST,
+	CHECKREQUEST,
+	ROUTETARGET,
+	EXECUTEMETHOD,
+	//CREATERESPONSE,
+};
 
 class AcceptedSocket : public ISubject, public EventHandler
 {
@@ -21,7 +31,7 @@ private:
 	HTTPResponse _res;
 	Read *_read;
 	Write *_write;
-	HTTPMethodReciever *_reciever;
+	HTTPMethodReceiver *_receiver;
 	ServerConfigFinder *_configs;
 public:
 	AcceptedSocket();
@@ -38,6 +48,7 @@ public:
 	virtual ICommand *getHandler(int) const;
 	AcceptedSocket &setInfo(const sockaddr_in &);
 	AcceptedSocket &setFd(int);
+	int processRequest(Level);
 };
 
 #endif /* ACCEPTEDSOCKET_HPP */

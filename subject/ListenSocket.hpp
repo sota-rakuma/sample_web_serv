@@ -28,7 +28,6 @@ private:
 	Accept * _accept;
 	std::string _ip;
 	std::string _port;
-	addrinfo *_info;
 	ServerConfigFinder *_configs;
 public:
 	ListenSocket(

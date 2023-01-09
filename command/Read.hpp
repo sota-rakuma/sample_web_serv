@@ -8,7 +8,7 @@ class AcceptedSocket;
 class Read : public ICommand
 {
 private:
-	AcceptedSocket *_reciever;
+	AcceptedSocket *_receiver;
 public:
 	Read();
 	Read(AcceptedSocket *);

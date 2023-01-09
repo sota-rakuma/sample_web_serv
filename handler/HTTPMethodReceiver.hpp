@@ -9,22 +9,22 @@ enum Stat {
 	CONTINUE,
 };
 
-class HTTPMethodReciever : public EventHandler
+class HTTPMethodReceiver : public EventHandler
 {
 private:
 public:
-	HTTPMethodReciever(/* args */);
-	~HTTPMethodReciever();
+	HTTPMethodReceiver(/* args */);
+	~HTTPMethodReceiver();
 	virtual int httpGet() = 0;
 	virtual int httpPost() = 0;
 	virtual int httpDelete() = 0;
 };
 
-HTTPMethodReciever::HTTPMethodReciever()
+HTTPMethodReceiver::HTTPMethodReceiver()
 {
 }
 
-HTTPMethodReciever::~HTTPMethodReciever()
+HTTPMethodReceiver::~HTTPMethodReceiver()
 {
 }
 
