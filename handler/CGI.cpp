@@ -36,6 +36,11 @@ CGI::~CGI()
 	delete _delete;
 }
 
+int CGI::httpDelete()
+{
+
+}
+
 int CGI::httpPost()
 {
 	if (_is_exist == false) {
@@ -49,6 +54,11 @@ int CGI::httpPost()
 		return 1;
 	}
 	return httpGet();
+}
+
+int CGI::httpGet()
+{
+	
 }
 
 void CGI::executeCGI(int event)

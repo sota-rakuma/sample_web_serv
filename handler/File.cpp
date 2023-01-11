@@ -71,6 +71,16 @@ File::~File()
 	::close(_fd);
 }
 
+int File::httpDelete()
+{
+
+}
+
+int File::httpPost()
+{
+
+}
+
 int File::httpGet()
 {
 	if (_is_exist == false) {
