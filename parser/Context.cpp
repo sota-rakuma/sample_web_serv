@@ -1,4 +1,5 @@
 #include "Context.hpp"
+#include <stdexcept>
 
 Context::Context()
 :_p(static_cast<Parser *>(NULL))
@@ -26,5 +27,8 @@ ParsingStatus Context::execParse(
 	const std::vector<std::pair<Symbol, std::string> > & tokens
 )
 {
+	if (_p == static_cast<Parser *>(NULL)) {
+		throw std::runtime_error("Parser is not set");
+	}
 	return _p->parse(tokens);
 }
