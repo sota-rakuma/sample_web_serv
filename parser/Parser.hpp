@@ -5,6 +5,7 @@
 
 enum ParsingStatus {
 	SUCCESS,
+	COTINUE,
 	ERROR,
 };
 
