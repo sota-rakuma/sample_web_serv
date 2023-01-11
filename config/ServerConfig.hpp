@@ -10,10 +10,12 @@ private:
 /*
 	location
 */
+	size_t _max_body_size;
 public:
 	ServerConfig();
 	ServerConfig(const ServerConfig &);
 	~ServerConfig();
+	size_t getMaxBodySize() const;
 };
 
 #endif /* SERVERCONFIG_HPP */
