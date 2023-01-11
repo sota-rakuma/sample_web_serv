@@ -3,7 +3,7 @@
 
 #include "SyntaxTree.hpp"
 
-enum Status {
+enum ParsingStatus {
 	SUCCESS,
 	ERROR,
 };
@@ -15,7 +15,7 @@ private:
 public:
 	Parser(/* args */);
 	~Parser();
-	virtual Status parse(
+	virtual ParsingStatus parse(
 		const std::vector<std::pair<Symbol, std::string> > &
 	) = 0;
 };
