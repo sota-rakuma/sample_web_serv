@@ -9,10 +9,7 @@ class IObserver
 public:
 	IObserver();
 	virtual ~IObserver();
-	virtual void update(
-		int,
-		std::list<ICommand *> &
-	) = 0;
+	virtual void update(int) = 0;
 };
 
 #endif /* IOBSERVER_HPP */

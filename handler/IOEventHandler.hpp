@@ -3,14 +3,20 @@
 
 #include "EventHandler.hpp"
 #include "../subject/ISubject.hpp"
+#include <list>
+#include "../command/ICommand.hpp"
 
 class IOEventHandler : public EventHandler
 {
 private:
 	ISubject *_subject;
+	std::list<ICommand *> *_commads;
 public:
 	IOEventHandler();
-	IOEventHandler(ISubject *);
+	IOEventHandler(
+		ISubject *,
+		std::list<ICommand *> *
+	);
 	IOEventHandler(const IOEventHandler &);
 	ISubject *getSubject() const;
 	~IOEventHandler();

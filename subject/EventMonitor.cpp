@@ -15,7 +15,8 @@ EventMonitor::EventMonitor(int time)
 EventMonitor::EventMonitor(const EventMonitor &another)
 :_time(another._time),
 _pollvec(another._pollvec),
-_storage(another._storage)
+_storage(another._storage),
+_commands(another._commands)
 {
 }
 
@@ -23,38 +24,73 @@ EventMonitor::~EventMonitor()
 {
 }
 
-
-int EventMonitor::monitor(
-	std::list<ICommand *> & commands
-)
+void EventMonitor::notify(int fd, int event)
 {
-	int ready;
-
-	ready = poll(_pollvec.data(), _pollvec.size(), _time);
-	if (ready <= 0) {
-		if (ready == 0 || errno != EINTR) {
-			// タイムアウトはここで実装できる
-			usleep(500);
-			return 0;
-		}
-		return -1;
-	}
-	publishEvent(ready, commands);
-	return 1;
+	_storage[fd]->update(event);
 }
 
-void EventMonitor::publishEvent(
-	int ready,
-	std::list<ICommand *> & commands
+void EventMonitor::subscribe(
+	int fd,
+	int event,
+	IObserver * target
 )
+{
+	_storage[fd] = target;
+	_pollvec.push_back((pollfd){fd, event, 0});
+}
+
+void EventMonitor::unsubscribe(
+	int fd,
+	bool is_dup,
+	IObserver *target
+)
+{
+	if (is_dup == false) {
+		delete _storage[fd];
+	}
+	_storage.erase(fd);
+	for (size_t i = 0; i < _pollvec.size(); i++) {
+		if (fd == _pollvec[i].fd) {
+			_pollvec.erase(_pollvec.begin() + i);
+			break;
+		}
+	}
+}
+
+void EventMonitor::monitor()
+{
+	while (true) {
+		int ready;
+
+		ready = poll(_pollvec.data(), _pollvec.size(), _time);
+		if (ready <= 0) {
+			if (ready == 0 || errno != EINTR) {
+				// タイムアウトはここで実装できる
+				usleep(500);
+				continue;
+			}
+			break;
+		}
+		publishEvent(ready);
+	}
+}
+
+void EventMonitor::publishEvent(int ready)
 {
 	for (size_t i = 0; i < _pollvec.size() && ready > 0; i++)
 	{
 		if (_pollvec[i].revents == 0) {
 			continue;
 		}
-		int fd = _pollvec[i].fd;
-		notify(_pollvec[i].fd, commands);
+		notify(_pollvec[i].fd, _pollvec[i].revents);
 		ready -= 1;
+	}
+}
+
+void EventMonitor::triggerEvent()
+{
+	while (_commands.size() > 0) {
+		(*(_commands.begin()))->execute();
+		_commands.pop_front();
 	}
 }

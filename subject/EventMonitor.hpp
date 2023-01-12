@@ -10,13 +10,9 @@ class Server
 {
 private:
 	EventMonitor *_em;
-	std::list<ICommand *> _commands;
 public:
 	void run() {
-		while (true) {
-			em->monitor(_commands);
-			triggerEvent();
-		}
+		em->monitor();
 	};
 }
 
@@ -32,17 +28,19 @@ private:
 	int _time;
 	std::vector<pollfd> _pollvec;
 	std::map<int, IObserver *> _storage;
+	std::list<ICommand *> _commands;
 private:
-	void publishEvent(
-		int,
-		std::list<ICommand *> &
-	);
+	void publishEvent(int);
 public:
 	EventMonitor();
 	EventMonitor(int);
 	EventMonitor(const EventMonitor &);
 	~EventMonitor();
-	int monitor(std::list<ICommand *> &);
+	virtual void notify(int, int);
+	virtual void subscribe(int, int, IObserver *);
+	virtual void unsubscribe(int, bool, IObserver *);
+	void monitor();
+	void triggerEvent();
 };
 
 #endif /* EVENTMONITOR_HPP */

@@ -8,9 +8,9 @@ class ISubject
 public:
 	ISubject();
 	virtual ~ISubject();
-	virtual void notify(int, std::list<ICommand *> &) = 0;
-	virtual void subscribe(IObserver *) = 0;
-	virtual void unsubscribe(IObserver * ) = 0;
+	virtual void notify(int, int) = 0;
+	virtual void subscribe(int, int, IObserver *) = 0;
+	virtual void unsubscribe(int, bool, IObserver * ) = 0;
 };
 
 #endif /* ISUBJECT_HPP */
