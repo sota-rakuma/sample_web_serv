@@ -28,7 +28,7 @@ ListenSocket::ListenSocket(
 	const std::string & port,
 	ServerConfigFinder *conifgs
 )
-:ISubject(static_cast<IObserver *>(NULL)),
+:EventHandler(static_cast<IObserver *>(NULL)),
 _ip(ip),
 _port(port),
 _accept(new Accept(this)),
@@ -71,7 +71,7 @@ _configs(conifgs)
 ListenSocket::ListenSocket(
 	const ListenSocket & another
 )
-:ISubject(another.getObserver()),
+:EventHandler(another.getObserver()),
 _ip(another._ip),
 _port(another._port),
 _sockfd(another._sockfd),
@@ -88,10 +88,10 @@ ListenSocket::~ListenSocket()
 void ListenSocket::notify(
 	int sockfd,
 	int event,
-	ISubject *subject
+	EventHandler *handler
 )
 {
-	getObserver()->update(sockfd, event, subject);
+	getObserver()->update(sockfd, event, handler);
 }
 
 void ListenSocket::listen()

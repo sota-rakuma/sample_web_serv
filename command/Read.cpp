@@ -14,3 +14,7 @@ Read::~Read()
 {
 }
 
+int Read::execute()
+{
+	return _receiver->receive();
+}
