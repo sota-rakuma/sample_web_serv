@@ -1,7 +1,7 @@
 #ifndef ISUBJECT_HPP
 #define ISUBJECT_HPP
 
-#include "../observer/IObserver.hpp"
+#include "../handler/IObserver.hpp"
 
 class ISubject
 {
