@@ -7,7 +7,7 @@ class IPublisher
 {
 public:
 	IPublisher();
-	~IPublisher();
+	virtual ~IPublisher();
 	virtual void notify(int) = 0;
 	virtual void subscribe(ISubscriber *) = 0;
 	virtual void unsubscribe(ISubscriber * ) = 0;

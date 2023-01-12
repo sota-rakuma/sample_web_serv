@@ -5,7 +5,7 @@ class ISubscriber
 {
 public:
 	ISubscriber();
-	~ISubscriber();
+	virtual ~ISubscriber();
 	virtual void update(int) = 0;
 };
 
