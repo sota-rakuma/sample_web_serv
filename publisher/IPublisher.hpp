@@ -1,7 +1,7 @@
 #ifndef IPUBLISHER_HPP
 #define IPUBLISHER_HPP
 
-class ISubscriber;
+#include "../subscriber/ISubscriver.hpp"
 
 class IPublisher
 {
