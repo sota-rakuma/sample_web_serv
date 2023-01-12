@@ -12,6 +12,7 @@ public:
 	IOEventHandler();
 	IOEventHandler(ISubject *);
 	IOEventHandler(const IOEventHandler &);
+	ISubject *getSubject() const;
 	~IOEventHandler();
 	virtual int read() = 0;
 	virtual int write() = 0;

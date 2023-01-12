@@ -15,3 +15,8 @@ IOEventHandler::IOEventHandler(const IOEventHandler &another)
 IOEventHandler::~IOEventHandler()
 {
 }
+
+ISubject *IOEventHandler::getSubject() const
+{
+	return _subject;
+}
