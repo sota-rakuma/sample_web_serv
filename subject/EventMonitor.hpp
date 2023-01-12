@@ -1,21 +1,22 @@
 #ifndef EVENTMONITOR_HPP
 #define EVENTMONITOR_HPP
 
-#include "../subject/ISubject.hpp"
+#include "ISubject.hpp"
+#include "../command/ICommand.hpp"
 #include <vector>
+#include <list>
+#include <map>
 #include <poll.h>
 
-class EventMonitor
+class EventMonitor : public ISubject
 {
 private:
 	int _time;
-	ISubject *_pub;
 	std::vector<pollfd> _pollvec;
+	std::map<int, IObserver *> _storage;
 public:
 	EventMonitor();
 	EventMonitor(int);
-	EventMonitor(ISubject *);
-	EventMonitor(int, ISubject *);
 	EventMonitor(const EventMonitor &);
 	~EventMonitor();
 	int monitor();

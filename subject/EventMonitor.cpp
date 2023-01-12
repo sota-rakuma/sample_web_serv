@@ -3,8 +3,7 @@
 #include <unistd.h>
 
 EventMonitor::EventMonitor()
-:_time(300),
-_pub(static_cast<ISubject *>(NULL))
+:_time(300)
 {
 }
 
@@ -13,22 +12,10 @@ EventMonitor::EventMonitor(int time)
 {
 }
 
-EventMonitor::EventMonitor(ISubject *pub)
-:_pub(pub)
-{
-}
-
-EventMonitor::EventMonitor(int time, ISubject * pub)
-:_time(time),
-_pub(pub)
-{
-}
-
-
 EventMonitor::EventMonitor(const EventMonitor &another)
 :_time(another._time),
-_pub(another._pub),
-_pollvec(another._pollvec)
+_pollvec(another._pollvec),
+_storage(another._storage)
 {
 }
 
@@ -60,7 +47,7 @@ void EventMonitor::publishEvent(int ready)
 			continue;
 		}
 		int fd = _pollvec[i].fd;
-		_pub->notify(_pollvec[i].fd);
+		notify(_pollvec[i].fd);
 		ready -= 1;
 	}
 }
