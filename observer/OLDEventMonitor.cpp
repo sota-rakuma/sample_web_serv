@@ -1,21 +1,21 @@
-#include "EventMonitor.hpp"
+#include "OLDEventMonitor.hpp"
 #include <unistd.h>
 
-EventMonitor::EventMonitor()
+OLDEventMonitor::OLDEventMonitor()
 :_pollvec()
 {
 }
 
-EventMonitor::EventMonitor(const EventMonitor & another)
+OLDEventMonitor::OLDEventMonitor(const OLDEventMonitor & another)
 :_pollvec(another._pollvec)
 {
 }
 
-EventMonitor::~EventMonitor()
+OLDEventMonitor::~OLDEventMonitor()
 {
 }
 
-void EventMonitor::update(int fd, int event, EventHandler * subject)
+void OLDEventMonitor::update(int fd, int event, EventHandler * subject)
 {
 	if (event == REMOVE) {
 		for (size_t i = 0; i < _pollvec.size(); i++) {
@@ -30,7 +30,7 @@ void EventMonitor::update(int fd, int event, EventHandler * subject)
 	}
 }
 
-void EventMonitor::addSubject(int fd, int event, EventHandler * subject)
+void OLDEventMonitor::addSubject(int fd, int event, EventHandler * subject)
 {
 	if (event & OUT) {
 		_pollvec.push_back((pollfd){fd, POLLOUT, 0});
@@ -40,13 +40,13 @@ void EventMonitor::addSubject(int fd, int event, EventHandler * subject)
 	_for_find.insert(std::make_pair(fd, subject));
 }
 
-void EventMonitor::deleteSubject(int fd)
+void OLDEventMonitor::deleteSubject(int fd)
 {
 	delete _for_find[fd];
 	_for_find.erase(fd);
 }
 
-int EventMonitor::monitor(
+int OLDEventMonitor::monitor(
 	std::list<ICommand *> & commandlist
 )
 {
@@ -65,7 +65,7 @@ int EventMonitor::monitor(
 	return 1;
 }
 
-void EventMonitor::postEvent(
+void OLDEventMonitor::postEvent(
 	int ready,
 	std::list<ICommand *> & commandlist
 )

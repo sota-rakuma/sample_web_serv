@@ -1,5 +1,5 @@
-#ifndef EVENTMONITOR_HPP
-#define EVENTMONITOR_HPP
+#ifndef OLDEVENTMONITOR_HPP
+#define OLDEVENTMONITOR_HPP
 
 #include "IObserver.hpp"
 #include "../command/ICommand.hpp"
@@ -9,16 +9,16 @@
 #include <vector>
 #include <list>
 
-class EventMonitor : public IObserver
+class OLDEventMonitor : public IObserver
 {
 private:
 	int _time;
 	std::vector<pollfd> _pollvec;
 	std::map<int, EventHandler *> _for_find;
 public:
-	EventMonitor();
-	EventMonitor(const EventMonitor &);
-	~EventMonitor();
+	OLDEventMonitor();
+	OLDEventMonitor(const OLDEventMonitor &);
+	~OLDEventMonitor();
 	virtual void update(int, int, EventHandler *);
 	void addSubject(int fd, int event, EventHandler *);
 	void deleteSubject(int fd);
@@ -26,4 +26,4 @@ public:
 	void postEvent(int, std::list<ICommand *> &);
 };
 
-#endif /* EVENTMONITOR_HPP */
+#endif /* OLDEVENTMONITOR_HPP */
