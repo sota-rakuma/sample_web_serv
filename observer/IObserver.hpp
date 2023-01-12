@@ -6,7 +6,7 @@
 
 #define IN 0x00000001
 #define OUT 0x00000002
-#define DELETE 0x00000004
+#define REMOVE 0x00000004
 
 class IObserver
 {
