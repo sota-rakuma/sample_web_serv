@@ -2,7 +2,7 @@
 #define EVENTHANDLER_HPP
 
 #include "../command/ICommand.hpp"
-#include "../subject/ISubject.hpp"
+#include "../oldsubject/ISubject.hpp"
 
 class EventHandler : public ISubject
 {

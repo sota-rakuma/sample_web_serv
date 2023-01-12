@@ -15,7 +15,7 @@ OLDEventMonitor::~OLDEventMonitor()
 {
 }
 
-void OLDEventMonitor::update(int fd, int event, EventHandler * subject)
+void OLDEventMonitor::update(int fd, int event, EventHandler * oldsubject)
 {
 	if (event == REMOVE) {
 		for (size_t i = 0; i < _pollvec.size(); i++) {
@@ -26,18 +26,18 @@ void OLDEventMonitor::update(int fd, int event, EventHandler * subject)
 		delete _for_find[fd];
 		_for_find.erase(fd);
 	} else {
-		addSubject(fd, event, subject);
+		addSubject(fd, event, oldsubject);
 	}
 }
 
-void OLDEventMonitor::addSubject(int fd, int event, EventHandler * subject)
+void OLDEventMonitor::addSubject(int fd, int event, EventHandler * oldsubject)
 {
 	if (event & OUT) {
 		_pollvec.push_back((pollfd){fd, POLLOUT, 0});
 	} else if (event & IN) {
 		_pollvec.push_back((pollfd){fd, POLLIN, 0});
 	}
-	_for_find.insert(std::make_pair(fd, subject));
+	_for_find.insert(std::make_pair(fd, oldsubject));
 }
 
 void OLDEventMonitor::deleteSubject(int fd)

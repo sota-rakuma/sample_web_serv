@@ -7,12 +7,12 @@ AcceptedSocket::AcceptedSocket()
 }
 
 AcceptedSocket::AcceptedSocket(
-	IObserver *observer,
+	IObserver *oldobserver,
 	int sockfd,
 	const sockaddr_in &info,
 	ServerConfigFinder *configfinder
 )
-:EventHandler(observer),
+:EventHandler(oldobserver),
 _sockfd(sockfd),
 _info(info),
 _configfinder(configfinder),
@@ -64,10 +64,10 @@ AcceptedSocket &AcceptedSocket::setFd(int sockfd)
 void AcceptedSocket::notify(
 	int fd,
 	int event,
-	EventHandler *subject
+	EventHandler *oldsubject
 )
 {
-	getObserver()->update(fd, event, subject);
+	getObserver()->update(fd, event, oldsubject);
 }
 
 ICommand *AcceptedSocket::getHandler(int event) const

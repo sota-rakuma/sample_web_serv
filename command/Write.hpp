@@ -2,7 +2,7 @@
 #define WRITE_HPP
 
 #include "ICommand.hpp"
-#include "../subject/AcceptedSocket.hpp"
+#include "../oldsubject/AcceptedSocket.hpp"
 //class AcceptedSocket;
 
 class Write : public ICommand

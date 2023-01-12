@@ -1,13 +1,13 @@
 #ifndef ISUBJECT_HPP
 #define ISUBJECT_HPP
 
-#include "../observer/IObserver.hpp"
+#include "../oldobserver/IObserver.hpp"
 #include "../command/ICommand.hpp"
 
 class ISubject
 {
 private:
-	IObserver * _observer;
+	IObserver * _oldobserver;
 public:
 	ISubject();
 	ISubject(IObserver *);

@@ -1,4 +1,4 @@
-#include "../observer/IObserver.hpp"
+#include "../oldobserver/IObserver.hpp"
 #include "File.hpp"
 #include <fcntl.h>
 #include <unistd.h>
@@ -41,7 +41,7 @@ _is_exist(false)
 /**
  * @brief Construct a new File:: File object
  *
- * @param observer event monitor
+ * @param oldobserver event monitor
  * @param name getTarget();
  * @param oflag O_RDWR | O_NONBLOCK | O_CREAT
  */
