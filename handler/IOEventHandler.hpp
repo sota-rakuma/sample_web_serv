@@ -22,6 +22,7 @@ public:
 	IOEventHandler(const IOEventHandler &);
 	ISubject *getSubject() const;
 	std::list<ICommand *> * getCommandList() const;
+	void addCommand(ICommand *);
 	~IOEventHandler();
 	virtual int read() = 0;
 	virtual int write() = 0;

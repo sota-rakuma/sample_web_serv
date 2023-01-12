@@ -32,3 +32,8 @@ std::list<ICommand *> *IOEventHandler::getCommandList() const
 {
 	return _commands;
 }
+
+void IOEventHandler::addCommand(ICommand * command)
+{
+	_commands->push_back(command);
+}
