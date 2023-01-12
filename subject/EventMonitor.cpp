@@ -24,7 +24,9 @@ EventMonitor::~EventMonitor()
 }
 
 
-int EventMonitor::monitor()
+int EventMonitor::monitor(
+	std::list<ICommand *> & commands
+)
 {
 	int ready;
 
@@ -39,7 +41,10 @@ int EventMonitor::monitor()
 	}
 }
 
-void EventMonitor::publishEvent(int ready)
+void EventMonitor::publishEvent(
+	int ready,
+	std::list<ICommand *> & commands
+)
 {
 	for (size_t i = 0; i < _pollvec.size() && ready > 0; i++)
 	{
@@ -47,7 +52,7 @@ void EventMonitor::publishEvent(int ready)
 			continue;
 		}
 		int fd = _pollvec[i].fd;
-		notify(_pollvec[i].fd);
+		notify(_pollvec[i].fd, commands);
 		ready -= 1;
 	}
 }
