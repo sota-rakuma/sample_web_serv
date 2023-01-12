@@ -2,7 +2,6 @@
 #define LISTENSOCKET_HPP
 
 #include "ISubject.hpp"
-#include "../handler/EventHandler.hpp"
 #include "AcceptedSocket.hpp"
 #include "../command/Accept.hpp"
 #include "../config/ServerConfigFinder.hpp"
@@ -11,7 +10,7 @@
 #include <sys/types.h>
 #include <stdexcept>
 
-class ListenSocket : public ISubject, public EventHandler
+class ListenSocket : public ISubject
 {
 private:
 	ListenSocket::ListenSocket(const ListenSocket &);

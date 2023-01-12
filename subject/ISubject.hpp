@@ -3,8 +3,9 @@
 
 #include "../observer/IObserver.hpp"
 #include "../command/ICommand.hpp"
+#include "../handler/EventHandler.hpp"
 
-class ISubject
+class ISubject : public EventHandler
 {
 private:
 	IObserver * _observer;

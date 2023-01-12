@@ -1,15 +1,13 @@
 #ifndef HTTPMETHODRECIEVER_HPP
 #define HTTPMETHODRECIEVER_HPP
 
-#include "EventHandler.hpp"
-
 enum Stat {
 	SUCCESS,
 	ERROR,
 	CONTINUE,
 };
 
-class HTTPMethodReceiver : public EventHandler
+class HTTPMethodReceiver
 {
 private:
 public:

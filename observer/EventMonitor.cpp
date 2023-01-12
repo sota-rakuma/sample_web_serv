@@ -15,7 +15,7 @@ EventMonitor::~EventMonitor()
 {
 }
 
-void EventMonitor::update(int fd, int event, EventHandler * subject)
+void EventMonitor::update(int fd, int event, ISubject * subject)
 {
 	if (event == REMOVE) {
 		for (size_t i = 0; i < _pollvec.size(); i++) {
@@ -30,7 +30,7 @@ void EventMonitor::update(int fd, int event, EventHandler * subject)
 	}
 }
 
-void EventMonitor::addSubject(int fd, int event, EventHandler * subject)
+void EventMonitor::addSubject(int fd, int event, ISubject * subject)
 {
 	if (event & OUT) {
 		_pollvec.push_back((pollfd){fd, POLLOUT, 0});
