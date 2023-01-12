@@ -4,11 +4,6 @@ EventHandler::EventHandler()
 {
 }
 
-EventHandler::EventHandler(IObserver *oldobserver)
-:ISubject(oldobserver)
-{
-}
-
 EventHandler::~EventHandler()
 {
 }
