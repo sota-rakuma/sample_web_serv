@@ -9,13 +9,4 @@ public:
 	virtual void update(int) = 0;
 };
 
-IObserver::IObserver()
-{
-}
-
-IObserver::~IObserver()
-{
-}
-
-
 #endif /* IOBSERVER_HPP */
