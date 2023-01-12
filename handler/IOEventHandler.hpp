@@ -3,8 +3,8 @@
 
 #include "EventHandler.hpp"
 #include "../subject/ISubject.hpp"
-#include <list>
 #include "../command/ICommand.hpp"
+#include <list>
 
 class IOEventHandler : public EventHandler
 {
