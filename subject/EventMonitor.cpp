@@ -39,6 +39,8 @@ int EventMonitor::monitor(
 		}
 		return -1;
 	}
+	publishEvent(ready, commands);
+	return 1;
 }
 
 void EventMonitor::publishEvent(
