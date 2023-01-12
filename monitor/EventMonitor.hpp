@@ -20,6 +20,7 @@ public:
 	EventMonitor(const EventMonitor &);
 	~EventMonitor();
 	int monitor();
+	void publishEvent(int);
 };
 
 #endif /* EVENTMONITOR_HPP */
