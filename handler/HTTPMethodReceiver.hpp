@@ -1,15 +1,16 @@
 #ifndef HTTPMETHODRECIEVER_HPP
 #define HTTPMETHODRECIEVER_HPP
 
+#include "IOEventHandler.hpp"
+
 enum Stat {
 	SUCCESS,
 	ERROR,
 	CONTINUE,
 };
 
-class HTTPMethodReceiver
+class HTTPMethodReceiver : public IOEventHandler
 {
-private:
 public:
 	HTTPMethodReceiver(/* args */);
 	~HTTPMethodReceiver();
@@ -17,14 +18,5 @@ public:
 	virtual int httpPost() = 0;
 	virtual int httpDelete() = 0;
 };
-
-HTTPMethodReceiver::HTTPMethodReceiver()
-{
-}
-
-HTTPMethodReceiver::~HTTPMethodReceiver()
-{
-}
-
 
 #endif /* HTTPMETHODRECIEVER_HPP */
