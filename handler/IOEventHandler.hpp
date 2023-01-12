@@ -5,12 +5,14 @@
 #include "../subject/ISubject.hpp"
 #include "../command/ICommand.hpp"
 #include <list>
+#define IN 0x00000001
+#define OUT 0x00000002
 
 class IOEventHandler : public EventHandler
 {
 private:
 	ISubject *_subject;
-	std::list<ICommand *> *_commads;
+	std::list<ICommand *> *_commands;
 public:
 	IOEventHandler();
 	IOEventHandler(
@@ -19,6 +21,7 @@ public:
 	);
 	IOEventHandler(const IOEventHandler &);
 	ISubject *getSubject() const;
+	std::list<ICommand *> * getCommandList() const;
 	~IOEventHandler();
 	virtual int read() = 0;
 	virtual int write() = 0;
