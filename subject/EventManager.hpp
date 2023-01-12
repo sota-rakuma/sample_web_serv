@@ -1,12 +1,12 @@
 #ifndef EVENTMANAGER_HPP
 #define EVENTMANAGER_HPP
 
-#include "IPublisher.hpp"
+#include "ISubject.hpp"
 #include "../command/ICommand.hpp"
 #include <map>
 #include <list>
 
-class EventManager : public IPublisher
+class EventManager : public ISubject
 {
 private:
 	std::map<int, ISubscriber *> _storage;

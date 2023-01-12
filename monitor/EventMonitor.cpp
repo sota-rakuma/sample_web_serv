@@ -4,7 +4,7 @@
 
 EventMonitor::EventMonitor()
 :_time(300),
-_pub(static_cast<IPublisher *>(NULL))
+_pub(static_cast<ISubject *>(NULL))
 {
 }
 
@@ -13,12 +13,12 @@ EventMonitor::EventMonitor(int time)
 {
 }
 
-EventMonitor::EventMonitor(IPublisher *pub)
+EventMonitor::EventMonitor(ISubject *pub)
 :_pub(pub)
 {
 }
 
-EventMonitor::EventMonitor(int time, IPublisher * pub)
+EventMonitor::EventMonitor(int time, ISubject * pub)
 :_time(time),
 _pub(pub)
 {
