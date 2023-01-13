@@ -147,7 +147,7 @@ HTTPRequest::getHeaderField() const
 	return _hf;
 }
 
-const std::string &
+const std::string 
 HTTPRequest::getHeaderValue(
 	const std::string & key
 ) const
@@ -160,7 +160,7 @@ HTTPRequest::getHeaderValue(
 	catch(const std::exception& e)
 	{
 	}
-	return "";
+	return std::string("");
 }
 
 const std::string &
