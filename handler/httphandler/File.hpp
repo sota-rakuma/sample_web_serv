@@ -22,7 +22,7 @@ public:
 	public:
 		FileError();
 		FileError(const std::string &);
-		~FileError();
+		virtual ~FileError() throw();
 	};
 private:
 	int _fd;

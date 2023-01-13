@@ -9,6 +9,8 @@
 #include <string>
 #include <stdexcept>
 
+class AcceptedSocket;
+
 class CGI : public HTTPMethodReceiver, public IObserver
 {
 private:

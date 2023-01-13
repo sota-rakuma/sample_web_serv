@@ -3,12 +3,6 @@
 
 #include "../IOEventHandler.hpp"
 
-enum Stat {
-	SUCCESS,
-	ERROR,
-	CONTINUE,
-};
-
 class HTTPMethodReceiver : public IOEventHandler
 {
 public:

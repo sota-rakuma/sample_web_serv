@@ -2,11 +2,11 @@
 #define ACCEPTEDSOCKET_HPP
 
 #include "IOEventHandler.hpp"
-#include "httphandler/CGI.hpp"
-#include "httphandler/File.hpp"
 #include "../parser/Context.hpp"
 #include "../HTTP/HTTPRequest.hpp"
 #include "../HTTP/HTTPResponse.hpp"
+#include "httphandler/CGI.hpp"
+#include "httphandler/File.hpp"
 #include "../command/Read.hpp"
 #include "../command/Write.hpp"
 #include "../config/ServerConfigFinder.hpp"

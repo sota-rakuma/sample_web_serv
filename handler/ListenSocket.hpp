@@ -14,14 +14,14 @@
 class ListenSocket : public IOEventHandler, public IObserver
 {
 private:
-	ListenSocket::ListenSocket(const ListenSocket &);
+	ListenSocket(const ListenSocket &);
 public:
 	class ListenSockError : public std::runtime_error
 	{
 	public:
 		ListenSockError();
 		ListenSockError(const std::string &);
-		~ListenSockError();
+		virtual ~ListenSockError() throw();
 	};
 private:
 	int _sockfd;
@@ -38,7 +38,7 @@ public:
 		const std::string &,
 		ServerConfigFinder *
 	);
-	~ListenSocket();
+	virtual ~ListenSocket();
 	virtual void update(int);
 	virtual int read();
 	virtual int write();
