@@ -24,13 +24,15 @@ File::File(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
 	const std::string & path,
-	int oflag
+	int oflag,
+	AcceptedSocket *as
 )
 :HTTPMethodReceiver(subject, commands),
 _read(new Read(this)),
 _write(new Write(this)),
 _path(path),
-_is_exist(false)
+_is_exist(false),
+_as(as)
 {
 	_fd = open(_path.c_str(), oflag | O_CLOEXEC);
 	if (_fd == -1) {
@@ -50,13 +52,15 @@ File::File(
 	std::list<ICommand *> * commands,
 	const std::string & path,
 	int oflag,
-	int mode
+	int mode,
+	AcceptedSocket *as
 )
 :HTTPMethodReceiver(subject, commands),
 _read(new Read(this)),
 _write(new Write(this)),
 _path(path),
-_is_exist(false)
+_is_exist(false),
+_as(as)
 {
 	_fd = open(_path.c_str(), oflag | O_CLOEXEC, mode);
 	if (_fd == -1) {
@@ -88,12 +92,7 @@ int File::read()
 	if (nb < 0) {
 		return -1;
 	} else if (nb == 0) {
-		for (std::list<AcceptedSocket *>::iterator it = _as.begin();
-			it != _as.end();
-			it++)
-		{
-			//(*it)->createResponse(OK, _header, _buff);
-		}
+		_as->createResponse(_buff);
 		return 0;
 	}
 	buff[nb] = '\0';

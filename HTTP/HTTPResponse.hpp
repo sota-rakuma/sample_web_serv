@@ -32,6 +32,7 @@ public:
 		StatusLine & operator=(const StatusLine &);
 	};
 private:
+	static std::map<HTTPStatus, const std::string &> _err_msg;
 	StatusLine _statl;
 	std::map<std::string, std::string> _hf;
 	std::string _body;
