@@ -1,7 +1,7 @@
 CXX:=c++
 CXXFLAGS:=-MMD -MP --std=c++98 #-fsanitize=address
-#SRCS:=$(wildcard *.cpp)
-SRCS:=$(wildcard *.cpp)
+# -Wall -Werror -Wextra
+SRCS:=$(wildcard *.cpp */*.cpp */*/*.cpp)
 OBJ_DIR:=obj
 DEP_DIR:=dep
 OBJS:= $(addprefix $(OBJ_DIR)/, $(SRCS:.cpp=.o))
