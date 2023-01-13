@@ -92,7 +92,7 @@ int File::read()
 	if (nb < 0) {
 		return -1;
 	} else if (nb == 0) {
-		//it->createResponse(_buff);
+		_as->createResponse(_buff);
 		return 0;
 	}
 	buff[nb] = '\0';
