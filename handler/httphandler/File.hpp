@@ -28,11 +28,12 @@ private:
 	int _fd;
 	bool _is_exist;
 	std::string _path;
-	HTTPStatus _status;
 	std::string _buff;
+	size_t _nb;
+	HTTPStatus _status;
+	AcceptedSocket * _as;
 	Read *_read;
 	Write *_write;
-	AcceptedSocket * _as;
 public:
 	File();
 	File(

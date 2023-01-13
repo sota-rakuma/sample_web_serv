@@ -51,7 +51,7 @@ CGI::~CGI()
 
 void CGI::update(int event)
 {
-	if (event == IN) {
+	if (event == POLLIN) {
 		getCommandList()->push_back(_read);
 	} else {
 		getCommandList()->push_back(_write);
@@ -83,6 +83,7 @@ int CGI::write()
 	}
 	if (nb < _nb + _buff.size()) {
 		_nb += nb;
+		_buff = _buff.substr(0, nb);
 		return 1;
 	}
 	::close(_out_fd);
@@ -93,22 +94,22 @@ int CGI::write()
 int CGI::httpGet()
 {
 	executeCGI(GET);
-	getSubject()->subscribe(_in_fd, IN, this);
+	getSubject()->subscribe(_in_fd, POLLIN, this);
 	return 0;
 }
 
 int CGI::httpPost()
 {
 	executeCGI(POST);
-	getSubject()->subscribe(_out_fd, OUT, this);
-	getSubject()->subscribe(_in_fd, IN, this);
+	getSubject()->subscribe(_out_fd, POLLOUT, this);
+	getSubject()->subscribe(_in_fd, POLLIN, this);
 	return 0;
 }
 
 int CGI::httpDelete()
 {
 	executeCGI(DELETE);
-	getSubject()->subscribe(_in_fd, IN, this);
+	getSubject()->subscribe(_in_fd, POLLIN, this);
 	return 0;
 }
 

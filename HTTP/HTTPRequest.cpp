@@ -152,7 +152,15 @@ HTTPRequest::getHeaderValue(
 	const std::string & key
 ) const
 {
-	return _hf.at(key);
+	try
+	{
+		const std::string & val = _hf.at(key);
+		return val;
+	}
+	catch(const std::exception& e)
+	{
+	}
+	return "";
 }
 
 const std::string &

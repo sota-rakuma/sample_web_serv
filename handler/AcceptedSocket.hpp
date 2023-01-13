@@ -36,6 +36,7 @@ private:
 	int _sockfd;
 	size_t _chunk_size;
 	std::string _buff;
+	size_t _nb;
 	sockaddr_in _info;
 	ServerConfigFinder *_configfinder;
 	ServerConfig _config;
@@ -72,7 +73,9 @@ public:
 	virtual void update(int);
 	virtual int read();
 	virtual int write();
+	void processCGIResponse(const std::string &);
 	void createResponse(const std::string &);
+	void processTest();
 };
 
 #endif /* ACCEPTEDSOCKET_HPP */
