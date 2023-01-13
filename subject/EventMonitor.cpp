@@ -1,6 +1,8 @@
 #include "EventMonitor.hpp"
 #include <cstddef>
 #include <unistd.h>
+#include <typeinfo>
+#include <string>
 
 EventMonitor::EventMonitor()
 :_time(300)
@@ -91,6 +93,10 @@ void EventMonitor::triggerEvent()
 {
 	while (_commands.size() > 0) {
 		(*(_commands.begin()))->execute();
+		const std::string &name = typeid(*_commands.begin()).name();
+		if (name == "Get" || name == "Post" || name == "Delete") {
+			delete *_commands.begin();
+		}
 		_commands.pop_front();
 	}
 }
