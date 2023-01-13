@@ -1,12 +1,12 @@
 #include "Get.hpp"
 
 Get::Get()
-:_reciever(static_cast<HTTPMethodReciever *>(NULL))
+:_receiver(static_cast<HTTPMethodReceiver *>(NULL))
 {
 }
 
-Get::Get(HTTPMethodReciever *eh)
-:_reciever(eh)
+Get::Get(HTTPMethodReceiver *eh)
+:_receiver(eh)
 {
 }
 
@@ -16,5 +16,5 @@ Get::~Get()
 
 int Get::execute()
 {
-	return _reciever->httpGet();
+	return _receiver->httpGet();
 }

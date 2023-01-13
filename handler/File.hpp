@@ -1,7 +1,7 @@
 #ifndef FILE_HPP
 #define FILE_HPP
 
-#include "HTTPMethodReciever.hpp"
+#include "HTTPMethodReceiver.hpp"
 #include "../subject/AcceptedSocket.hpp"
 #include "../command/Get.hpp"
 #include "../command/Post.hpp"
@@ -14,7 +14,7 @@
 #define BUFSIZE 1024
 #endif
 
-class File : public HTTPMethodReciever, public ISubject
+class File : public HTTPMethodReceiver, public ISubject
 {
 public:
 	class FileError : public std::runtime_error

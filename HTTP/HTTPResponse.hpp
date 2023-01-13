@@ -1,6 +1,7 @@
 #ifndef HTTPRESPONSE_HPP
 #define HTTPRESPONSE_HPP
 
+#include "HTTPStatusCode.hpp"
 #include <string>
 #include <map>
 
@@ -11,22 +12,22 @@ public:
 	{
 	private:
 		std::string _version;
-		int _code;
+		HTTPStatus _code;
 		std::string _reason;
 	public:
 		StatusLine();
 		StatusLine(
 			const std::string &,
-			int,
+			HTTPStatus,
 			const std::string &
 		);
 		StatusLine(const StatusLine &);
 		~StatusLine();
 		const std::string & getHTTPVersion() const;
-		int getCode() const;
+		HTTPStatus getCode() const;
 		const std::string & getReason() const;
 		StatusLine & setHTTPVersion(const std::string &);
-		StatusLine &setCode(int);
+		StatusLine &setCode(HTTPStatus);
 		StatusLine & setReason(const std::string &);
 		StatusLine & operator=(const StatusLine &);
 	};
@@ -45,9 +46,12 @@ public:
 		const std::string &
 	) const;
 	const std::string & getMessageBody() const;
+	HTTPResponse & setStatusCode(
+		HTTPStatus
+	);
 	HTTPResponse & setStatusLine(
 		const std::string &,
-		int,
+		HTTPStatus,
 		const std::string &
 	);
 	HTTPResponse & setHeaderField(

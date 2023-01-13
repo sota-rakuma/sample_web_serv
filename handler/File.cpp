@@ -4,7 +4,6 @@
 #include <unistd.h>
 #include <errno.h>
 
-
 File::FileError::FileError()
 :std::runtime_error(strerror(errno))
 {
@@ -87,9 +86,9 @@ int File::httpGet()
 			it != _as.end();
 			it++)
 		{
-			//(*it)->createResponse(200, _header, _buff);
+			//(*it)->createResponse(OK, _header, _buff);
 		}
-		notify(_fd, DELETE, this);
+		notify(_fd, REMOVE, this);
 		return 0;
 	}
 	buff[nb] = '\0';

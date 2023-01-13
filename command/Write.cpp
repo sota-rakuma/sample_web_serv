@@ -1,12 +1,12 @@
 #include "Write.hpp"
 
 Write::Write()
-:_reciever(static_cast<AcceptedSocket *>(NULL))
+:_receiver(static_cast<AcceptedSocket *>(NULL))
 {
 }
 
 Write::Write(AcceptedSocket *as)
-:_reciever(as)
+:_receiver(as)
 {
 }
 

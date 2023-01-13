@@ -17,7 +17,7 @@ EventMonitor::~EventMonitor()
 
 void EventMonitor::update(int fd, int event, EventHandler * subject)
 {
-	if (event == DELETE) {
+	if (event == REMOVE) {
 		for (size_t i = 0; i < _pollvec.size(); i++) {
 			if (_pollvec[i].fd == fd) {
 				_pollvec.erase(_pollvec.begin() + i);

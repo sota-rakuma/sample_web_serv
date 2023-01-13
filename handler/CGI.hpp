@@ -1,7 +1,7 @@
 #ifndef CGI_HPP
 #define CGI_HPP
 
-#include "HTTPMethodReciever.hpp"
+#include "HTTPMethodReceiver.hpp"
 #include "../subject/AcceptedSocket.hpp"
 #include "../command/Get.hpp"
 #include "../command/Post.hpp"
@@ -9,7 +9,7 @@
 #include <string>
 #include <stdexcept>
 
-class CGI : public HTTPMethodReciever, public ISubject
+class CGI : public HTTPMethodReceiver, public ISubject
 {
 private:
 	int _in_fd;

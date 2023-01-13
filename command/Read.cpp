@@ -1,12 +1,12 @@
 #include "Read.hpp"
 
 Read::Read()
-:_reciever(static_cast<AcceptedSocket *>(NULL))
+:_receiver(static_cast<AcceptedSocket *>(NULL))
 {
 }
 
 Read::Read(AcceptedSocket *as)
-:_reciever(as)
+:_receiver(as)
 {
 }
 
@@ -14,3 +14,7 @@ Read::~Read()
 {
 }
 
+int Read::execute()
+{
+	return _receiver->receive();
+}

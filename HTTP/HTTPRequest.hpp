@@ -1,9 +1,16 @@
 #ifndef HTTPREQUEST_HPP
 #define HTTPREQUEST_HPP
 
+#include "HTTPStatusCode.hpp"
 #include <string>
 #include <map>
 #include <iostream>
+
+enum HTTPMethod {
+	GET,
+	POST,
+	DELETE,
+};
 
 class HTTPRequest
 {
@@ -11,7 +18,8 @@ public:
 	class RequestLine
 	{
 	private:
-		std::string _method;
+		HTTPMethod _method;
+		// targetは権限とかのチェックを行っときたい
 		std::string _target;
 		std::string _version;
 	public:
@@ -22,12 +30,20 @@ public:
 			const std::string &
 		);
 		RequestLine(
+			HTTPMethod,
+			const std::string &,
+			const std::string &
+		);
+		RequestLine(
 			const RequestLine &
 		);
 		~RequestLine();
-		const std::string & getMethod() const;
+		HTTPMethod getMethod() const;
 		const std::string & getTarget() const;
 		const std::string & getHTTPVersion() const;
+		RequestLine & setMethod(
+			HTTPMethod
+		);
 		RequestLine & setMethod(
 			const std::string &
 		);
