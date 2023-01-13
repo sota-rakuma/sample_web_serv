@@ -78,7 +78,7 @@ _configs(conifgs)
 	}
 	//// listen sock も new して
 	//notify(_sockfd, IN, this);
-	getSubject()->subscribe(_sockfd, IN, this);
+	getSubject()->subscribe(_sockfd, POLLIN, this);
 }
 
 ListenSocket::ListenSocket(
