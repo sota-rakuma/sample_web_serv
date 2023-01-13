@@ -72,6 +72,7 @@ public:
 	virtual void update(int);
 	virtual int read();
 	virtual int write();
+	void createResponse(const std::string &);
 };
 
 #endif /* ACCEPTEDSOCKET_HPP */

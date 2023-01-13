@@ -32,21 +32,23 @@ private:
 	std::string _buff;
 	Read *_read;
 	Write *_write;
-	std::list<AcceptedSocket *> _as;
+	AcceptedSocket * _as;
 public:
 	File();
 	File(
 		ISubject *,
 		std::list<ICommand *> *,
 		const std::string &,
-		int oflag
+		int oflag,
+		AcceptedSocket *
 	);
 	File(
 		ISubject *,
 		std::list<ICommand *> *,
 		const std::string &,
 		int oflag,
-		int mode
+		int mode,
+		AcceptedSocket *
 	);
 	File(const File &);
 	virtual ~File();

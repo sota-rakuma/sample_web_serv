@@ -133,22 +133,22 @@ void AcceptedSocket::processRequest()
 
 void AcceptedSocket::processRequestLine(size_t index)
 {
-	std::string raw = _buff.substr(0, index + 1);
-	_buff = _buff.substr(index + 1, _buff.size() - index);
-	std::vector<std::pair<Symbol, std::string>> tokens;
+	//std::string raw = _buff.substr(0, index + 1);
+	//_buff = _buff.substr(index + 1, _buff.size() - index);
+	//std::vector<std::pair<Symbol, std::string>> tokens;
 	// 現状 raw の tokenize 必須
 	/*
 		パースの方法によっては、
 		生のデータをトークンせずに渡す方式に変更してもいい
 	*/
-	if (_parser_ctx.execParse(tokens) == SUCCESS) {
+	//if (_parser_ctx.execParse(tokens) == SUCCESS) {
 		/*
 			メソッドのセット
 			targetの文字列セット
 		*/
 		// header の パーサ
 		// _parser_ctx.transitionTo();
-	}
+	//}
 	// BadRequest or HTTPVersion
 	// createResponse();
 }
@@ -195,8 +195,6 @@ void AcceptedSocket::processRequestHeader()
 /*
 ・chunk:→デコードしたものを_buffにaddしていく
 ・raw: → Content-Lengthまでデータを_buffに足していく
-・common: →
-	bufferのサイズを超えたら、tmpfileをopen
 	一番最後にtmpfileのサイズをカウントして、maxを超えていたら、413
 */
 /*
@@ -222,3 +220,9 @@ void AcceptedSocket::processChunkedBody()
 //{
 //	ssize_t nb = ::send(_sockfd, _)
 //}
+
+void AcceptedSocket::createResponse(const std::string & body)
+{
+	std::cout << "######### TEST ##########" << std::endl;
+	std::cout << body << std::endl;
+}
