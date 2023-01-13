@@ -9,6 +9,10 @@
 #include <string>
 #include <stdexcept>
 
+#define GET "GET" // デバッグ用
+#define POST "POST" // デバッグ用
+#define DELETE "DELETE" // デバッグ用
+
 class CGI : public HTTPMethodReciever, public ISubject
 {
 private:
@@ -34,7 +38,9 @@ public:
 	virtual int httpDelete();
 	virtual void notify(int, int, ISubject *);
 	virtual ICommand *getHandler(int) const;
-	void executeCGI(int);
+	// void executeCGI(int, int); //
+	void setMetaVariables(std::string);
+	void executeCGI(std::string);
 };
 
 #endif /* CGI_HPP */

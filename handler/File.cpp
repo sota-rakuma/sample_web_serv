@@ -73,22 +73,23 @@ File::~File()
 
 int File::httpDelete()
 {
-
+	//configファイルを参照してファイルのpath,権限を確認→削除
 }
 
 int File::httpPost()
 {
-
+	// configファイルからファイルを作成するpathを取得
+	// message_bodyを取得→ファイルを作成
 }
 
 int File::httpGet()
 {
-	if (_is_exist == false) {
-		notify(_fd, IN, this);
-		_is_exist = true;
-		return 1;
-	}
-	char buff[BUFSIZE];
+	// if (_is_exist == false) {
+	// 	notify(_fd, IN, this);
+	// 	_is_exist = true;
+	// 	return 1;
+	// }
+	char buff[BUFSIZE]; // ← buff??
 	ssize_t nb = read(_fd, buff, BUFSIZE);
 	if (nb < 0) {
 		return -1;

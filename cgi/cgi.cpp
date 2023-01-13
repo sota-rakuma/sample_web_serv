@@ -23,12 +23,12 @@ void    perror_and_exit(std::string str)
     std::exit(1);
 }
 
-static void    timer_handler(int pid)
-{
-    std::cout << "time is over, child will be killed" << std::endl;
-    if (kill(child_pid, SIGKILL) == -1)
-        perror_and_exit("kill");
-}
+// static void    timer_handler(int pid)
+// {
+//     std::cout << "time is over, child will be killed" << std::endl;
+//     if (kill(child_pid, SIGKILL) == -1)
+//         perror_and_exit("kill");
+// }
 
 static void    start_method(CgiMethod *method)
 {
@@ -37,8 +37,8 @@ static void    start_method(CgiMethod *method)
     pid_t   w_pid;
     int status;
 
-    if (std::signal(SIGALRM, timer_handler) == SIG_ERR)
-        perror_and_exit("std::signal");
+    // if (std::signal(SIGALRM, timer_handler) == SIG_ERR)
+    //     perror_and_exit("std::signal");
     if (pipe(pipe_fd) == -1)
         perror_and_exit("pipe");
     pid = fork();
