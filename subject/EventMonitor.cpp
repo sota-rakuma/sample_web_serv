@@ -74,6 +74,7 @@ void EventMonitor::monitor()
 			break;
 		}
 		publishEvent(ready);
+		triggerEvent();
 	}
 }
 
