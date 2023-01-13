@@ -1,17 +1,17 @@
 #ifndef LISTENSOCKET_HPP
 #define LISTENSOCKET_HPP
 
-#include "ISubject.hpp"
-#include "../handler/EventHandler.hpp"
+#include "IOEventHandler.hpp"
+#include "../subject/ISubject.hpp"
 #include "AcceptedSocket.hpp"
-#include "../command/Accept.hpp"
+#include "../command/Read.hpp"
 #include "../config/ServerConfigFinder.hpp"
 #include <string>
 #include <netdb.h>
 #include <sys/types.h>
 #include <stdexcept>
 
-class ListenSocket : public ISubject, public EventHandler
+class ListenSocket : public IOEventHandler, public IObserver
 {
 private:
 	ListenSocket::ListenSocket(const ListenSocket &);
@@ -25,22 +25,24 @@ public:
 	};
 private:
 	int _sockfd;
-	Accept * _accept;
+	Read * _read;
 	std::string _ip;
 	std::string _port;
-	addrinfo *_info;
 	ServerConfigFinder *_configs;
 public:
+	ListenSocket();
 	ListenSocket(
+		ISubject *,
+		std::list<ICommand *> *,
 		const std::string &,
 		const std::string &,
 		ServerConfigFinder *
 	);
 	~ListenSocket();
-	virtual void notify(int, int, ISubject *);
+	virtual void update(int);
+	virtual int read();
+	virtual int write();
 	virtual ICommand *getHandler(int) const;
-	void listen();
-	void accept();
 };
 
 #endif /* LISTENSOCKET_HPP */

@@ -2,16 +2,15 @@
 #define WRITE_HPP
 
 #include "ICommand.hpp"
-//#include "../subject/AcceptedSocket.hpp"
-class AcceptedSocket;
+#include "../handler/IOEventHandler.hpp"
 
 class Write : public ICommand
 {
 private:
-	AcceptedSocket *_reciever;
+	IOEventHandler *_receiver;
 public:
 	Write();
-	Write(AcceptedSocket *);
+	Write(IOEventHandler *);
 	~Write();
 	virtual int execute();
 };

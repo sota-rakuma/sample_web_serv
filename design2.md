@@ -101,7 +101,7 @@ private:
 	int _status;
 	ssize_t _wb;
 	std::string _buff;
-	std::list<Client *> _observer;
+	std::list<Client *> _oldobserver;
 public:
 	File(
 		EventMonitor *evm,
@@ -209,10 +209,10 @@ public:
 		- YES: 7を行う
 		- NO: 5を行う
 	5. targetがCGIかどうかをチェックする
-		- YES: RecieverにCGIオブジェクトを渡す
+		- YES: ReceiverにCGIオブジェクトを渡す
 		- NO: targetがopenされてるかどうかをチェックする
-			- YES: 既存のFileオブジェクトをRecieverに渡す
-			- NO: 読み書き可の状態でファイルをopenして、FileオブジェクトをRecieverに渡す
+			- YES: 既存のFileオブジェクトをReceiverに渡す
+			- NO: 読み書き可の状態でファイルをopenして、FileオブジェクトをReceiverに渡す
 	6.
 ```c++
 	//FILE
@@ -236,18 +236,17 @@ public:
 	}
 	// 本当は全部
 
-	_evnetlist.add(_req.getMethod().setHandler(p))ってしたい。
+	_evnetlist.add(_handler.getHandler(_req.getMethod()))ってしたい。
 
 
 	if (file) {
-		_reciever = new File(...);
+		_receiver = new File(...);
 	} else if (cgi) {
-		_reciever = new CGI(...);
+		_receiver = new CGI(...);
 	}
-	_evenlist.add(_reciever.getHandler(_req.getMethod()));
+	_evenlist.add(_receiver.getHandler(_req.getMethod()));
 ```
-	6. HTTPメソッドを読み取って、該当するメンバ変数に4で渡したRecieverを渡して、evnelistに追加依頼を通達する
-	7. レスポンスの作成をして、PollvecにPOLLOUTフラグを立てる
+	6. HTTPメソッドを読み取って、該当するメンバ変数に4で渡したReceiverを渡して、evnelistに追加依頼を通達する
 - レスポンス
 	1. レスポンスを送信する
 	2.ソケットを閉じて、pollvecにfdの削除依頼を通達する
@@ -322,7 +321,10 @@ int CGI::httpGet()
 	2. イベントが通知されたら、fdからファイルの読み込みを開始して、bufferにデータを溜め込む
 	3. エラー or EOFに達するまで2を繰り返す
 	4. AcceptedSocketにレスポンスの作成依頼を通達する
-	5. EOFに達したら、ファイルを閉じて、Pollvecを持つクラスとFileオブジェクトを持つクラスに削除要求をする
+	5. EOFに達したら、ファイルを閉じて、レスポンス作成
+	6. update(acceptedFD, OUT, NULL);
+	5. Pollvecを持つクラスとFileオブジェクトを持つクラスに削除要求をする
+
 - POST
 	1. fdとPOLLOUTフラグをPollvecに追加する
 	2. イベントが通知されたら、fdからファイルの書き込みを開始する

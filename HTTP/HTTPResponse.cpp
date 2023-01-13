@@ -11,7 +11,7 @@ _reason()
 
 HTTPResponse::StatusLine::StatusLine(
 	const std::string & version,
-	int code,
+	HTTPStatus code,
 	const std::string & reason
 )
 :_version(version),
@@ -36,7 +36,7 @@ const std::string & HTTPResponse::StatusLine::getHTTPVersion() const
 	return _version;
 }
 
-int HTTPResponse::StatusLine::getCode() const
+HTTPStatus HTTPResponse::StatusLine::getCode() const
 {
 	return _code;
 }
@@ -54,7 +54,7 @@ HTTPResponse::StatusLine & HTTPResponse::StatusLine::setHTTPVersion(
 	return *this;
 }
 
-HTTPResponse::StatusLine & HTTPResponse::StatusLine::setCode(int code)
+HTTPResponse::StatusLine & HTTPResponse::StatusLine::setCode(HTTPStatus code)
 {
 	_code = code;
 	return *this;
@@ -122,9 +122,17 @@ const std::string & HTTPResponse::getMessageBody() const
 	return _body;
 }
 
+HTTPResponse & HTTPResponse::setStatusCode(
+	HTTPStatus status
+)
+{
+	_statl.setCode(status);
+	return *this;
+}
+
 HTTPResponse & HTTPResponse::setStatusLine(
 	const std::string & version,
-	int code,
+	HTTPStatus code,
 	const std::string & reason
 )
 {

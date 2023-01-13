@@ -1,9 +1,7 @@
-#include "../observer/IObserver.hpp"
 #include "File.hpp"
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
-
 
 File::FileError::FileError()
 :std::runtime_error(strerror(errno))
@@ -16,20 +14,21 @@ File::FileError::FileError(const std::string &func_name)
 }
 
 File::File()
-:_get(new Get(this)),
-_post(new Post(this)),
-_delete(new Delete(this)),
+:_read(new Read(this)),
+_write(new Write(this)),
 _is_exist(false)
 {
 }
 
 File::File(
+	ISubject * subject,
+	std::list<ICommand *> * commands,
 	const std::string & path,
 	int oflag
 )
-:_get(new Get(this)),
-_post(new Post(this)),
-_delete(new Delete(this)),
+:HTTPMethodReceiver(subject, commands),
+_read(new Read(this)),
+_write(new Write(this)),
 _path(path),
 _is_exist(false)
 {
@@ -42,18 +41,20 @@ _is_exist(false)
 /**
  * @brief Construct a new File:: File object
  *
- * @param observer event monitor
+ * @param oldobserver event monitor
  * @param name getTarget();
  * @param oflag O_RDWR | O_NONBLOCK | O_CREAT
  */
 File::File(
+	ISubject * subject,
+	std::list<ICommand *> * commands,
 	const std::string & path,
 	int oflag,
 	int mode
 )
-:_get(new Get(this)),
-_post(new Post(this)),
-_delete(new Delete(this)),
+:HTTPMethodReceiver(subject, commands),
+_read(new Read(this)),
+_write(new Write(this)),
 _path(path),
 _is_exist(false)
 {
@@ -65,12 +66,12 @@ _is_exist(false)
 
 File::~File()
 {
-	delete _get;
-	delete _post;
-	delete _delete;
+	delete _read;
+	delete _write;
 	::close(_fd);
 }
 
+<<<<<<< HEAD:handler/File.cpp
 int File::httpDelete()
 {
 	//configファイルを参照してファイルのpath,権限を確認→削除
@@ -91,6 +92,22 @@ int File::httpGet()
 	// }
 	char buff[BUFSIZE]; // ← buff??
 	ssize_t nb = read(_fd, buff, BUFSIZE);
+=======
+void File::update(int event)
+{
+	// 例外処理
+	if (event == IN) {
+		getCommandList()->push_back(_read);
+	} else {
+		getCommandList()->push_back(_write);
+	}
+}
+
+int File::read()
+{
+	char buff[BUFSIZE];
+	ssize_t nb = ::read(_fd, buff, BUFSIZE);
+>>>>>>> main:handler/httphandler/File.cpp
 	if (nb < 0) {
 		return -1;
 	} else if (nb == 0) {
@@ -98,12 +115,25 @@ int File::httpGet()
 			it != _as.end();
 			it++)
 		{
-			//(*it)->createResponse(200, _header, _buff);
+			//(*it)->createResponse(OK, _header, _buff);
 		}
-		notify(_fd, DELETE, this);
 		return 0;
 	}
 	buff[nb] = '\0';
 	_buff += buff;
 	return 1;
+}
+
+int File::httpGet()
+{
+	getSubject()->subscribe(_fd, IN, this);
+}
+
+int File::getFd() const {
+	return _fd;
+}
+
+const std::string & File::getPath() const
+{
+	return _path;
 }

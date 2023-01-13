@@ -2,16 +2,15 @@
 #define READ_HPP
 
 #include "ICommand.hpp"
-//#include "../subject/AcceptedSocket.hpp"
-class AcceptedSocket;
+#include "../handler/IOEventHandler.hpp"
 
 class Read : public ICommand
 {
 private:
-	AcceptedSocket *_reciever;
+	IOEventHandler *_receiver;
 public:
 	Read();
-	Read(AcceptedSocket *);
+	Read(IOEventHandler  *);
 	~Read();
 	virtual int execute();
 };

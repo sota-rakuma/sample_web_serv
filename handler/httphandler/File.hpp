@@ -1,11 +1,10 @@
 #ifndef FILE_HPP
 #define FILE_HPP
 
-#include "HTTPMethodReciever.hpp"
-#include "../subject/AcceptedSocket.hpp"
-#include "../command/Get.hpp"
-#include "../command/Post.hpp"
-#include "../command/Delete.hpp"
+#include "HTTPMethodReceiver.hpp"
+#include "../AcceptedSocket.hpp"
+#include "../../command/Read.hpp"
+#include "../../command/Write.hpp"
 #include <string>
 #include <stdexcept>
 #include <list>
@@ -14,7 +13,7 @@
 #define BUFSIZE 1024
 #endif
 
-class File : public HTTPMethodReciever, public ISubject
+class File : public HTTPMethodReceiver, public IObserver
 {
 public:
 	class FileError : public std::runtime_error
@@ -29,27 +28,34 @@ private:
 	bool _is_exist;
 	std::string _path;
 	std::string _buff;
-	Get *_get;
-	Post *_post;
-	Delete *_delete;
+	Read *_read;
+	Write *_write;
 	std::list<AcceptedSocket *> _as;
 public:
 	File();
 	File(
+		ISubject *,
+		std::list<ICommand *> *,
 		const std::string &,
 		int oflag
 	);
 	File(
+		ISubject *,
+		std::list<ICommand *> *,
 		const std::string &,
 		int oflag,
 		int mode
 	);
 	File(const File &);
 	virtual ~File();
+	virtual void update(int);
+	virtual int read();
+	virtual int write();
 	virtual int httpGet();
 	virtual int httpPost();
 	virtual int httpDelete();
-	virtual void notify(int, int, ISubject *);
+	int getFd() const;
+	const std::string & getPath() const;
 };
 
 #endif /* FILE_HPP */

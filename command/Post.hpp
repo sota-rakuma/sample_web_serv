@@ -2,15 +2,15 @@
 #define POST_HPP
 
 #include "ICommand.hpp"
-#include "../handler/HTTPMethodReciever.hpp"
+#include "../handler/httphandler/HTTPMethodReceiver.hpp"
 
 class Post : public ICommand
 {
 private:
-	HTTPMethodReciever *_reciever;
+	HTTPMethodReceiver *_receiver;
 public:
 	Post();
-	Post(HTTPMethodReciever *);
+	Post(HTTPMethodReceiver *);
 	~Post();
 	virtual int execute();
 };
