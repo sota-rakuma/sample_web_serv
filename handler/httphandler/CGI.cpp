@@ -7,6 +7,18 @@ _write(new Write(this))
 {
 }
 
+CGI::CGI(
+	ISubject * subject,
+	std::list<ICommand *> * commands,
+	const std::string & path
+)
+:HTTPMethodReceiver(subject, commands),
+_read(new Read(this)),
+_write(new Write(this)),
+_path(path)
+{
+}
+
 
 CGI::CGI(
 	ISubject * subject,

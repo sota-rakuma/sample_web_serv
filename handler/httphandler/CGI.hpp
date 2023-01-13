@@ -25,6 +25,11 @@ public:
 	CGI(
 		ISubject *,
 		std::list<ICommand *> *,
+		const std::string &
+	);
+	CGI(
+		ISubject *,
+		std::list<ICommand *> *,
 		const std::string &,
 		bool
 	);
