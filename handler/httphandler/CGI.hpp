@@ -5,6 +5,7 @@
 #include "../AcceptedSocket.hpp"
 #include "../../command/Read.hpp"
 #include "../../command/Write.hpp"
+#include "../../HTTP/HTTPStatusCode.hpp"
 #include <string>
 #include <stdexcept>
 
@@ -16,6 +17,7 @@ private:
 	std::string _buff;
 	size_t _nb;
 	bool _is_exutetable;
+	HTTPStatus _status;
 	std::string _path;
 	Read *_read;
 	Write *_write;
@@ -42,7 +44,7 @@ public:
 	virtual int httpPost();
 	virtual int httpDelete();
 	virtual ICommand *getHandler(int) const;
-	void executeCGI(int);
+	void executeCGI();
 	int getInFd() const;
 	int getOutFd() const;
 	const std::string & getPath() const;

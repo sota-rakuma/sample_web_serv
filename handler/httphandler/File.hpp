@@ -5,6 +5,7 @@
 #include "../AcceptedSocket.hpp"
 #include "../../command/Read.hpp"
 #include "../../command/Write.hpp"
+#include "../../HTTP/HTTPStatusCode.hpp"
 #include <string>
 #include <stdexcept>
 #include <list>
@@ -27,6 +28,7 @@ private:
 	int _fd;
 	bool _is_exist;
 	std::string _path;
+	HTTPStatus _status;
 	std::string _buff;
 	Read *_read;
 	Write *_write;

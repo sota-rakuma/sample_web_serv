@@ -47,10 +47,7 @@ AcceptedSocket::~AcceptedSocket()
 {
 	delete _read;
 	delete _write;
-	close(_sockfd);
-	//if (_tmpfd != -1) {
-	//	::close(_tmpfd);
-	//}
+	::close(_sockfd);
 }
 
 AcceptedSocket &AcceptedSocket::setInfo(const sockaddr_in & info)

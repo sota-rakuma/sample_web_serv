@@ -66,6 +66,7 @@ int CGI::read()
 		return -1;
 	} else if (nb == 0) {
 		// レスポンス作成フェーズ
+		getSubject()->unsubscribe(_in_fd, false, this);
 		// _as->createResponse(_buff);
 		return 0;
 	}
@@ -84,18 +85,27 @@ int CGI::write()
 		_nb += nb;
 		return 1;
 	}
+	::close(_out_fd);
+	getSubject()->unsubscribe(_out_fd, true, this);
+	return 0;
+}
+
+int CGI::httpGet()
+{
+	executeCGI();
+	getSubject()->subscribe(_in_fd, IN, this);
 	return 0;
 }
 
 int CGI::httpPost()
 {
-	executeCGI(OUT);
+	executeCGI();
 	getSubject()->subscribe(_out_fd, OUT, this);
 	getSubject()->subscribe(_in_fd, IN, this);
 	return 0;
 }
 
-void CGI::executeCGI(int event)
+void CGI::executeCGI()
 {
 }
 
