@@ -118,7 +118,7 @@ static void    perror_and_exit(std::string str) //
     std::exit(1);
 }
 
-void CGI::setMetaVariables(std::string method)
+void CGI::setMetaVariables(HTTPMethod method)
 {
 	if (method != POST)
 	{
@@ -127,20 +127,29 @@ void CGI::setMetaVariables(std::string method)
 		if (setenv("QUERY_STRING", QUERY_STRING_VALUE, 1) == -1)
 			perror_and_exit("set_env");
 	}
-	if (/*　message_bodyが存在 */)
-	{
-		if (setenv("CONTENT_LENGTH", /* message_bodyのlength */, 1) == -1)
-			perror_and_exit("set_env");
-	}
+	//if (/*　message_bodyが存在 */)
+	//{
+	//	if (setenv("CONTENT_LENGTH", /* message_bodyのlength */, 1) == -1)
+	//		perror_and_exit("set_env");
+	//}
 	if (setenv("PATH_INFO", "/aaa/bbb", 1) == -1)
 		perror_and_exit("setenv");
-	if (setenv("REQUEST_METHOD", method.c_str(), 1) == -1)
+
+	std::string m;
+	if (method == GET) {
+		m = "GET";
+	} else if (method == POST) {
+		m = "POST";
+	} else if (method == DELETE) {
+		m = "DELETE";
+	}
+	if (setenv("REQUEST_METHOD", m.c_str(), 1) == -1)
 		perror_and_exit("setenv");
 }
 
 extern char **environ;
 
-void CGI::executeCGI(std::string method)
+void CGI::executeCGI(HTTPMethod method)
 {
 	int pipe_fd[2];
     pid_t   pid;
