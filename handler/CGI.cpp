@@ -136,11 +136,11 @@ void CGI::executeCGI(std::string method)
 	}
 	if (close(pipe_fd[1]) == -1)
 		perror_and_exit("close");
-	w_pid = waitpid(pid, &status, 0);
-	if (WIFEXITED(status) != 1)
-	{
-		std::exit(1);
-	}
+	// w_pid = waitpid(pid, &status, 0); // waitpid必要ない
+	// if (WIFEXITED(status) != 1)
+	// {
+	// 	std::exit(1);
+	// }
 	char buf[1000];
 	if (read(pipe_fd[0], buf, 1000) == -1)
 		perror_and_exit("read");
