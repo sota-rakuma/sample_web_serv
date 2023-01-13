@@ -18,6 +18,7 @@ public:
 
 */
 #include "ISubject.hpp"
+#include "../handler/ListenSocket.hpp"
 #include <vector>
 #include <map>
 #include <poll.h>

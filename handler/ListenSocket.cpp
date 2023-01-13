@@ -122,9 +122,3 @@ void ListenSocket::update(int event)
 {
 	addCommand(_read);
 }
-
-ICommand *ListenSocket::getHandler(int event) const
-{
-	// 例外処理
-	return _read;
-}

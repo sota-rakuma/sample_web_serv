@@ -67,7 +67,6 @@ public:
 	);
 	AcceptedSocket(const AcceptedSocket &);
 	virtual ~AcceptedSocket();
-	virtual ICommand *getHandler(int) const;
 	AcceptedSocket &setInfo(const sockaddr_in &);
 	AcceptedSocket &setFd(int);
 	virtual void update(int);

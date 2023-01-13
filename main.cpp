@@ -1,4 +1,4 @@
-#include "Server.hpp"
+#include "subject/EventMonitor.hpp"
 #include <iostream>
 
 int main(int argc, char *argv[])
@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
 	//}
 	//(void)argv[1];
 
-	Server server;
-	server.run();
+	EventMonitor em;
+	em.monitor();
 	return 0;
 }

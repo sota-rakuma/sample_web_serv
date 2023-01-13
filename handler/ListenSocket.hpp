@@ -42,7 +42,6 @@ public:
 	virtual void update(int);
 	virtual int read();
 	virtual int write();
-	virtual ICommand *getHandler(int) const;
 };
 
 #endif /* LISTENSOCKET_HPP */

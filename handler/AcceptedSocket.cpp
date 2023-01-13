@@ -82,17 +82,6 @@ void AcceptedSocket::update(int event)
 	}
 }
 
-ICommand *AcceptedSocket::getHandler(int event) const
-{
-	// 要例外処理
-	if (event == POLLIN) {
-		return _read;
-	} else if (event == POLLOUT) {
-		return _write;
-	}
-	return NULL;
-}
-
 /*
 recv → リクエストラインパース
 → メソッドセット, targetセット(長さ確認)
