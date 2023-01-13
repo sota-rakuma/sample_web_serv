@@ -15,7 +15,7 @@ private:
 	/* data */
 public:
 	Parser(/* args */);
-	~Parser();
+	virtual ~Parser();
 	virtual ParsingStatus parse(
 		const std::vector<std::pair<Symbol, std::string> > &
 	) = 0;

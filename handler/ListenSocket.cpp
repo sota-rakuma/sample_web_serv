@@ -21,7 +21,8 @@ ListenSocket::ListenSockError::ListenSockError(
 {
 }
 
-ListenSocket::ListenSockError::~ListenSockError(){};
+ListenSocket::ListenSockError::~ListenSockError() throw()
+{};
 
 ListenSocket::ListenSocket()
 :IOEventHandler()
@@ -104,7 +105,8 @@ int ListenSocket::read()
 	int fd;
 	sockaddr_in client_info;
 
-	if (fd = ::accept(_sockfd, (sockaddr *)&client_info, &len) == -1) {
+	fd = ::accept(_sockfd, (sockaddr *)&client_info, &len);
+	if (fd == -1) {
 		throw ListenSockError("accept");
 	}
 	// acceptedsocketでnotifyしたほうがいいのかもしれない。

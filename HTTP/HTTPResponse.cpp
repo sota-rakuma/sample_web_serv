@@ -3,7 +3,7 @@
 #include "../utils/Template.hpp"
 #include <iostream>
 
-static std::pair<HTTPStatus, const std::string &> temp[] = {std::make_pair(OK, "OK")};
+static std::pair<HTTPStatus, const std::string> temp[] = {std::make_pair(OK, "OK")};
 
 std::map<HTTPStatus, const std::string &> HTTPResponse::_err_msg(temp, temp + getSize(temp));
 
@@ -168,6 +168,7 @@ HTTPResponse & HTTPResponse::setMessageBody(
 )
 {
 	_body = body;
+	return *this;
 }
 
 std::ostream &operator<<(

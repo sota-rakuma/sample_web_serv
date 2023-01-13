@@ -13,6 +13,11 @@ File::FileError::FileError(const std::string &func_name)
 {
 }
 
+File::FileError::~FileError() throw()
+{
+}
+
+
 File::File()
 :_read(new Read(this)),
 _write(new Write(this)),
@@ -125,6 +130,18 @@ int File::write()
 int File::httpGet()
 {
 	getSubject()->subscribe(_fd, POLLIN, this);
+	return 0;
+}
+
+int File::httpPost()
+{
+	getSubject()->subscribe(_fd, POLLOUT, this);
+	return 0;
+}
+
+int File::httpDelete()
+{
+	return 0;
 }
 
 int File::getFd() const {
