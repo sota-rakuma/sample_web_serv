@@ -1,4 +1,6 @@
 #include "AcceptedSocket.hpp"
+#include "httphandler/CGI.hpp"
+#include "httphandler/File.hpp"
 #include <unistd.h>
 #include <sstream>
 #include "../command/Get.hpp"

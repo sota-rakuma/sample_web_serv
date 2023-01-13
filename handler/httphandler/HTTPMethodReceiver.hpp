@@ -3,6 +3,10 @@
 
 #include "../IOEventHandler.hpp"
 
+#ifndef BUFSIZE
+#define BUFSIZE 1024
+#endif
+
 class HTTPMethodReceiver : public IOEventHandler
 {
 public:

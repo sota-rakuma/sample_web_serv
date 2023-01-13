@@ -21,13 +21,4 @@ public:
 	) = 0;
 };
 
-Parser::Parser(/* args */)
-{
-}
-
-Parser::~Parser()
-{
-}
-
-
 #endif /* PARSER_HPP */

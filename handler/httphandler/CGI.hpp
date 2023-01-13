@@ -2,7 +2,6 @@
 #define CGI_HPP
 
 #include "HTTPMethodReceiver.hpp"
-#include "../AcceptedSocket.hpp"
 #include "../../command/Read.hpp"
 #include "../../command/Write.hpp"
 #include "../../HTTP/HTTPStatusCode.hpp"
@@ -45,7 +44,6 @@ public:
 	virtual int httpGet();
 	virtual int httpPost();
 	virtual int httpDelete();
-	virtual ICommand *getHandler(int) const;
 	void executeCGI(HTTPMethod);
 	void setMetaVariables(HTTPMethod);
 	int getInFd() const;

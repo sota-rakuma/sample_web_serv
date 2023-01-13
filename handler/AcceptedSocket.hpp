@@ -3,10 +3,9 @@
 
 #include "IOEventHandler.hpp"
 #include "../parser/Context.hpp"
+#include "httphandler/HTTPMethodReceiver.hpp"
 #include "../HTTP/HTTPRequest.hpp"
 #include "../HTTP/HTTPResponse.hpp"
-#include "httphandler/CGI.hpp"
-#include "httphandler/File.hpp"
 #include "../command/Read.hpp"
 #include "../command/Write.hpp"
 #include "../config/ServerConfigFinder.hpp"
@@ -29,6 +28,9 @@ enum Progress
 	SEND_RESPONSE_HEADER,
 	SEND_RESPONSE_BODY,
 };
+
+class File;
+class CGI;
 
 class AcceptedSocket : public IOEventHandler, public IObserver
 {

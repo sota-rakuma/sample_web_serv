@@ -1,3 +1,4 @@
+#include "../AcceptedSocket.hpp"
 #include "CGI.hpp"
 #include <unistd.h>
 
