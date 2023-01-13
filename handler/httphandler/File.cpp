@@ -105,3 +105,12 @@ int File::httpGet()
 {
 	getSubject()->subscribe(_fd, IN, this);
 }
+
+size_t File::getFd() const {
+	return _fd;
+}
+
+const std::string & File::getPath() const
+{
+	return _path;
+}
