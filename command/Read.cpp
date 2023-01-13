@@ -1,12 +1,12 @@
 #include "Read.hpp"
 
 Read::Read()
-:_receiver(static_cast<AcceptedSocket *>(NULL))
+:_receiver(static_cast<IOEventHandler *>(NULL))
 {
 }
 
-Read::Read(AcceptedSocket *as)
-:_receiver(as)
+Read::Read(IOEventHandler *handler)
+:_receiver(handler)
 {
 }
 
@@ -16,5 +16,5 @@ Read::~Read()
 
 int Read::execute()
 {
-	return _receiver->receive();
+	return _receiver->read();
 }
