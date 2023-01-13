@@ -37,8 +37,18 @@ void EventMonitor::subscribe(
 	IObserver * target
 )
 {
-	_storage[fd] = target;
-	_pollvec.push_back((pollfd){fd, event, 0});
+	if (_storage.find(fd) == _storage.end()) {
+		_storage[fd] = target;
+		_pollvec.push_back((pollfd){fd, event, 0});
+		return ;
+	}
+
+	for (size_t i = 0; i < _pollvec.size(); i++) {
+		if (_pollvec[i].fd == fd) {
+			_pollvec[i].events |= event;
+			break ;
+		}
+	}
 }
 
 void EventMonitor::unsubscribe(
