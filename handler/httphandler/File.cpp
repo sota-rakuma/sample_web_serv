@@ -106,7 +106,7 @@ int File::httpGet()
 	getSubject()->subscribe(_fd, IN, this);
 }
 
-size_t File::getFd() const {
+int File::getFd() const {
 	return _fd;
 }
 

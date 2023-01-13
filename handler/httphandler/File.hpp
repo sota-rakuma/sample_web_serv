@@ -54,7 +54,7 @@ public:
 	virtual int httpGet();
 	virtual int httpPost();
 	virtual int httpDelete();
-	size_t getFd() const;
+	int getFd() const;
 	const std::string & getPath() const;
 };
 
