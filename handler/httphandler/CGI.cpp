@@ -11,13 +11,14 @@ _write(new Write(this))
 CGI::CGI(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
-	const std::string & path
+	const std::string & path,
+	bool is_executable
 )
 :HTTPMethodReceiver(subject, commands),
 _read(new Read(this)),
 _write(new Write(this)),
-_is_exist(false),
-_path(path)
+_path(path),
+_is_exutetable(is_executable)
 {
 }
 
@@ -25,8 +26,8 @@ CGI::CGI(const CGI & another)
 :HTTPMethodReceiver(another.getSubject(), another.getCommandList()),
 _read(new Read(this)),
 _write(new Write(this)),
-_is_exist(false),
-_path(another._path)
+_path(another._path),
+_is_exutetable(another._is_exutetable)
 {
 }
 
@@ -98,4 +99,15 @@ int CGI::getOutFd() const
 
 const std::string & CGI::getPath() const {
 	return _path;
+}
+
+bool CGI::getExectableFlag() const
+{
+	return _is_exutetable;
+}
+
+CGI &CGI::setExectableFlag(bool f)
+{
+	_is_exutetable = f;
+	return *this;
 }

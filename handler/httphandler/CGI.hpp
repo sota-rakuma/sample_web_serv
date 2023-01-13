@@ -15,8 +15,8 @@ private:
 	int _out_fd;
 	std::string _buff;
 	size_t _nb;
+	bool _is_exutetable;
 	std::string _path;
-	bool _is_exist;
 	Read *_read;
 	Write *_write;
 	AcceptedSocket *_as;
@@ -25,7 +25,8 @@ public:
 	CGI(
 		ISubject *,
 		std::list<ICommand *> *,
-		const std::string &
+		const std::string &,
+		bool
 	);
 	CGI(const CGI &);
 	virtual ~CGI();
@@ -40,6 +41,8 @@ public:
 	int getInFd() const;
 	int getOutFd() const;
 	const std::string & getPath() const;
+	bool getExectableFlag() const;
+	CGI & setExectableFlag(bool);
 };
 
 #endif /* CGI_HPP */
