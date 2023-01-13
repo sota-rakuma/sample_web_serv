@@ -1,21 +1,21 @@
-#include "EventMonitor.hpp"
+#include "OLDEventMonitor.hpp"
 #include <unistd.h>
 
-EventMonitor::EventMonitor()
+OLDEventMonitor::OLDEventMonitor()
 :_pollvec()
 {
 }
 
-EventMonitor::EventMonitor(const EventMonitor & another)
+OLDEventMonitor::OLDEventMonitor(const OLDEventMonitor & another)
 :_pollvec(another._pollvec)
 {
 }
 
-EventMonitor::~EventMonitor()
+OLDEventMonitor::~OLDEventMonitor()
 {
 }
 
-void EventMonitor::update(int fd, int event, EventHandler * subject)
+void OLDEventMonitor::update(int fd, int event, EventHandler * oldsubject)
 {
 	if (event == REMOVE) {
 		for (size_t i = 0; i < _pollvec.size(); i++) {
@@ -26,27 +26,27 @@ void EventMonitor::update(int fd, int event, EventHandler * subject)
 		delete _for_find[fd];
 		_for_find.erase(fd);
 	} else {
-		addSubject(fd, event, subject);
+		addSubject(fd, event, oldsubject);
 	}
 }
 
-void EventMonitor::addSubject(int fd, int event, EventHandler * subject)
+void OLDEventMonitor::addSubject(int fd, int event, EventHandler * oldsubject)
 {
 	if (event & OUT) {
 		_pollvec.push_back((pollfd){fd, POLLOUT, 0});
 	} else if (event & IN) {
 		_pollvec.push_back((pollfd){fd, POLLIN, 0});
 	}
-	_for_find.insert(std::make_pair(fd, subject));
+	_for_find.insert(std::make_pair(fd, oldsubject));
 }
 
-void EventMonitor::deleteSubject(int fd)
+void OLDEventMonitor::deleteSubject(int fd)
 {
 	delete _for_find[fd];
 	_for_find.erase(fd);
 }
 
-int EventMonitor::monitor(
+int OLDEventMonitor::monitor(
 	std::list<ICommand *> & commandlist
 )
 {
@@ -65,7 +65,7 @@ int EventMonitor::monitor(
 	return 1;
 }
 
-void EventMonitor::postEvent(
+void OLDEventMonitor::postEvent(
 	int ready,
 	std::list<ICommand *> & commandlist
 )

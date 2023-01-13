@@ -1,4 +1,3 @@
-#include "../observer/IObserver.hpp"
 #include "File.hpp"
 #include <fcntl.h>
 #include <unistd.h>
@@ -15,20 +14,21 @@ File::FileError::FileError(const std::string &func_name)
 }
 
 File::File()
-:_get(new Get(this)),
-_post(new Post(this)),
-_delete(new Delete(this)),
+:_read(new Read(this)),
+_write(new Write(this)),
 _is_exist(false)
 {
 }
 
 File::File(
+	ISubject * subject,
+	std::list<ICommand *> * commands,
 	const std::string & path,
 	int oflag
 )
-:_get(new Get(this)),
-_post(new Post(this)),
-_delete(new Delete(this)),
+:HTTPMethodReceiver(subject, commands),
+_read(new Read(this)),
+_write(new Write(this)),
 _path(path),
 _is_exist(false)
 {
@@ -41,18 +41,20 @@ _is_exist(false)
 /**
  * @brief Construct a new File:: File object
  *
- * @param observer event monitor
+ * @param oldobserver event monitor
  * @param name getTarget();
  * @param oflag O_RDWR | O_NONBLOCK | O_CREAT
  */
 File::File(
+	ISubject * subject,
+	std::list<ICommand *> * commands,
 	const std::string & path,
 	int oflag,
 	int mode
 )
-:_get(new Get(this)),
-_post(new Post(this)),
-_delete(new Delete(this)),
+:HTTPMethodReceiver(subject, commands),
+_read(new Read(this)),
+_write(new Write(this)),
 _path(path),
 _is_exist(false)
 {
@@ -64,21 +66,25 @@ _is_exist(false)
 
 File::~File()
 {
-	delete _get;
-	delete _post;
-	delete _delete;
+	delete _read;
+	delete _write;
 	::close(_fd);
 }
 
-int File::httpGet()
+void File::update(int event)
 {
-	if (_is_exist == false) {
-		notify(_fd, IN, this);
-		_is_exist = true;
-		return 1;
+	// 例外処理
+	if (event == IN) {
+		getCommandList()->push_back(_read);
+	} else {
+		getCommandList()->push_back(_write);
 	}
+}
+
+int File::read()
+{
 	char buff[BUFSIZE];
-	ssize_t nb = read(_fd, buff, BUFSIZE);
+	ssize_t nb = ::read(_fd, buff, BUFSIZE);
 	if (nb < 0) {
 		return -1;
 	} else if (nb == 0) {
@@ -88,10 +94,23 @@ int File::httpGet()
 		{
 			//(*it)->createResponse(OK, _header, _buff);
 		}
-		notify(_fd, REMOVE, this);
 		return 0;
 	}
 	buff[nb] = '\0';
 	_buff += buff;
 	return 1;
+}
+
+int File::httpGet()
+{
+	getSubject()->subscribe(_fd, IN, this);
+}
+
+int File::getFd() const {
+	return _fd;
+}
+
+const std::string & File::getPath() const
+{
+	return _path;
 }

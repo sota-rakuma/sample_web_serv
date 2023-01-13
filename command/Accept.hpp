@@ -2,8 +2,8 @@
 #define ACCEPT_HPP
 
 #include "ICommand.hpp"
-#include "../subject/ListenSocket.hpp"
-#include "../subject/AcceptedSocket.hpp"
+#include "../oldsubject/ListenSocket.hpp"
+#include "../oldsubject/AcceptedSocket.hpp"
 
 class Accept : public ICommand
 {

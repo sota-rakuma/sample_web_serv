@@ -1,18 +1,21 @@
 #include "AcceptedSocket.hpp"
 #include <unistd.h>
+#include <sstream>
 
 AcceptedSocket::AcceptedSocket()
-:EventHandler()
+:IOEventHandler()
 {
 }
 
 AcceptedSocket::AcceptedSocket(
-	IObserver *observer,
+	ISubject *subject,
+	std::list<ICommand *> *commands,
 	int sockfd,
 	const sockaddr_in &info,
 	ServerConfigFinder *configfinder
 )
-:EventHandler(observer),
+:IOEventHandler(subject, commands),
+_chunk_size(0),
 _sockfd(sockfd),
 _info(info),
 _configfinder(configfinder),
@@ -26,9 +29,10 @@ _write(new Write(this))
 
 // socket fd, tmpfd, _receiver, はディープコピーをする必要がある？
 AcceptedSocket::AcceptedSocket(const AcceptedSocket &another)
-:EventHandler(another.getObserver()),
+:IOEventHandler(another.getSubject(), another.getCommandList()),
 _sockfd(another._sockfd),
-//_tmpfd(another._tmpfd),
+_tmpfile(another._tmpfile),
+_chunk_size(0),
 _configfinder(another._configfinder),
 _config(another._config),
 _parser_ctx(another._parser_ctx),
@@ -61,13 +65,14 @@ AcceptedSocket &AcceptedSocket::setFd(int sockfd)
 	return *this;
 }
 
-void AcceptedSocket::notify(
-	int fd,
-	int event,
-	EventHandler *subject
-)
+void AcceptedSocket::update(int event)
 {
-	getObserver()->update(fd, event, subject);
+	// 要例外処理
+	if (event == IN) {
+		getCommandList()->push_back(_read);
+	} else if (event == OUT) {
+		getCommandList()->push_back(_write);
+	}
 }
 
 ICommand *AcceptedSocket::getHandler(int event) const
@@ -95,16 +100,16 @@ execMethod:
 eventlist.add(_receiver.getHandler(_req.getMethod()));
 */
 // チャンクの時の処理も必要
-int AcceptedSocket::receive()
+int AcceptedSocket::read()
 {
 	char buff[BUFFSIZE];
 
 	ssize_t nb = ::recv(_sockfd, buff, BUFFSIZE, 0);
 	if (nb == -1) {
-		notify(_sockfd, REMOVE, this);
+		getSubject()->unsubscribe(_sockfd, false, this);
 	} else if (nb == 0) {
 		// ソケットストリームが正しく閉じられた場合
-		notify(_sockfd, REMOVE, this);
+		getSubject()->unsubscribe(_sockfd, false, this);
 		// ソケットが閉じられて、file/cgiが存在する可能性は
 		return 0;
 	}
@@ -119,15 +124,13 @@ void AcceptedSocket::processRequest()
 {
 	size_t index = _buff.find_first_of("\x0d\x0a");
 	if (_progress == RECEIVE_REQUEST_LINE &&
-		index != std::string::npos)
-	{
+		index != std::string::npos) {
 		processRequestLine(index);
 	} else if (_progress == RECEIVE_REQUEST_HEADER &&
-		_buff.find_first_of("\x0d\x0a\x0d\x0a") != std::string::npos)
-	{
+		_buff.find_first_of("\x0d\x0a\x0d\x0a") != std::string::npos) {
 		processRequestHeader();
 	} else if (_progress == RECEIVE_REQUEST_BODY) {
-		/**/
+		processRequestBody();
 	}
 }
 
@@ -161,8 +164,8 @@ void AcceptedSocket::processRequestHeader()
 	std::vector<std::pair<Symbol, std::string>> tokens;
 	// 現状 raw の tokenize 必須
 	/*
-	パースの方法によっては、
-	生のデータをトークンせずに渡す方式に変更してもいい
+		パースの方法によっては、
+		生のデータをトークンせずに渡す方式に変更してもいい
 	*/
 	if (_parser_ctx.execParse(tokens) == SUCCESS) {
 		_config = _configfinder->getConfig(
@@ -175,8 +178,13 @@ void AcceptedSocket::processRequestHeader()
 			_receiver = new CGI();
 		*/
 		if (_req.getRequestLine().getMethod() == POST) {
-			_progress = RECEIVE_REQUEST_BODY;
+			if (_req.getHeaderValue("Tranfer-Encoding").find("chunked") != std::string::npos) {
+				_progress = RECEIVE_CHUNKED_SIZE;
+			} else {
+				_progress = RECEIVE_REQUEST_BODY;
+			}
 		} else {
+			_buff = "";
 			_progress = EXECUTE_METHOD;
 		}
 	}
@@ -184,15 +192,22 @@ void AcceptedSocket::processRequestHeader()
 	// createResponse();
 }
 
-
 /*
 ・chunk:→デコードしたものを_buffにaddしていく
-・raw: →Content-Lengthまでデータを_buffに足していく
-・common:
+・raw: → Content-Lengthまでデータを_buffに足していく
+・common: →
 	bufferのサイズを超えたら、tmpfileをopen
 	一番最後にtmpfileのサイズをカウントして、maxを超えていたら、413
 */
 void AcceptedSocket::processRequestBody()
+{
+	if (_progress == RECEIVE_CHUNKED_SIZE) {
+		std::stringstream ss;
+		std::string str = _buff.substr();
+	}
+}
+
+void AcceptedSocket::processChunkedBody()
 {
 }
 

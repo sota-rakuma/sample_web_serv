@@ -101,7 +101,7 @@ private:
 	int _status;
 	ssize_t _wb;
 	std::string _buff;
-	std::list<Client *> _observer;
+	std::list<Client *> _oldobserver;
 public:
 	File(
 		EventMonitor *evm,

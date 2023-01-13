@@ -2,14 +2,13 @@
 #define CGI_HPP
 
 #include "HTTPMethodReceiver.hpp"
-#include "../subject/AcceptedSocket.hpp"
-#include "../command/Get.hpp"
-#include "../command/Post.hpp"
-#include "../command/Delete.hpp"
+#include "../AcceptedSocket.hpp"
+#include "../../command/Read.hpp"
+#include "../../command/Write.hpp"
 #include <string>
 #include <stdexcept>
 
-class CGI : public HTTPMethodReceiver, public ISubject
+class CGI : public HTTPMethodReceiver, public IObserver
 {
 private:
 	int _in_fd;
@@ -17,24 +16,30 @@ private:
 	std::string _buff;
 	size_t _nb;
 	std::string _path;
-
 	bool _is_exist;
-	Get *_get;
-	Post *_post;
-	Delete *_delete;
+	Read *_read;
+	Write *_write;
+	AcceptedSocket *_as;
 public:
 	CGI();
 	CGI(
+		ISubject *,
+		std::list<ICommand *> *,
 		const std::string &
 	);
 	CGI(const CGI &);
 	virtual ~CGI();
+	virtual void update(int);
+	virtual int read();
+	virtual int write();
 	virtual int httpGet();
 	virtual int httpPost();
 	virtual int httpDelete();
-	virtual void notify(int, int, ISubject *);
 	virtual ICommand *getHandler(int) const;
 	void executeCGI(int);
+	int getInFd() const;
+	int getOutFd() const;
+	const std::string & getPath() const;
 };
 
 #endif /* CGI_HPP */

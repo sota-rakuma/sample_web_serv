@@ -2,7 +2,7 @@
 #define DELETE_HPP
 
 #include "ICommand.hpp"
-#include "../handler/HTTPMethodReceiver.hpp"
+#include "../handler/httphandler/HTTPMethodReceiver.hpp"
 
 class Delete : public ICommand
 {
