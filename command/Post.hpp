@@ -2,7 +2,7 @@
 #define POST_HPP
 
 #include "ICommand.hpp"
-#include "../handler/HTTPMethodReceiver.hpp"
+#include "../handler/httphandler/HTTPMethodReceiver.hpp"
 
 class Post : public ICommand
 {

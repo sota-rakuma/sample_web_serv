@@ -2,7 +2,7 @@
 #define GET_HPP
 
 #include "ICommand.hpp"
-#include "../handler/HTTPMethodReceiver.hpp"
+#include "../handler/httphandler/HTTPMethodReceiver.hpp"
 
 class Get : public ICommand
 {
