@@ -121,10 +121,20 @@ int AcceptedSocket::read()
 void AcceptedSocket::processTest()
 {
 	// for test
+	char cd[1024];
+	getcwd(cd, 1024);
+	std::string current_dir = cd;
+	std::string now_file = "handler";
+	size_t index = current_dir.find(now_file);
+	current_dir = current_dir.substr(
+		0,
+		index);
+	current_dir += "html/test.html";
+
 	_receiver = new File(
 		getSubject(),
 		getCommandList(),
-		"/Users/macbookpro/42/sample_server/html/test.html",
+		current_dir,
 		O_CLOEXEC,
 		this
 	);
