@@ -1,6 +1,6 @@
 #include "HTTPResponse.hpp"
 #include "utils/utils.hpp"
-#include "utils/Template.hpp"
+#include "../utils/Template.hpp"
 #include <iostream>
 
 static std::pair<HTTPStatus, const std::string &> temp[] = {std::make_pair(OK, "OK")};

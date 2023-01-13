@@ -1,5 +1,5 @@
 #include "HTTPRequest.hpp"
-#include "utils/utils.hpp"
+#include "../utils/utils.hpp"
 #include <vector>
 
 HTTPRequest::RequestLine::RequestLine()
