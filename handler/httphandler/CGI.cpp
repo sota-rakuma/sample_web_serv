@@ -140,7 +140,7 @@ static void    perror_and_exit(std::string str) //
 
 extern char **environ;
 
-void CGI::executeCGI(std::string method)
+void CGI::executeCGI(HTTPMethod method)
 {
 	int pipe_fd[2];
     pid_t   pid;
