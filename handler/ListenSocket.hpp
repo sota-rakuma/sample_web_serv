@@ -4,7 +4,7 @@
 #include "IOEventHandler.hpp"
 #include "../subject/ISubject.hpp"
 #include "AcceptedSocket.hpp"
-#include "../command/Accept.hpp"
+#include "../command/Read.hpp"
 #include "../config/ServerConfigFinder.hpp"
 #include <string>
 #include <netdb.h>
@@ -25,7 +25,7 @@ public:
 	};
 private:
 	int _sockfd;
-	Accept * _accept;
+	Read * _read;
 	std::string _ip;
 	std::string _port;
 	ServerConfigFinder *_configs;

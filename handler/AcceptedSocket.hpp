@@ -34,7 +34,6 @@ class AcceptedSocket : public IOEventHandler, public IObserver
 {
 private:
 	int _sockfd;
-	File *_tmpfile;
 	size_t _chunk_size;
 	std::string _buff;
 	sockaddr_in _info;

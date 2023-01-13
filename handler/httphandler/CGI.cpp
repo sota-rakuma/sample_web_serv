@@ -53,6 +53,7 @@ int CGI::read()
 		return -1;
 	} else if (nb == 0) {
 		// レスポンス作成フェーズ
+		// _as->createResponse(_buff);
 		return 0;
 	}
 	buff[nb] = '\0';

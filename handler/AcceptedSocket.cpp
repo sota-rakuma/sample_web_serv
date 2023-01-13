@@ -1,6 +1,7 @@
 #include "AcceptedSocket.hpp"
 #include <unistd.h>
 #include <sstream>
+#include "../command/Get.hpp"
 
 AcceptedSocket::AcceptedSocket()
 :IOEventHandler()
@@ -31,7 +32,6 @@ _write(new Write(this))
 AcceptedSocket::AcceptedSocket(const AcceptedSocket &another)
 :IOEventHandler(another.getSubject(), another.getCommandList()),
 _sockfd(another._sockfd),
-_tmpfile(another._tmpfile),
 _chunk_size(0),
 _configfinder(another._configfinder),
 _config(another._config),
@@ -122,12 +122,12 @@ int AcceptedSocket::read()
 // \x0d\x0a → \r\n → CRLF
 void AcceptedSocket::processRequest()
 {
-	size_t index = _buff.find_first_of("\x0d\x0a");
+	size_t index = _buff.find("\x0d\x0a");
 	if (_progress == RECEIVE_REQUEST_LINE &&
 		index != std::string::npos) {
 		processRequestLine(index);
 	} else if (_progress == RECEIVE_REQUEST_HEADER &&
-		_buff.find_first_of("\x0d\x0a\x0d\x0a") != std::string::npos) {
+		_buff.find("\x0d\x0a\x0d\x0a") != std::string::npos) {
 		processRequestHeader();
 	} else if (_progress == RECEIVE_REQUEST_BODY) {
 		processRequestBody();
@@ -178,14 +178,17 @@ void AcceptedSocket::processRequestHeader()
 			_receiver = new CGI();
 		*/
 		if (_req.getRequestLine().getMethod() == POST) {
+			_buff = "";
 			if (_req.getHeaderValue("Tranfer-Encoding").find("chunked") != std::string::npos) {
 				_progress = RECEIVE_CHUNKED_SIZE;
 			} else {
 				_progress = RECEIVE_REQUEST_BODY;
 			}
 		} else {
-			_buff = "";
 			_progress = EXECUTE_METHOD;
+			if (_req.getRequestLine().getMethod() == GET) {
+				getCommandList()->push_back(new Get(_receiver));
+			}
 		}
 	}
 	// BadRequest or HTTPVersion
@@ -198,6 +201,13 @@ void AcceptedSocket::processRequestHeader()
 ・common: →
 	bufferのサイズを超えたら、tmpfileをopen
 	一番最後にtmpfileのサイズをカウントして、maxを超えていたら、413
+*/
+/*
+	3
+	aa
+
+	a
+	0
 */
 void AcceptedSocket::processRequestBody()
 {

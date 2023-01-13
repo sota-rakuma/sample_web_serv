@@ -38,7 +38,7 @@ ListenSocket::ListenSocket(
 :IOEventHandler(subject, commands),
 _ip(ip),
 _port(port),
-_accept(new Accept(this)),
+_read(new Read(this)),
 _configs(conifgs)
 {
 	// init soket info weith getaddrinfo
@@ -88,14 +88,14 @@ ListenSocket::ListenSocket(
 _ip(another._ip),
 _port(another._port),
 _sockfd(another._sockfd),
-_accept(new Accept(this)),
+_read(new Read(this)),
 _configs(another._configs)
 {
 }
 
 ListenSocket::~ListenSocket()
 {
-	delete _accept;
+	delete _read;
 }
 
 int ListenSocket::read()
@@ -120,11 +120,11 @@ int ListenSocket::write()
 
 void ListenSocket::update(int event)
 {
-	addCommand(_accept);
+	addCommand(_read);
 }
 
 ICommand *ListenSocket::getHandler(int event) const
 {
 	// 例外処理
-	return _accept;
+	return _read;
 }
