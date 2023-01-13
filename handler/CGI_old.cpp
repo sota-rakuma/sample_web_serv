@@ -1,4 +1,4 @@
-#include "CGI.hpp"
+#include "CGI_old.hpp"
 #include <unistd.h>
 
 CGI::CGI()

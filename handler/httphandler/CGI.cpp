@@ -92,21 +92,99 @@ int CGI::write()
 
 int CGI::httpGet()
 {
-	executeCGI();
+	executeCGI(GET);
 	getSubject()->subscribe(_in_fd, IN, this);
 	return 0;
 }
 
 int CGI::httpPost()
 {
-	executeCGI();
+	executeCGI(POST);
 	getSubject()->subscribe(_out_fd, OUT, this);
 	getSubject()->subscribe(_in_fd, IN, this);
 	return 0;
 }
 
-void CGI::executeCGI()
+int CGI::httpDelete()
 {
+	executeCGI(DELETE);
+	getSubject()->subscribe(_in_fd, IN, this);
+	return 0;
+}
+
+static void    perror_and_exit(std::string str) //
+{
+    std::perror(str.c_str());
+    std::exit(1);
+}
+
+void CGI::setMetaVariables(std::string method)
+{
+	if (method != POST)
+	{
+		char *QUERY_STRING_VALUE = "abc=ABC&def=DEF"; //
+		// GETの場合はリクエストターゲットから取得、POSTの場合は標準入力から取得
+		if (setenv("QUERY_STRING", QUERY_STRING_VALUE, 1) == -1)
+			perror_and_exit("set_env");
+	}
+	if (/*　message_bodyが存在 */)
+	{
+		if (setenv("CONTENT_LENGTH", /* message_bodyのlength */, 1) == -1)
+			perror_and_exit("set_env");
+	}
+	if (setenv("PATH_INFO", "/aaa/bbb", 1) == -1)
+		perror_and_exit("setenv");
+	if (setenv("REQUEST_METHOD", method.c_str(), 1) == -1)
+		perror_and_exit("setenv");
+}
+
+extern char **environ;
+
+void CGI::executeCGI(std::string method)
+{
+	int pipe_fd[2];
+    pid_t   pid;
+    pid_t   w_pid;
+    int status;
+
+	if (pipe(pipe_fd) == -1)
+		perror_and_exit("pipe");
+	if (method != POST)
+	{
+		pid = fork();
+		if (pid < 0)
+			perror_and_exit("fork");
+		else if (pid == 0)
+		{
+			if (close(pipe_fd[0]) == -1)
+				perror_and_exit("close");
+			if (dup2(pipe_fd[1], STDOUT_FILENO) == -1)
+				perror_and_exit("dup2");
+			// setMetaVariables(method);
+			execve("./cgi_scripts/perl.cgi", NULL, environ);
+		}
+	}
+	// else if (method == POST)
+	// {
+	// 	write(pipe_fd[1], "abc\0", 4); //
+	// 	pid = fork();
+	// 	if (pid < 0)
+	// 		perror_and_exit("fork");
+	// 	else if (pid == 0)
+	// 	{
+	// 		char buf[1000];
+	// 		if (dup2(pipe_fd[0], STDIN_FILENO) == -1)
+	// 			perror_and_exit("dup2");
+	// 		// ssize_t n = read(STDIN_FILENO, buf, 4);
+	// 		// std::cout << buf << std::endl;
+	// 		if (dup2(pipe_fd[1], STDOUT_FILENO) == -1)
+	// 			perror_and_exit("dup2");
+	// 		setMetaVariables(method);
+	// 		execve("./cgi_scripts/perl.cgi", NULL, environ);
+	// 	}
+	// }
+	if (close(pipe_fd[1]) == -1)
+		perror_and_exit("close");
 }
 
 int CGI::getInFd() const

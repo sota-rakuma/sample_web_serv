@@ -9,6 +9,10 @@
 #include <string>
 #include <stdexcept>
 
+#define GET "GET"
+#define POST "POST"
+#define DELETE "DELETE"
+
 class CGI : public HTTPMethodReceiver, public IObserver
 {
 private:
@@ -44,7 +48,8 @@ public:
 	virtual int httpPost();
 	virtual int httpDelete();
 	virtual ICommand *getHandler(int) const;
-	void executeCGI();
+	void executeCGI(std::string);
+	void setMetaVariables(std::string);
 	int getInFd() const;
 	int getOutFd() const;
 	const std::string & getPath() const;
