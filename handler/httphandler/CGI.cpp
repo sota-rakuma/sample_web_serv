@@ -2,6 +2,15 @@
 #include "CGI.hpp"
 #include <unistd.h>
 
+#ifndef IN
+#define IN 0
+#endif
+
+#ifndef OUT
+#define OUT 1
+#endif
+
+
 CGI::CGI()
 :_buff(""),
 _read(new Read(this)),
@@ -61,28 +70,40 @@ CGI::~CGI()
 void CGI::update(int event)
 {
 	if (event & (POLLNVAL | POLLERR)) {
-		getSubject()->unsubscribe(_pipe_fd[1], true);
-		getSubject()->unsubscribe(_pipe_fd[0], false);
+		if (event == POLLNVAL)
+		{
+			std::cout << "POLLNVAL" << std::endl;
+		} else {
+			std::cout << "POLLERR" << std::endl;
+		}
+		getSubject()->unsubscribe(_p_to_c[OUT], true);
+		getSubject()->unsubscribe(_c_to_p[IN], false);
 	}
 	if (event & POLLHUP) {
-		getSubject()->unsubscribe(_pipe_fd[1], true);
-		getSubject()->unsubscribe(_pipe_fd[0], false);
+		getSubject()->unsubscribe(_p_to_c[OUT], true);
+		getSubject()->unsubscribe(_c_to_p[IN], false);
 		_as->processCGIResponse(_buff);
-	} else if (event & POLLIN) {
-		getCommandList()->push_back(_read);
 	} else if (event & POLLOUT) {
 		getCommandList()->push_back(_write);
+	} else if (event & POLLIN) {
+		std::cout << "read " << std::endl;
+		getCommandList()->push_back(_read);
 	}
 }
 
 int CGI::read()
 {
 	char buff[BUFSIZE];
-	ssize_t nb = ::read(_pipe_fd[0], buff, BUFSIZE);
+	ssize_t nb = ::read(_c_to_p[IN], buff, BUFSIZE);
 	if (nb < 0) {
+		// error レスポンス
+		::close(_p_to_c[OUT]);
+		getSubject()->unsubscribe(_p_to_c[OUT], true);
+		getSubject()->unsubscribe(_c_to_p[IN], false);
 		return -1;
 	} else if (nb == 0) {
-		getSubject()->unsubscribe(_pipe_fd[0], false);
+		getSubject()->unsubscribe(_p_to_c[OUT], true);
+		getSubject()->unsubscribe(_c_to_p[IN], false);
 		// ::close(_pipe_fd[0]);
 		// レスポンス作成フェーズ
 		_as->processCGIResponse(_buff);
@@ -95,8 +116,12 @@ int CGI::read()
 
 int CGI::write()
 {
-	ssize_t nb = ::write(_pipe_fd[1], _buff.c_str(), _buff.size());
+	ssize_t nb = ::write(_p_to_c[OUT], _buff.c_str(), _buff.size());
 	if (nb == -1) {
+		// error レスポンス
+		::close(_p_to_c[OUT]);
+		getSubject()->unsubscribe(_c_to_p[IN], false);
+		getSubject()->unsubscribe(_p_to_c[OUT], true);
 		return -1;
 	}
 	if (nb < _nb + _buff.size()) {
@@ -104,30 +129,32 @@ int CGI::write()
 		_buff = _buff.substr(0, nb);
 		return 1;
 	}
-	::close(_pipe_fd[1]);
-	getSubject()->unsubscribe(_pipe_fd[1], true);
+	::close(_p_to_c[OUT]);
+	getSubject()->unsubscribe(_p_to_c[OUT], true);
+	_buff = "";
 	return 0;
 }
 
 int CGI::httpGet()
 {
 	executeCGI(GET);
-	getSubject()->subscribe(_pipe_fd[0], POLLIN, this);
+	getSubject()->subscribe(_c_to_p[IN], POLLIN, this);
 	return 0;
 }
 
 int CGI::httpPost()
 {
 	executeCGI(POST);
-	getSubject()->subscribe(_pipe_fd[1], POLLOUT, this);
-	getSubject()->subscribe(_pipe_fd[0], POLLIN, this);
+	_buff = "value=aaaa&value_2=bbbb";
+	getSubject()->subscribe(_p_to_c[OUT], POLLOUT, this);
+	getSubject()->subscribe(_c_to_p[IN], POLLIN, this);
 	return 0;
 }
 
 int CGI::httpDelete()
 {
 	executeCGI(DELETE);
-	getSubject()->subscribe(_pipe_fd[0], POLLIN, this);
+	getSubject()->subscribe(_c_to_p[IN], POLLIN, this);
 	return 0;
 }
 
@@ -194,7 +221,11 @@ void CGI::executeCGI(HTTPMethod method)
     pid_t   w_pid;
     int status;
 
-	if (pipe(_pipe_fd) == -1)
+	// if (pipe(_pipe_fd) == -1)
+	// 	perror_and_exit("pipe");
+	if (pipe(_p_to_c) == -1)
+		perror_and_exit("pipe");
+	if (pipe(_c_to_p) == -1)
 		perror_and_exit("pipe");
 	if (method != POST)
 	{
@@ -203,47 +234,50 @@ void CGI::executeCGI(HTTPMethod method)
 			perror_and_exit("fork");
 		else if (pid == 0)
 		{
-			if (close(_pipe_fd[0]) == -1)
+			if (close(_c_to_p[IN]) == -1)
 				perror_and_exit("close");
-			if (dup2(_pipe_fd[1], STDOUT_FILENO) == -1)
+			if (dup2(_p_to_c[OUT], STDOUT_FILENO) == -1)
 				perror_and_exit("dup2");
 			// setMetaVariables(method);
 			if (execve(_path.c_str(), NULL, environ) == -1) {
 				perror("execve");
 			}
 		}
+		if (close(_c_to_p[OUT]) == -1)
+			perror_and_exit("close");
 	}
-	// else if (method == POST)
-	// {
-	// 	write(pipe_fd[1], "abc\0", 4); //
-	// 	pid = fork();
-	// 	if (pid < 0)
-	// 		perror_and_exit("fork");
-	// 	else if (pid == 0)
-	// 	{
-	// 		char buf[1000];
-	// 		if (dup2(pipe_fd[0], STDIN_FILENO) == -1)
-	// 			perror_and_exit("dup2");
-	// 		// ssize_t n = read(STDIN_FILENO, buf, 4);
-	// 		// std::cout << buf << std::endl;
-	// 		if (dup2(pipe_fd[1], STDOUT_FILENO) == -1)
-	// 			perror_and_exit("dup2");
-	// 		setMetaVariables(method);
-	// 		execve("./cgi_scripts/perl.cgi", NULL, environ);
-	// 	}
-	// }
-	if (close(_pipe_fd[1]) == -1)
-		perror_and_exit("close");
+	 else if (method == POST)
+	 {
+	 	//::write(_pipe_fd[1], "abc\0", 4);
+	 	pid = fork();
+	 	if (pid < 0)
+	 		perror_and_exit("fork");
+	 	else if (pid == 0)
+	 	{
+			close(_c_to_p[IN]);
+			close(_p_to_c[OUT]);
+	 		if (dup2(_p_to_c[IN], STDIN_FILENO) == -1)
+	 			perror_and_exit("dup2");
+
+	 		if (dup2(_c_to_p[OUT], STDOUT_FILENO) == -1)
+	 			perror_and_exit("dup2");
+
+	 		//setMetaVariables(method);
+	 		execve(_path.c_str(), NULL, environ);
+	 	}
+		close(_c_to_p[OUT]);
+		close(_p_to_c[IN]);
+	 }
 }
 
 int CGI::getInFd() const
 {
-	return _pipe_fd[0];
+	return _c_to_p[IN];
 }
 
 int CGI::getOutFd() const
 {
-	return _pipe_fd[1];
+	return _p_to_c[OUT];
 }
 
 const std::string & CGI::getPath() const {

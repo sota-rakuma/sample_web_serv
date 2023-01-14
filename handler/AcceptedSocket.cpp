@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <sstream>
 #include "../command/Get.hpp"
+#include "../command/Post.hpp"
 #include <fcntl.h>
 
 AcceptedSocket::AcceptedSocket()
@@ -128,13 +129,21 @@ void AcceptedSocket::processTest()
 	char cd[1024];
 	getcwd(cd, 1024);
 	std::string current_dir = cd;
-	std::string test_file = "handler";
-	size_t index = current_dir.find(test_file);
-	current_dir = current_dir.substr(
-		0,
-		index);
+	//std::string test_file = "handler";
+	//size_t index = current_dir.find(test_file);
+	//current_dir = current_dir.substr(
+	//	0,
+	//	index);
 	//current_dir += "/html/test.html";
-	current_dir += "/exp/test.cgi";
+	//current_dir += "/exp/cgi_scripts/perl_post.cgi";
+	current_dir += "/sample";
+
+	//setenv("CONTENT_LENGTH", "24", 1);
+
+	//setenv("QUERY_STRING", "value=aaaa&value_2=bbbb", 1);
+
+	//_req.setRequestLine("GET", "", "");
+	_req.setRequestLine("POST", "", "value=aaaa&value_2=bbbb");
 
 	std::cout << current_dir << std::endl;
 
@@ -145,13 +154,25 @@ void AcceptedSocket::processTest()
 	//	O_CLOEXEC,
 	//	this
 	//);
-	_receiver = new CGI(getSubject(),
-						getCommandList(),
-						current_dir,
-						this);
+
+	_receiver = new File (
+		getSubject(),
+		getCommandList(),
+		current_dir,
+		O_RDWR | O_CREAT | O_EXCL,
+		S_IRWXU,
+		this
+	);
+
+	//_receiver = new CGI(getSubject(),
+	//					getCommandList(),
+	//					current_dir,
+	//					this);
 	_progress = EXECUTE_METHOD;
 	if (_req.getRequestLine().getMethod() == GET) {
 		getCommandList()->push_back(new Get(_receiver));
+	} else if (_req.getRequestLine().getMethod() == POST) {
+		getCommandList()->push_back(new Post(_receiver));
 	}
 }
 

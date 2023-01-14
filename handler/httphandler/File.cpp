@@ -101,6 +101,7 @@ int File::read()
 	char buff[BUFSIZE];
 	ssize_t nb = ::read(_fd, buff, BUFSIZE);
 	if (nb < 0) {
+		getSubject()->unsubscribe(_fd, false);
 		return -1;
 	} else if (nb == 0) {
 		_as->createResponse(_buff);
@@ -116,6 +117,7 @@ int File::write()
 {
 	ssize_t nb = ::write(_fd, _buff.c_str(), _buff.size());
 	if (nb == -1) {
+		getSubject()->unsubscribe(_fd, false);
 		return -1;
 	}
 	if (nb < _nb + _buff.size()) {
@@ -123,7 +125,9 @@ int File::write()
 		_nb += nb;
 		return 1;
 	}
+	std::cout << "write buffer" << _buff << std::endl;
 	getSubject()->unsubscribe(_fd, false);
+	_as->createResponse("created");
 	return 0;
 }
 
@@ -135,6 +139,7 @@ int File::httpGet()
 
 int File::httpPost()
 {
+	_buff = "value=aaaa&value_2=bbbb";
 	getSubject()->subscribe(_fd, POLLOUT, this);
 	return 0;
 }

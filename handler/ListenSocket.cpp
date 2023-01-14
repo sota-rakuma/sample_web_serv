@@ -62,6 +62,8 @@ _configs(conifgs)
 		}
 		// change state of sokcet into nonblocking
 		fcntl(_sockfd, F_SETFL, O_NONBLOCK);
+		int val = 1;
+		setsockopt(_sockfd, SOL_SOCKET, SO_REUSEADDR, (void *)&val, sizeof(val));
 		// bind
 		if (bind(_sockfd, rep->ai_addr, rep->ai_addrlen) == 0) {
 			break;
