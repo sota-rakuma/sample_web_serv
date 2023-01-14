@@ -107,8 +107,6 @@ int ListenSocket::read()
 	if (fd == -1) {
 		throw ListenSockError("accept");
 	}
-	// acceptedsocketでnotifyしたほうがいいのかもしれない。
-	//notify(fd, IN, new AcceptedSocket(getObserver(), fd, client_info, _configs));
 	new AcceptedSocket(getSubject(), getCommandList(), fd, client_info, _configs);
 	return 0;
 }

@@ -120,9 +120,9 @@ int AcceptedSocket::read()
 	return 1;
 }
 
+// for test
 void AcceptedSocket::processTest()
 {
-	// for test
 	char cd[1024];
 	getcwd(cd, 1024);
 	std::string current_dir = cd;
@@ -131,7 +131,9 @@ void AcceptedSocket::processTest()
 	current_dir = current_dir.substr(
 		0,
 		index);
-	current_dir += "html/test.html";
+	current_dir += "/html/test.html";
+
+	std::cout << current_dir << std::endl;
 
 	_receiver = new File(
 		getSubject(),
