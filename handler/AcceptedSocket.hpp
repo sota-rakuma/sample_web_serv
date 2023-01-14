@@ -36,7 +36,7 @@ class AcceptedSocket : public IOEventHandler, public IObserver
 {
 private:
 	int _sockfd;
-	size_t _chunk_size;
+	size_t _body_size;
 	std::string _buff;
 	size_t _nb;
 	sockaddr_in _info;
@@ -53,11 +53,19 @@ private:
 	// finderではなく、header解析時にconfigをセットしてしまっても構わない
 	// error-pageの内容は持っていてもいいのか？
 private:
-	void processRequest();
-	void processRequestLine(size_t);
-	void processRequestHeader();
-	void processRequestBody();
-	void processChunkedBody();
+	void processRequest(const std::string &);
+	void processRequestLine(
+		const std::string &
+	);
+	void processRequestHeader(
+		const std::string &
+	);
+	void processRequestBody(
+		const std::string &
+	);
+	void processChunkedBody(
+		const std::string &
+	);
 public:
 	AcceptedSocket();
 	AcceptedSocket(

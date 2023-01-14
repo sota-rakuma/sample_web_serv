@@ -21,7 +21,7 @@ AcceptedSocket::AcceptedSocket(
 )
 :IOEventHandler(subject, commands),
 _sockfd(sockfd),
-_chunk_size(0),
+_body_size(0),
 _buff(""),
 _nb(0),
 _info(info),
@@ -40,7 +40,7 @@ _receiver(static_cast<HTTPMethodReceiver *>(NULL))
 AcceptedSocket::AcceptedSocket(const AcceptedSocket &another)
 :IOEventHandler(another.getSubject(), another.getCommandList()),
 _sockfd(another._sockfd),
-_chunk_size(0),
+_body_size(0),
 _buff(""),
 _nb(0),
 _configfinder(another._configfinder),
@@ -117,11 +117,199 @@ int AcceptedSocket::read()
 		return 0;
 	}
 	buff[nb] = '\0';
-	_buff += buff;
-	//processRequest();
-	processTest();
+	processRequest(buff);
+	//processTest();
 	return 1;
 }
+
+// \x0d\x0a → \r\n → CRLF
+void AcceptedSocket::processRequest(const std::string & raw)
+{
+	if (_progress == RECEIVE_REQUEST_LINE) {
+		processRequestLine(raw);
+	} else if (_progress == RECEIVE_REQUEST_HEADER) {
+		processRequestHeader(raw);
+	} else {
+		processChunkedBody(raw);
+	}
+}
+
+void AcceptedSocket::processRequestLine(
+	const std::string &raw
+)
+{
+	size_t index = raw.find("\x0d\x0a");
+	if (index == std::string::npos) {
+		_buff += raw;
+		return ;
+	}
+	//std::string raw = _buff.substr(0, index + 1);
+	//_buff = _buff.substr(index + 1, _buff.size() - index);
+	//std::vector<std::pair<Symbol, std::string>> tokens;
+	// 現状 raw の tokenize 必須
+	/*
+		パースの方法によっては、
+		生のデータをトークンせずに渡す方式に変更してもいい
+	*/
+	//if (_parser_ctx.execParse(tokens) == SUCCESS) {
+		/*
+			メソッドのセット
+			targetの文字列セット
+		*/
+		// header の パース
+		// _parser_ctx.transitionTo();
+		// _buff = "";
+	//}
+	// BadRequest or HTTPVersion
+	// createResponse();
+}
+
+void AcceptedSocket::processRequestHeader(
+	const std::string & raw
+)
+{
+	if (raw.find("\x0d\x0a\x0d\x0a") == std::string::npos) {
+		_buff += raw;
+		return ;
+	}
+	//std::vector<std::pair<Symbol, std::string>> tokens;
+	// 現状 raw の tokenize 必須
+	/*
+		パースの方法によっては、
+		生のデータをトークンせずに渡す方式に変更してもいい
+	*/
+	// Host なかったらパースエラー
+	//if (_parser_ctx.execParse(tokens) == ERROR) {
+		// BadRequest or HTTPVersion
+		// createResponse();
+	//}
+
+	//_config = _configfinder->getConfig(
+	//	_req.getHeaderValue("Host"));
+	/*
+		targetのルーティング
+		targetの情報設定
+		_receiver = new File();
+			or
+		_receiver = new CGI();
+	*/
+	if (_req.getRequestLine().getMethod() == POST) {
+		_buff = "";
+		if (_req.getHeaderValue("Tranfer-Encoding").find("chunked") != std::string::npos) {
+			_progress = RECEIVE_CHUNKED_SIZE;
+		} else {
+			_progress = RECEIVE_REQUEST_BODY;
+		}
+	} else {
+		_progress = EXECUTE_METHOD;
+		//_receiver = new File() or CGI();
+		if (_req.getRequestLine().getMethod() == GET) {
+			getCommandList()->push_back(new Get(_receiver));
+		}
+	}
+}
+
+void AcceptedSocket::processRequestBody(
+	const std::string & raw
+)
+{
+	if (_progress == RECEIVE_CHUNKED_SIZE) {
+		processChunkedBody(raw);
+	} else {
+		std::stringstream ss;
+		// パースの段階で処理される想定
+		//ss << _req.getHeaderValue("Content-Length");
+		//ss >> _body_size;
+		/*
+		if (_conf.getMaxBodySize() < _body_size) {
+			// PAYLOAD_TOO_MUCH;
+		}
+		*/
+		_buff += raw.substr(0, _body_size - _buff.size());
+		if (_body_size == _buff.size()) {
+			_progress == EXECUTE_METHOD;
+			return ;
+		}
+	}
+}
+
+void AcceptedSocket::processChunkedBody(
+	const std::string & raw
+)
+{
+	for (size_t i = 0; i < raw.size();)
+	{
+		size_t index = raw.find("\x0d\x0a");
+		if (index == std::string::npos) {
+			index = raw.size() - 1;
+		}
+
+		if (_progress == RECEIVE_CHUNKED_SIZE) {
+			std::stringstream ss;
+			ss << std::dec << std::hex << raw.substr(i, index);
+			ss >> _body_size;
+			if (ss) {
+				// エラーレスポンス
+				std::cerr << "BAD_REQUEST" << std::endl;
+			}
+			if (_body_size == 0) {
+				_progress = EXECUTE_METHOD;
+				return ;
+			}
+			_progress = RECEIVE_REQUEST_BODY;
+		}
+		else if (_progress == RECEIVE_REQUEST_BODY)
+		{
+			std::string chunked_body = raw.substr(i, index);
+			if (chunked_body.size() != _body_size) {
+				// エラーレスポンス
+				std::cerr << "BAD_REQUEST" << std::endl;
+			}
+			_buff += chunked_body;
+			if (_config.getMaxBodySize() < _buff.size()) {
+				// エラーレスポンス
+				std::cerr << "PAYLOAD_TOO_LARGE" << std::endl;
+			}
+			_progress = RECEIVE_CHUNKED_SIZE;
+		}
+		i = index + 2;
+	}
+}
+
+// for test
+int AcceptedSocket::write()
+{
+	ssize_t nb = ::send(_sockfd, _buff.c_str(), _buff.size(), 0);
+	if (nb == -1) {
+		getSubject()->unsubscribe(_sockfd, false);
+		return -1;
+	}
+	if (nb < _nb + _buff.size()) {
+		_nb += nb;
+		_buff = _buff.substr(0, nb);
+		return 1;
+	}
+	getSubject()->unsubscribe(_sockfd, false);
+	return 0;
+}
+
+// for test
+void AcceptedSocket::processCGIResponse(
+	const std::string & cgi_res
+)
+{
+	createResponse(cgi_res);
+}
+
+// for test
+void AcceptedSocket::createResponse(const std::string & body)
+{
+	std::cout << "######### TEST ##########" << std::endl;
+	_buff = body;
+	getSubject()->subscribe(_sockfd, POLLOUT, this);
+}
+
+
 
 // for test
 void AcceptedSocket::processTest()
@@ -174,143 +362,4 @@ void AcceptedSocket::processTest()
 	} else if (_req.getRequestLine().getMethod() == POST) {
 		getCommandList()->push_back(new Post(_receiver));
 	}
-}
-
-// \x0d\x0a → \r\n → CRLF
-void AcceptedSocket::processRequest()
-{
-	size_t index = _buff.find("\x0d\x0a");
-	if (_progress == RECEIVE_REQUEST_LINE &&
-		index != std::string::npos) {
-		processRequestLine(index);
-	} else if (_progress == RECEIVE_REQUEST_HEADER &&
-		_buff.find("\x0d\x0a\x0d\x0a") != std::string::npos) {
-		processRequestHeader();
-	} else if (_progress == RECEIVE_REQUEST_BODY) {
-		processRequestBody();
-	}
-}
-
-void AcceptedSocket::processRequestLine(size_t index)
-{
-	//std::string raw = _buff.substr(0, index + 1);
-	//_buff = _buff.substr(index + 1, _buff.size() - index);
-	//std::vector<std::pair<Symbol, std::string>> tokens;
-	// 現状 raw の tokenize 必須
-	/*
-		パースの方法によっては、
-		生のデータをトークンせずに渡す方式に変更してもいい
-	*/
-	//if (_parser_ctx.execParse(tokens) == SUCCESS) {
-		/*
-			メソッドのセット
-			targetの文字列セット
-		*/
-		// header の パーサ
-		// _parser_ctx.transitionTo();
-	//}
-	// BadRequest or HTTPVersion
-	// createResponse();
-}
-
-void AcceptedSocket::processRequestHeader()
-{
-	if (BUFFSIZE < _buff.size()) {
-		// for test
-		std::cerr << "REQUEST_HEADER_FIELD_TOO_LARGE" << std::endl;
-
-		//return createResponse(REQUEST_HEADER_FIELD_TOO_LARGE);
-	}
-	//std::vector<std::pair<Symbol, std::string>> tokens;
-	// 現状 raw の tokenize 必須
-	/*
-		パースの方法によっては、
-		生のデータをトークンせずに渡す方式に変更してもいい
-	*/
-	// Host なかったらパースエラー
-	//if (_parser_ctx.execParse(tokens) == ERROR) {
-		// BadRequest or HTTPVersion
-		// createResponse();
-	//}
-
-	//_config = _configfinder->getConfig(
-	//	_req.getHeaderValue("Host"));
-	/*
-		targetのルーティング
-		targetの情報設定
-		_receiver = new File();
-			or
-		_receiver = new CGI();
-	*/
-	if (_req.getRequestLine().getMethod() == POST) {
-		_buff = "";
-		if (_req.getHeaderValue("Tranfer-Encoding").find("chunked") != std::string::npos) {
-			_progress = RECEIVE_CHUNKED_SIZE;
-		} else {
-			_progress = RECEIVE_REQUEST_BODY;
-		}
-	} else {
-		_progress = EXECUTE_METHOD;
-		//_receiver = new File() or CGI();
-		if (_req.getRequestLine().getMethod() == GET) {
-			getCommandList()->push_back(new Get(_receiver));
-		}
-	}
-}
-
-/*
-・chunk:→デコードしたものを_buffにaddしていく
-・raw: → Content-Lengthまでデータを_buffに足していく
-	一番最後にtmpfileのサイズをカウントして、maxを超えていたら、413
-*/
-/*
-	3
-	aa
-
-	a
-	0
-*/
-void AcceptedSocket::processRequestBody()
-{
-	if (_progress == RECEIVE_CHUNKED_SIZE) {
-		std::stringstream ss;
-		std::string str = _buff.substr();
-	}
-}
-
-void AcceptedSocket::processChunkedBody()
-{
-}
-
-// for test
-int AcceptedSocket::write()
-{
-	ssize_t nb = ::send(_sockfd, _buff.c_str(), _buff.size(), 0);
-	if (nb == -1) {
-		getSubject()->unsubscribe(_sockfd, false);
-		return -1;
-	}
-	if (nb < _nb + _buff.size()) {
-		_nb += nb;
-		_buff = _buff.substr(0, nb);
-		return 1;
-	}
-	getSubject()->unsubscribe(_sockfd, false);
-	return 0;
-}
-
-// for test
-void AcceptedSocket::processCGIResponse(
-	const std::string & cgi_res
-)
-{
-	createResponse(cgi_res);
-}
-
-// for test
-void AcceptedSocket::createResponse(const std::string & body)
-{
-	std::cout << "######### TEST ##########" << std::endl;
-	_buff = body;
-	getSubject()->subscribe(_sockfd, POLLOUT, this);
 }
