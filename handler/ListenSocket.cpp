@@ -48,8 +48,9 @@ _configs(conifgs)
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE;
-	if (getaddrinfo(NULL, _port.c_str(), &hints, &res) == -1) {
-		throw std::runtime_error("getaddrinfo");
+	int ret = getaddrinfo(NULL, _port.c_str(), &hints, &res);
+	if (ret != 0) {
+		throw std::runtime_error(gai_strerror(ret));
 	}
 
 	int fd;
@@ -77,8 +78,6 @@ _configs(conifgs)
 	if (::listen(_sockfd, LIESTEN_BACKLOG) == -1) {
 		throw ListenSockError("listen");
 	}
-	//// listen sock も new して
-	//notify(_sockfd, IN, this);
 	getSubject()->subscribe(_sockfd, POLLIN, this);
 }
 
