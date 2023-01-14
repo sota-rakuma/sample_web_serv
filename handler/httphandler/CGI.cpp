@@ -124,7 +124,7 @@ void CGI::setMetaVariables(HTTPMethod method)
 {
 	if (method != POST)
 	{
-		char *QUERY_STRING_VALUE = "abc=ABC&def=DEF"; //
+		const char *QUERY_STRING_VALUE = "abc=ABC&def=DEF"; //
 		// GETの場合はリクエストターゲットから取得、POSTの場合は標準入力から取得
 		if (setenv("QUERY_STRING", QUERY_STRING_VALUE, 1) == -1)
 			perror_and_exit("set_env");
