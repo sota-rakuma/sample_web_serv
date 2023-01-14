@@ -65,8 +65,9 @@ void CGI::update(int event)
 		getSubject()->unsubscribe(_pipe_fd[0], false);
 	}
 	if (event & POLLHUP) {
-		_as->processCGIResponse(_buff);
+		getSubject()->unsubscribe(_pipe_fd[1], true);
 		getSubject()->unsubscribe(_pipe_fd[0], false);
+		_as->processCGIResponse(_buff);
 	} else if (event & POLLIN) {
 		getCommandList()->push_back(_read);
 	} else if (event & POLLOUT) {

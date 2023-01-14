@@ -292,5 +292,4 @@ void AcceptedSocket::createResponse(const std::string & body)
 	std::cout << "######### TEST ##########" << std::endl;
 	_buff = body;
 	getSubject()->subscribe(_sockfd, POLLOUT, this);
-	std::cout << "a" << std::endl;
 }
