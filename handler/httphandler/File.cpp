@@ -18,7 +18,6 @@ File::FileError::~FileError() throw()
 {
 }
 
-
 File::File()
 :_read(new Read(this)),
 _write(new Write(this)),

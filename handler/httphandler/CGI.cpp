@@ -3,7 +3,8 @@
 #include <unistd.h>
 
 CGI::CGI()
-:_read(new Read(this)),
+:_buff(""),
+_read(new Read(this)),
 _write(new Write(this))
 {
 }
@@ -11,12 +12,15 @@ _write(new Write(this))
 CGI::CGI(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
-	const std::string & path
+	const std::string & path,
+	AcceptedSocket * as
 )
 :HTTPMethodReceiver(subject, commands),
+_buff(""),
 _read(new Read(this)),
 _write(new Write(this)),
-_path(path)
+_path(path),
+_as(as)
 {
 }
 
@@ -25,18 +29,22 @@ CGI::CGI(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
 	const std::string & path,
-	bool is_executable
+	bool is_executable,
+	AcceptedSocket *as
 )
 :HTTPMethodReceiver(subject, commands),
+_buff(""),
 _read(new Read(this)),
 _write(new Write(this)),
 _path(path),
-_is_exutetable(is_executable)
+_is_exutetable(is_executable),
+_as(as)
 {
 }
 
 CGI::CGI(const CGI & another)
 :HTTPMethodReceiver(another.getSubject(), another.getCommandList()),
+_buff(another._buff),
 _read(new Read(this)),
 _write(new Write(this)),
 _path(another._path),
@@ -52,9 +60,16 @@ CGI::~CGI()
 
 void CGI::update(int event)
 {
-	if (event == POLLIN) {
+	if (event & (POLLNVAL | POLLERR)) {
+		getSubject()->unsubscribe(_pipe_fd[1], true, this);
+		getSubject()->unsubscribe(_pipe_fd[0], false, this);
+	}
+	if (event & POLLHUP) {
+		_as->processCGIResponse(_buff);
+		getSubject()->unsubscribe(_pipe_fd[0], false, this);
+	} else if (event & POLLIN) {
 		getCommandList()->push_back(_read);
-	} else {
+	} else if (event & POLLOUT) {
 		getCommandList()->push_back(_write);
 	}
 }
@@ -62,13 +77,14 @@ void CGI::update(int event)
 int CGI::read()
 {
 	char buff[BUFSIZE];
-	ssize_t nb = ::read(_in_fd, buff, BUFSIZE);
+	ssize_t nb = ::read(_pipe_fd[0], buff, BUFSIZE);
 	if (nb < 0) {
 		return -1;
 	} else if (nb == 0) {
+		getSubject()->unsubscribe(_pipe_fd[0], false, this);
+		// ::close(_pipe_fd[0]);
 		// レスポンス作成フェーズ
-		getSubject()->unsubscribe(_in_fd, false, this);
-		// _as->createResponse(_buff);
+		_as->processCGIResponse(_buff);
 		return 0;
 	}
 	buff[nb] = '\0';
@@ -78,7 +94,7 @@ int CGI::read()
 
 int CGI::write()
 {
-	ssize_t nb = ::write(_out_fd, _buff.c_str(), _buff.size());
+	ssize_t nb = ::write(_pipe_fd[1], _buff.c_str(), _buff.size());
 	if (nb == -1) {
 		return -1;
 	}
@@ -87,30 +103,30 @@ int CGI::write()
 		_buff = _buff.substr(0, nb);
 		return 1;
 	}
-	::close(_out_fd);
-	getSubject()->unsubscribe(_out_fd, true, this);
+	::close(_pipe_fd[1]);
+	getSubject()->unsubscribe(_pipe_fd[1], true, this);
 	return 0;
 }
 
 int CGI::httpGet()
 {
 	executeCGI(GET);
-	getSubject()->subscribe(_in_fd, POLLIN, this);
+	getSubject()->subscribe(_pipe_fd[0], POLLIN, this);
 	return 0;
 }
 
 int CGI::httpPost()
 {
 	executeCGI(POST);
-	getSubject()->subscribe(_out_fd, POLLOUT, this);
-	getSubject()->subscribe(_in_fd, POLLIN, this);
+	getSubject()->subscribe(_pipe_fd[1], POLLOUT, this);
+	getSubject()->subscribe(_pipe_fd[0], POLLIN, this);
 	return 0;
 }
 
 int CGI::httpDelete()
 {
 	executeCGI(DELETE);
-	getSubject()->subscribe(_in_fd, POLLIN, this);
+	getSubject()->subscribe(_pipe_fd[0], POLLIN, this);
 	return 0;
 }
 
@@ -150,12 +166,12 @@ void CGI::setMetaVariables(HTTPMethod method)
 		perror_and_exit("setenv");
 	if (setenv("SERVER_PORT", "80", 1) == -1) // サーバーのポートを設定
 		perror_and_exit("setenv");
-	if (setenv("SERVER_PROTOCOL", "HTTP/1.1", 1) == -1) // 
+	if (setenv("SERVER_PROTOCOL", "HTTP/1.1", 1) == -1) //
 		perror_and_exit("setenv");
 	if (setenv("SERVER_SOFTWARE", "Debian", 1) == -1) // CGI プログラムを起動した Web サーバソフトウエアの名前 例:Apacheとか
 		perror_and_exit("setenv");
 
-	
+
 	std::string m;
 	if (method == GET) {
 		m = "GET";
@@ -172,12 +188,12 @@ extern char **environ;
 
 void CGI::executeCGI(HTTPMethod method)
 {
-	int pipe_fd[2];
+	//int pipe_fd[2];
     pid_t   pid;
     pid_t   w_pid;
     int status;
 
-	if (pipe(pipe_fd) == -1)
+	if (pipe(_pipe_fd) == -1)
 		perror_and_exit("pipe");
 	if (method != POST)
 	{
@@ -186,12 +202,14 @@ void CGI::executeCGI(HTTPMethod method)
 			perror_and_exit("fork");
 		else if (pid == 0)
 		{
-			if (close(pipe_fd[0]) == -1)
+			if (close(_pipe_fd[0]) == -1)
 				perror_and_exit("close");
-			if (dup2(pipe_fd[1], STDOUT_FILENO) == -1)
+			if (dup2(_pipe_fd[1], STDOUT_FILENO) == -1)
 				perror_and_exit("dup2");
 			// setMetaVariables(method);
-			execve("./cgi_scripts/perl.cgi", NULL, environ);
+			if (execve(_path.c_str(), NULL, environ) == -1) {
+				perror("execve");
+			}
 		}
 	}
 	// else if (method == POST)
@@ -213,18 +231,18 @@ void CGI::executeCGI(HTTPMethod method)
 	// 		execve("./cgi_scripts/perl.cgi", NULL, environ);
 	// 	}
 	// }
-	if (close(pipe_fd[1]) == -1)
+	if (close(_pipe_fd[1]) == -1)
 		perror_and_exit("close");
 }
 
 int CGI::getInFd() const
 {
-	return _in_fd;
+	return _pipe_fd[0];
 }
 
 int CGI::getOutFd() const
 {
-	return _out_fd;
+	return _pipe_fd[1];
 }
 
 const std::string & CGI::getPath() const {

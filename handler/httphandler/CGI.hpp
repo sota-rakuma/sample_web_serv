@@ -13,8 +13,9 @@ class AcceptedSocket;
 class CGI : public HTTPMethodReceiver, public IObserver
 {
 private:
-	int _in_fd;
-	int _out_fd;
+	int _pipe_fd[2];
+	//int _in_fd;
+	//int _out_fd;
 	std::string _buff;
 	size_t _nb;
 	bool _is_exutetable;
@@ -28,13 +29,15 @@ public:
 	CGI(
 		ISubject *,
 		std::list<ICommand *> *,
-		const std::string &
+		const std::string &,
+		AcceptedSocket *
 	);
 	CGI(
 		ISubject *,
 		std::list<ICommand *> *,
 		const std::string &,
-		bool
+		bool,
+		AcceptedSocket *
 	);
 	CGI(const CGI &);
 	virtual ~CGI();

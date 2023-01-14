@@ -19,8 +19,9 @@ AcceptedSocket::AcceptedSocket(
 	ServerConfigFinder *configfinder
 )
 :IOEventHandler(subject, commands),
-_chunk_size(0),
 _sockfd(sockfd),
+_chunk_size(0),
+_buff(""),
 _nb(0),
 _info(info),
 _configfinder(configfinder),
@@ -38,8 +39,9 @@ _receiver(static_cast<HTTPMethodReceiver *>(NULL))
 AcceptedSocket::AcceptedSocket(const AcceptedSocket &another)
 :IOEventHandler(another.getSubject(), another.getCommandList()),
 _sockfd(another._sockfd),
-_nb(0),
 _chunk_size(0),
+_buff(""),
+_nb(0),
 _configfinder(another._configfinder),
 _config(another._config),
 _parser_ctx(another._parser_ctx),
@@ -126,22 +128,27 @@ void AcceptedSocket::processTest()
 	char cd[1024];
 	getcwd(cd, 1024);
 	std::string current_dir = cd;
-	std::string now_file = "handler";
-	size_t index = current_dir.find(now_file);
+	std::string test_file = "handler";
+	size_t index = current_dir.find(test_file);
 	current_dir = current_dir.substr(
 		0,
 		index);
-	current_dir += "/html/test.html";
+	//current_dir += "/html/test.html";
+	current_dir += "/exp/test.cgi";
 
 	std::cout << current_dir << std::endl;
 
-	_receiver = new File(
-		getSubject(),
-		getCommandList(),
-		current_dir,
-		O_CLOEXEC,
-		this
-	);
+	//_receiver = new File(
+	//	getSubject(),
+	//	getCommandList(),
+	//	current_dir,
+	//	O_CLOEXEC,
+	//	this
+	//);
+	_receiver = new CGI(getSubject(),
+						getCommandList(),
+						current_dir,
+						this);
 	_progress = EXECUTE_METHOD;
 	if (_req.getRequestLine().getMethod() == GET) {
 		getCommandList()->push_back(new Get(_receiver));
@@ -285,4 +292,5 @@ void AcceptedSocket::createResponse(const std::string & body)
 	std::cout << "######### TEST ##########" << std::endl;
 	_buff = body;
 	getSubject()->subscribe(_sockfd, POLLOUT, this);
+	std::cout << "a" << std::endl;
 }
