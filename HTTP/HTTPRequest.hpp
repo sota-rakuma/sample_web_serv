@@ -66,7 +66,7 @@ public:
 	const RequestLine & getRequestLine() const;
 	const std::map<std::string, std::string> &
 	getHeaderField() const;
-	const std::string &getHeaderValue(
+	const std::string getHeaderValue(
 		const std::string &
 	) const;
 	const std::string & getMessageBody() const;

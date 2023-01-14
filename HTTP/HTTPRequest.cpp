@@ -1,5 +1,5 @@
 #include "HTTPRequest.hpp"
-#include "utils/utils.hpp"
+#include "../utils/utils.hpp"
 #include <vector>
 
 HTTPRequest::RequestLine::RequestLine()
@@ -147,12 +147,20 @@ HTTPRequest::getHeaderField() const
 	return _hf;
 }
 
-const std::string &
+const std::string 
 HTTPRequest::getHeaderValue(
 	const std::string & key
 ) const
 {
-	return _hf.at(key);
+	try
+	{
+		const std::string & val = _hf.at(key);
+		return val;
+	}
+	catch(const std::exception& e)
+	{
+	}
+	return std::string("");
 }
 
 const std::string &

@@ -4,14 +4,18 @@
 #include <typeinfo>
 #include <string>
 
+// for test
 EventMonitor::EventMonitor()
 :_time(300)
 {
+	ListenSocket l(this, &_commands, "127.0.0.1", "4242", NULL);
 }
 
+// for test
 EventMonitor::EventMonitor(int time)
 :_time(time)
 {
+	ListenSocket l(this, &_commands, "127.0.0.1", "4242", NULL);
 }
 
 EventMonitor::EventMonitor(const EventMonitor &another)

@@ -2,7 +2,6 @@
 #define FILE_HPP
 
 #include "HTTPMethodReceiver.hpp"
-#include "../AcceptedSocket.hpp"
 #include "../../command/Read.hpp"
 #include "../../command/Write.hpp"
 #include "../../HTTP/HTTPStatusCode.hpp"
@@ -10,9 +9,7 @@
 #include <stdexcept>
 #include <list>
 
-#ifndef BUFSIZE
-#define BUFSIZE 1024
-#endif
+class AcceptedSocket;
 
 class File : public HTTPMethodReceiver, public IObserver
 {
@@ -22,17 +19,18 @@ public:
 	public:
 		FileError();
 		FileError(const std::string &);
-		~FileError();
+		virtual ~FileError() throw();
 	};
 private:
 	int _fd;
 	bool _is_exist;
 	std::string _path;
-	HTTPStatus _status;
 	std::string _buff;
+	size_t _nb;
+	HTTPStatus _status;
+	AcceptedSocket * _as;
 	Read *_read;
 	Write *_write;
-	AcceptedSocket * _as;
 public:
 	File();
 	File(

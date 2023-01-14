@@ -21,7 +21,8 @@ ListenSocket::ListenSockError::ListenSockError(
 {
 }
 
-ListenSocket::ListenSockError::~ListenSockError(){};
+ListenSocket::ListenSockError::~ListenSockError() throw()
+{};
 
 ListenSocket::ListenSocket()
 :IOEventHandler()
@@ -78,7 +79,7 @@ _configs(conifgs)
 	}
 	//// listen sock も new して
 	//notify(_sockfd, IN, this);
-	getSubject()->subscribe(_sockfd, IN, this);
+	getSubject()->subscribe(_sockfd, POLLIN, this);
 }
 
 ListenSocket::ListenSocket(
@@ -104,7 +105,8 @@ int ListenSocket::read()
 	int fd;
 	sockaddr_in client_info;
 
-	if (fd = ::accept(_sockfd, (sockaddr *)&client_info, &len) == -1) {
+	fd = ::accept(_sockfd, (sockaddr *)&client_info, &len);
+	if (fd == -1) {
 		throw ListenSockError("accept");
 	}
 	// acceptedsocketでnotifyしたほうがいいのかもしれない。
@@ -121,10 +123,4 @@ int ListenSocket::write()
 void ListenSocket::update(int event)
 {
 	addCommand(_read);
-}
-
-ICommand *ListenSocket::getHandler(int event) const
-{
-	// 例外処理
-	return _read;
 }

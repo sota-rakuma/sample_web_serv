@@ -2,9 +2,8 @@
 #define ACCEPTEDSOCKET_HPP
 
 #include "IOEventHandler.hpp"
-#include "httphandler/CGI.hpp"
-#include "httphandler/File.hpp"
 #include "../parser/Context.hpp"
+#include "httphandler/HTTPMethodReceiver.hpp"
 #include "../HTTP/HTTPRequest.hpp"
 #include "../HTTP/HTTPResponse.hpp"
 #include "../command/Read.hpp"
@@ -30,12 +29,16 @@ enum Progress
 	SEND_RESPONSE_BODY,
 };
 
+class File;
+class CGI;
+
 class AcceptedSocket : public IOEventHandler, public IObserver
 {
 private:
 	int _sockfd;
 	size_t _chunk_size;
 	std::string _buff;
+	size_t _nb;
 	sockaddr_in _info;
 	ServerConfigFinder *_configfinder;
 	ServerConfig _config;
@@ -66,13 +69,14 @@ public:
 	);
 	AcceptedSocket(const AcceptedSocket &);
 	virtual ~AcceptedSocket();
-	virtual ICommand *getHandler(int) const;
 	AcceptedSocket &setInfo(const sockaddr_in &);
 	AcceptedSocket &setFd(int);
 	virtual void update(int);
 	virtual int read();
 	virtual int write();
+	void processCGIResponse(const std::string &);
 	void createResponse(const std::string &);
+	void processTest();
 };
 
 #endif /* ACCEPTEDSOCKET_HPP */

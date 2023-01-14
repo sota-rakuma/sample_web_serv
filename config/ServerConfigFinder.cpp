@@ -13,7 +13,7 @@ ServerConfigFinder::FileError::FileError(
 {
 }
 
-ServerConfigFinder::FileError::~FileError()
+ServerConfigFinder::FileError::~FileError() throw()
 {
 }
 

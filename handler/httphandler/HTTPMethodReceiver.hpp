@@ -1,13 +1,11 @@
 #ifndef HTTPMETHODRECIEVER_HPP
 #define HTTPMETHODRECIEVER_HPP
 
-#include "IOEventHandler.hpp"
+#include "../IOEventHandler.hpp"
 
-enum Stat {
-	SUCCESS,
-	ERROR,
-	CONTINUE,
-};
+#ifndef BUFSIZE
+#define BUFSIZE 1024
+#endif
 
 class HTTPMethodReceiver : public IOEventHandler
 {

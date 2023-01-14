@@ -13,3 +13,8 @@ Write::Write(IOEventHandler *handler)
 Write::~Write()
 {
 }
+
+int Write::execute()
+{
+	return _receiver->write();
+}

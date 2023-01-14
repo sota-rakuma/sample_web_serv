@@ -1,14 +1,11 @@
 #ifndef IOEVENTHANDLER_HPP
 #define IOEVENTHANDLER_HPP
 
-#include "EventHandler.hpp"
 #include "../subject/ISubject.hpp"
 #include "../command/ICommand.hpp"
+#include <poll.h>
 #include <list>
-#define IN 0x00000001
-#define OUT 0x00000002
-
-class IOEventHandler : public EventHandler
+class IOEventHandler
 {
 private:
 	ISubject *_subject;

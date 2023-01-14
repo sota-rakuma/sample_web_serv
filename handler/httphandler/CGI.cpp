@@ -1,3 +1,4 @@
+#include "../AcceptedSocket.hpp"
 #include "CGI.hpp"
 #include <unistd.h>
 
@@ -51,7 +52,7 @@ CGI::~CGI()
 
 void CGI::update(int event)
 {
-	if (event == IN) {
+	if (event == POLLIN) {
 		getCommandList()->push_back(_read);
 	} else {
 		getCommandList()->push_back(_write);
@@ -83,6 +84,7 @@ int CGI::write()
 	}
 	if (nb < _nb + _buff.size()) {
 		_nb += nb;
+		_buff = _buff.substr(0, nb);
 		return 1;
 	}
 	::close(_out_fd);
@@ -93,22 +95,22 @@ int CGI::write()
 int CGI::httpGet()
 {
 	executeCGI(GET);
-	getSubject()->subscribe(_in_fd, IN, this);
+	getSubject()->subscribe(_in_fd, POLLIN, this);
 	return 0;
 }
 
 int CGI::httpPost()
 {
 	executeCGI(POST);
-	getSubject()->subscribe(_out_fd, OUT, this);
-	getSubject()->subscribe(_in_fd, IN, this);
+	getSubject()->subscribe(_out_fd, POLLOUT, this);
+	getSubject()->subscribe(_in_fd, POLLIN, this);
 	return 0;
 }
 
 int CGI::httpDelete()
 {
 	executeCGI(DELETE);
-	getSubject()->subscribe(_in_fd, IN, this);
+	getSubject()->subscribe(_in_fd, POLLIN, this);
 	return 0;
 }
 
@@ -118,25 +120,34 @@ static void    perror_and_exit(std::string str) //
     std::exit(1);
 }
 
-// void CGI::setMetaVariables(std::string method)
-// {
-// 	if (method != POST)
-// 	{
-// 		char *QUERY_STRING_VALUE = "abc=ABC&def=DEF"; //
-// 		// GETの場合はリクエストターゲットから取得、POSTの場合は標準入力から取得
-// 		if (setenv("QUERY_STRING", QUERY_STRING_VALUE, 1) == -1)
-// 			perror_and_exit("set_env");
-// 	}
-// 	if (/*　message_bodyが存在 */)
-// 	{
-// 		if (setenv("CONTENT_LENGTH", /* message_bodyのlength */, 1) == -1)
-// 			perror_and_exit("set_env");
-// 	}
-// 	if (setenv("PATH_INFO", "/aaa/bbb", 1) == -1)
-// 		perror_and_exit("setenv");
-// 	if (setenv("REQUEST_METHOD", method.c_str(), 1) == -1)
-// 		perror_and_exit("setenv");
-// }
+void CGI::setMetaVariables(HTTPMethod method)
+{
+	if (method != POST)
+	{
+		const char *QUERY_STRING_VALUE = "abc=ABC&def=DEF"; //
+		// GETの場合はリクエストターゲットから取得、POSTの場合は標準入力から取得
+		if (setenv("QUERY_STRING", QUERY_STRING_VALUE, 1) == -1)
+			perror_and_exit("set_env");
+	}
+	//if (/*　message_bodyが存在 */)
+	//{
+	//	if (setenv("CONTENT_LENGTH", /* message_bodyのlength */, 1) == -1)
+	//		perror_and_exit("set_env");
+	//}
+	if (setenv("PATH_INFO", "/aaa/bbb", 1) == -1)
+		perror_and_exit("setenv");
+
+	std::string m;
+	if (method == GET) {
+		m = "GET";
+	} else if (method == POST) {
+		m = "POST";
+	} else if (method == DELETE) {
+		m = "DELETE";
+	}
+	if (setenv("REQUEST_METHOD", m.c_str(), 1) == -1)
+		perror_and_exit("setenv");
+}
 
 extern char **environ;
 

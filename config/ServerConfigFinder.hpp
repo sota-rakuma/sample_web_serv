@@ -15,7 +15,7 @@ public:
 	public:
 		FileError();
 		FileError(const std::string &);
-		~FileError();
+		virtual ~FileError() throw();
 	};
 	/*
 	ServerConfigParser _p;

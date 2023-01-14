@@ -1,3 +1,4 @@
+#include "../AcceptedSocket.hpp"
 #include "File.hpp"
 #include <fcntl.h>
 #include <unistd.h>
@@ -12,6 +13,11 @@ File::FileError::FileError(const std::string &func_name)
 :std::runtime_error(func_name + std::string(": ") + strerror(errno))
 {
 }
+
+File::FileError::~FileError() throw()
+{
+}
+
 
 File::File()
 :_read(new Read(this)),
@@ -28,11 +34,12 @@ File::File(
 	AcceptedSocket *as
 )
 :HTTPMethodReceiver(subject, commands),
-_read(new Read(this)),
-_write(new Write(this)),
 _path(path),
+_nb(0),
 _is_exist(false),
-_as(as)
+_as(as),
+_read(new Read(this)),
+_write(new Write(this))
 {
 	_fd = open(_path.c_str(), oflag | O_CLOEXEC);
 	if (_fd == -1) {
@@ -56,11 +63,12 @@ File::File(
 	AcceptedSocket *as
 )
 :HTTPMethodReceiver(subject, commands),
-_read(new Read(this)),
-_write(new Write(this)),
 _path(path),
+_nb(0),
 _is_exist(false),
-_as(as)
+_as(as),
+_read(new Read(this)),
+_write(new Write(this))
 {
 	_fd = open(_path.c_str(), oflag | O_CLOEXEC, mode);
 	if (_fd == -1) {
@@ -77,11 +85,15 @@ File::~File()
 
 void File::update(int event)
 {
-	// 例外処理
-	if (event == IN) {
-		getCommandList()->push_back(_read);
-	} else {
+	if (event & (POLLHUP | POLLERR | POLLNVAL)) {
+		_as->createResponse("error");
+		getSubject()->unsubscribe(_fd, false, this);
+		return ;
+	}
+	if (event & POLLOUT) {
 		getCommandList()->push_back(_write);
+	} else if (event == POLLIN) {
+		getCommandList()->push_back(_read);
 	}
 }
 
@@ -93,6 +105,7 @@ int File::read()
 		return -1;
 	} else if (nb == 0) {
 		_as->createResponse(_buff);
+		getSubject()->unsubscribe(_fd, false, this);
 		return 0;
 	}
 	buff[nb] = '\0';
@@ -100,9 +113,36 @@ int File::read()
 	return 1;
 }
 
+int File::write()
+{
+	ssize_t nb = ::write(_fd, _buff.c_str(), _buff.size());
+	if (nb == -1) {
+		return -1;
+	}
+	if (nb < _nb + _buff.size()) {
+		_buff = _buff.substr(0, nb);
+		_nb += nb;
+		return 1;
+	}
+	getSubject()->unsubscribe(_fd, false, this);
+	return 0;
+}
+
 int File::httpGet()
 {
-	getSubject()->subscribe(_fd, IN, this);
+	getSubject()->subscribe(_fd, POLLIN, this);
+	return 0;
+}
+
+int File::httpPost()
+{
+	getSubject()->subscribe(_fd, POLLOUT, this);
+	return 0;
+}
+
+int File::httpDelete()
+{
+	return 0;
 }
 
 int File::getFd() const {
