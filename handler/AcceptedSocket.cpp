@@ -28,7 +28,8 @@ _config(),
 //_parser_ctx(new RequestLineParser()),
 _progress(RECEIVE_REQUEST_LINE),
 _read(new Read(this)),
-_write(new Write(this))
+_write(new Write(this)),
+_receiver(static_cast<HTTPMethodReceiver *>(NULL))
 {
 	getSubject()->subscribe(_sockfd, POLLIN, this);
 }
@@ -45,7 +46,8 @@ _parser_ctx(another._parser_ctx),
 _info(another._info),
 _progress(another._progress),
 _read(new Read(this)),
-_write(new Write(this))
+_write(new Write(this)),
+_receiver(static_cast<HTTPMethodReceiver *>(NULL))
 {
 	getSubject()->subscribe(_sockfd, POLLIN, this);
 }
