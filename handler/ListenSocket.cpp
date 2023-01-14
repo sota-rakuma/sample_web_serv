@@ -53,26 +53,25 @@ _configs(conifgs)
 		throw std::runtime_error(gai_strerror(ret));
 	}
 
-	int fd;
 	for (addrinfo *rep = res; rep != (addrinfo *)NULL; rep = rep->ai_next) {
 		// create socket
-		fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-		if (fd == -1) {
+		_sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+		if (_sockfd == -1) {
 			perror("socket");
 			continue;
 		}
 		// change state of sokcet into nonblocking
-		fcntl(fd, F_SETFL, O_NONBLOCK);
+		fcntl(_sockfd, F_SETFL, O_NONBLOCK);
 		// bind
-		if (bind(fd, rep->ai_addr, rep->ai_addrlen) == 0) {
+		if (bind(_sockfd, rep->ai_addr, rep->ai_addrlen) == 0) {
 			break;
 		}
 		perror("bind");
-		fd = -1;
-		close(fd);
+		_sockfd = -1;
+		close(_sockfd);
 	}
 	freeaddrinfo(res);
-	if (fd == -1) {
+	if (_sockfd == -1) {
 		throw ListenSockError();
 	}
 	if (::listen(_sockfd, LIESTEN_BACKLOG) == -1) {
