@@ -61,12 +61,12 @@ CGI::~CGI()
 void CGI::update(int event)
 {
 	if (event & (POLLNVAL | POLLERR)) {
-		getSubject()->unsubscribe(_pipe_fd[1], true, this);
-		getSubject()->unsubscribe(_pipe_fd[0], false, this);
+		getSubject()->unsubscribe(_pipe_fd[1], true);
+		getSubject()->unsubscribe(_pipe_fd[0], false);
 	}
 	if (event & POLLHUP) {
 		_as->processCGIResponse(_buff);
-		getSubject()->unsubscribe(_pipe_fd[0], false, this);
+		getSubject()->unsubscribe(_pipe_fd[0], false);
 	} else if (event & POLLIN) {
 		getCommandList()->push_back(_read);
 	} else if (event & POLLOUT) {
@@ -81,7 +81,7 @@ int CGI::read()
 	if (nb < 0) {
 		return -1;
 	} else if (nb == 0) {
-		getSubject()->unsubscribe(_pipe_fd[0], false, this);
+		getSubject()->unsubscribe(_pipe_fd[0], false);
 		// ::close(_pipe_fd[0]);
 		// レスポンス作成フェーズ
 		_as->processCGIResponse(_buff);
@@ -104,7 +104,7 @@ int CGI::write()
 		return 1;
 	}
 	::close(_pipe_fd[1]);
-	getSubject()->unsubscribe(_pipe_fd[1], true, this);
+	getSubject()->unsubscribe(_pipe_fd[1], true);
 	return 0;
 }
 

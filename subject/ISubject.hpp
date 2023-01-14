@@ -10,7 +10,7 @@ public:
 	virtual ~ISubject();
 	virtual void notify(int, int) = 0;
 	virtual void subscribe(int, int, IObserver *) = 0;
-	virtual void unsubscribe(int, bool, IObserver * ) = 0;
+	virtual void unsubscribe(int, bool) = 0;
 };
 
 #endif /* ISUBJECT_HPP */

@@ -86,7 +86,7 @@ void File::update(int event)
 {
 	if (event & (POLLHUP | POLLERR | POLLNVAL)) {
 		_as->createResponse("error");
-		getSubject()->unsubscribe(_fd, false, this);
+		getSubject()->unsubscribe(_fd, false);
 		return ;
 	}
 	if (event & POLLOUT) {
@@ -104,7 +104,7 @@ int File::read()
 		return -1;
 	} else if (nb == 0) {
 		_as->createResponse(_buff);
-		getSubject()->unsubscribe(_fd, false, this);
+		getSubject()->unsubscribe(_fd, false);
 		return 0;
 	}
 	buff[nb] = '\0';
@@ -123,7 +123,7 @@ int File::write()
 		_nb += nb;
 		return 1;
 	}
-	getSubject()->unsubscribe(_fd, false, this);
+	getSubject()->unsubscribe(_fd, false);
 	return 0;
 }
 

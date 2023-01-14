@@ -39,7 +39,7 @@ public:
 	~EventMonitor();
 	virtual void notify(int, int);
 	virtual void subscribe(int, int, IObserver *);
-	virtual void unsubscribe(int, bool, IObserver *);
+	virtual void unsubscribe(int, bool);
 	void monitor();
 	void triggerEvent();
 };

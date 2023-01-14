@@ -76,7 +76,7 @@ AcceptedSocket &AcceptedSocket::setFd(int sockfd)
 void AcceptedSocket::update(int event)
 {
 	if (event & (POLLERR | POLLHUP | POLLNVAL)) {
-		getSubject()->unsubscribe(_sockfd, false, this);
+		getSubject()->unsubscribe(_sockfd, false);
 		return ;
 	}
 
@@ -108,11 +108,11 @@ int AcceptedSocket::read()
 
 	ssize_t nb = ::recv(_sockfd, buff, BUFFSIZE, 0);
 	if (nb == -1) {
-		getSubject()->unsubscribe(_sockfd, false, this);
+		getSubject()->unsubscribe(_sockfd, false);
 		return -1;
 	} else if (nb == 0) {
 		// ソケットストリームが正しく閉じられた場合
-		getSubject()->unsubscribe(_sockfd, false, this);
+		getSubject()->unsubscribe(_sockfd, false);
 		return 0;
 	}
 	buff[nb] = '\0';
@@ -266,7 +266,7 @@ int AcceptedSocket::write()
 {
 	ssize_t nb = ::send(_sockfd, _buff.c_str(), _buff.size(), 0);
 	if (nb == -1) {
-		getSubject()->unsubscribe(_sockfd, false, this);
+		getSubject()->unsubscribe(_sockfd, false);
 		return -1;
 	}
 	if (nb < _nb + _buff.size()) {
@@ -274,7 +274,7 @@ int AcceptedSocket::write()
 		_buff = _buff.substr(0, nb);
 		return 1;
 	}
-	getSubject()->unsubscribe(_sockfd, false, this);
+	getSubject()->unsubscribe(_sockfd, false);
 	return 0;
 }
 

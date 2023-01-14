@@ -75,19 +75,25 @@ void EventMonitor::subscribe(
 
 void EventMonitor::unsubscribe(
 	int fd,
-	bool is_dup,
-	IObserver *target
+	bool is_dup
 )
 {
-	if (is_dup == false) {
-		delete _storage[fd];
-	}
-	_storage.erase(fd);
-	for (size_t i = 0; i < _pollvec.size(); i++) {
-		if (fd == _pollvec[i].fd) {
-			_pollvec.erase(_pollvec.begin() + i);
-			break;
+	try
+	{
+		IObserver *& target = _storage.at(fd);
+		if (is_dup == false) {
+			delete _storage[fd];
 		}
+		_storage.erase(fd);
+		for (size_t i = 0; i < _pollvec.size(); i++) {
+			if (fd == _pollvec[i].fd) {
+				_pollvec.erase(_pollvec.begin() + i);
+				break;
+			}
+		}
+	}
+	catch(const std::exception& e)
+	{
 	}
 }
 
