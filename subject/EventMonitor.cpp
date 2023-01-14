@@ -28,6 +28,24 @@ _commands(another._commands)
 
 EventMonitor::~EventMonitor()
 {
+	for (std::map<int, IObserver *>::iterator it = _storage.begin();
+		it != _storage.end();
+		it++)
+	{
+		std::map<int, IObserver *>::iterator in_it = it;
+		for (;
+			in_it != _storage.end();
+			in_it++)
+		{
+			if (in_it->second == it->second) {
+				break;
+			}
+		}
+		if (in_it == _storage.end()) {
+			delete it->second;
+		}
+		_storage.erase(it);
+	}
 }
 
 void EventMonitor::notify(int fd, int event)
@@ -85,6 +103,7 @@ void EventMonitor::monitor()
 				usleep(500);
 				continue;
 			}
+			perror("poll");
 			break;
 		}
 		publishEvent(ready);
