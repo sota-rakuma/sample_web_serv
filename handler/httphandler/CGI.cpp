@@ -127,16 +127,35 @@ void CGI::setMetaVariables(HTTPMethod method)
 		char *QUERY_STRING_VALUE = "abc=ABC&def=DEF"; //
 		// GETの場合はリクエストターゲットから取得、POSTの場合は標準入力から取得
 		if (setenv("QUERY_STRING", QUERY_STRING_VALUE, 1) == -1)
-			perror_and_exit("set_env");
+			perror_and_exit("setenv");
 	}
 	//if (/*　message_bodyが存在 */)
 	//{
 	//	if (setenv("CONTENT_LENGTH", /* message_bodyのlength */, 1) == -1)
-	//		perror_and_exit("set_env");
+	//		perror_and_exit("setenv");
+		// if (setenv("CONTENT_TYPE", "", 1) == -1) // html/textとか 判別方法どうする？？
+		// 	perror_and_exit("setenv");
 	//}
 	if (setenv("PATH_INFO", "/aaa/bbb", 1) == -1)
 		perror_and_exit("setenv");
+	if (setenv("AUTH_TYPE", "", 1) == -1) //
+		perror_and_exit("setenv");
+	if (setenv("GATEWAY_INTERFACE", "CGI/1.1", 1) == -1) //
+		perror_and_exit("setenv");
+	if (setenv("REMOTE_ADDR", "", 1) == -1) // クライアントのIPアドレスを設定する
+		perror_and_exit("setenv");
+	if (setenv("SCRIPT_NAME", "", 1) == -1) // CGIスクリプトのpath(URI)を設定する SCRIPT_NAMEの値にはPATH_INFO部分を含めない
+		perror_and_exit("setenv");
+	if (setenv("SERVER_NAME", "", 1) == -1) // サーバーの名前　configファイルのserver_nameディレクティブを使う？
+		perror_and_exit("setenv");
+	if (setenv("SERVER_PORT", "80", 1) == -1) // サーバーのポートを設定
+		perror_and_exit("setenv");
+	if (setenv("SERVER_PROTOCOL", "HTTP/1.1", 1) == -1) // 
+		perror_and_exit("setenv");
+	if (setenv("SERVER_SOFTWARE", "Debian", 1) == -1) // CGI プログラムを起動した Web サーバソフトウエアの名前 例:Apacheとか
+		perror_and_exit("setenv");
 
+	
 	std::string m;
 	if (method == GET) {
 		m = "GET";
