@@ -144,8 +144,52 @@ int File::httpPost()
 	return 0;
 }
 
+#include <sys/stat.h>
+
 int File::httpDelete()
 {
+	int file_fd;
+	// ファイルのpathをセット
+	std::string file_path = "confファイルから取得"; //
+	// ファイルの存在を確認
+	if (access(file_path.c_str(), F_OK) == 0)
+	{
+		// ファイルが存在する場合
+		file_fd = open(file_path.c_str(), O_RDWR);
+		if (file_fd == -1)
+			//open失敗
+			_status = INTERNAL_SERVER_ERROR;
+		else
+		{
+			// open成功
+			struct stat sb;
+			if (fstat(file_fd, &sb) == -1)
+				// fstat失敗
+				_status = INTERNAL_SERVER_ERROR;
+			else
+			{
+				// fstat成功
+				if (sb.st_mode & S_IWOTH)
+				{
+					// 削除権限がある場合
+					if (unlink(file_path.c_str()) == -1)
+						// unlink失敗
+						_status = INTERNAL_SERVER_ERROR;
+					else
+						// unlink成功
+						_status = OK;
+				}
+				else
+					// 削除権限がない場合
+					_status = FORBIDDEN;
+				}
+			}
+	}
+	else
+		// ファイルが存在しない場合
+		_status = NOT_FOUND; // status合ってる？？
+	close(file_fd);
+	getSubject()->subscribe(_fd, POLLOUT, this);
 	return 0;
 }
 

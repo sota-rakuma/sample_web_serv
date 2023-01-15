@@ -182,8 +182,8 @@ void CGI::setMetaVariables(HTTPMethod method)
 	//}
 	if (setenv("PATH_INFO", "/aaa/bbb", 1) == -1)
 		perror_and_exit("setenv");
-	if (setenv("AUTH_TYPE", "", 1) == -1) //
-		perror_and_exit("setenv");
+	// if (setenv("AUTH_TYPE", "", 1) == -1) // いらない
+	// 	perror_and_exit("setenv");
 	if (setenv("GATEWAY_INTERFACE", "CGI/1.1", 1) == -1) //
 		perror_and_exit("setenv");
 	if (setenv("REMOTE_ADDR", "", 1) == -1) // クライアントのIPアドレスを設定する
