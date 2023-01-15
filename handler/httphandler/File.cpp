@@ -137,6 +137,8 @@ int File::httpGet()
 	return 0;
 }
 
+
+// writeした後にファイルの内容を取得
 int File::httpPost()
 {
 	_buff = "value=aaaa&value_2=bbbb";
