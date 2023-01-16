@@ -54,12 +54,12 @@ class ListenSocket : public IConnection
 {
 private:
 	int socketfd;
-	std::string _ip:
+	std::string _host:
 	std::string _port;
 public:
 	virtual void accept()
 	{
-		if (getaddrinfo(_ip, _port, &hint, &res) == -1) {
+		if (getaddrinfo(_host, _port, &hint, &res) == -1) {
 			// エラー処理
 		}
 		struct sockadd_in c_info;
