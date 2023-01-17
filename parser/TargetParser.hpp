@@ -19,14 +19,6 @@ private:
 	int parseAbsolutePath(
 		const std::string &
 	);
-	void splitRaw(
-		const std::string &
-	);
-	size_t splitComponent(
-		size_t ,
-		const std::string &,
-		std::string &
-	);
 	bool parseScheme(
 		const std::string &
 	);
