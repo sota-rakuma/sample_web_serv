@@ -169,30 +169,9 @@ bool TargetParser::parseIPv4(
 	const std::string & raw
 )
 {
-	size_t cnt = 0;
-	while (first < last) {
-		if (cnt > 4) {
-			return false;
-		}
-		size_t dot = raw.find('.', first);
-		if (dot == std::string::npos) {
-			dot = last;
-		}
-
-		size_t dec_octet = 0;
-		while (first < dot) {
-			if (isDigit(raw[first]) == false) {
-				return false;
-			}
-			dec_octet = dec_octet * 10 +  (raw[first] - '0');
-			first++;
-		}
-		if ( dec_octet > 255) {
-			return false;
-		}
-		first++;
-	}
-	return cnt == 4;
+	unsigned char buf[sizeof(in_addr)];
+	std::string ip = raw.substr(first, last - first);
+	return inet_pton(AF_INET, ip.c_str(), buf);
 }
 
 bool TargetParser::parseRegName(
