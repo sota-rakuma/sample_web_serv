@@ -16,5 +16,10 @@ enum color {
 
 const std::string addColorText(const std::string &, enum color);
 const std::string addColorText(int raw, enum color kind);
+bool isDigit(char);
+bool isAlpha(char);
+bool isUpperCase(char);
+bool isLowerCase(char);
+bool isHexDig(char);
 
 #endif /* UTILS_HPP */

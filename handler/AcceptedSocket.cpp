@@ -301,6 +301,13 @@ void AcceptedSocket::processCGIResponse(
 	createResponse(cgi_res);
 }
 
+/*
+エラーレスポンスの場合
+
+ステータスコードから、デフォルトエラーページを取得できた場合、現在持っている_receiverをdeleteして、そのファイルをreceiverに代入して、とってこれた内容をレスポンスのボディとして、レスポンスを作成する。
+
+そうでない場合、それに対応するエラーレスポンスを埋め込んで、れすポンスを作成する(定型文があると、楽)
+*/
 // for test
 void AcceptedSocket::createResponse(const std::string & body)
 {

@@ -37,7 +37,7 @@ ListenSocket::ListenSocket(
 	ServerConfigFinder *conifgs
 )
 :IOEventHandler(subject, commands),
-_ip(ip),
+_host(ip),
 _port(port),
 _read(new Read(this)),
 _configs(conifgs)
@@ -86,7 +86,7 @@ ListenSocket::ListenSocket(
 	const ListenSocket & another
 )
 :IOEventHandler(another.getSubject(), another.getCommandList()),
-_ip(another._ip),
+_host(another._host),
 _port(another._port),
 _sockfd(another._sockfd),
 _read(new Read(this)),
