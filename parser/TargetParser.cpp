@@ -28,15 +28,52 @@ int TargetParser::parse(
 	if (raw[0] == '/') {
 		return parseAbsolutePath(raw);
 	}
-	splitRaw(raw);
 	size_t start = 0;
 	size_t index = raw.find(':');
-	if (parseScheme(raw.substr(start, index)) == false)
-	{
+	if (index == std::string::npos) {
+		return -1;
+	}
+	if (parseScheme(raw.substr(start, index)) == false) {
 		return -1;
 	}
 	start = index + 1;
 	index = raw.find('/', start);
+	if (parseAuthority(raw.substr(start, index)) == false) {
+		return -1;
+	}
+	if (index == std::string::npos) {
+		return 0;
+	}
+	start = index + 1;
+	index = raw.find_first_of("?#", start);
+	if (parsePath(raw.substr(start, index)) == false) {
+		return -1;
+	}
+	if (index == std::string::npos) {
+		return 0;
+	}
+	start = index + 1;
+	if (raw[index] == '?') {
+		index = raw.find('#', start);
+		const std::string & q = raw.substr(start, index);
+		if (parseQueryFragment(q) == false)
+		{
+			return -1;
+		}
+		_query = q;
+		if (index == std::string::npos) {
+			return 0;
+		}
+		start = index + 1;
+	}
+	if (raw[index] == '#') {
+		const std::string & frag = raw.substr(start);
+		if (parseQueryFragment(frag) == false)
+		{
+			return -1;
+		}
+		_fragment = frag;
+	}
 	return 0;
 }
 
@@ -89,6 +126,7 @@ bool TargetParser::parseAuthority(
 	if (parseHost(first, last, raw) == false) {
 		return false;
 	}
+	_authority = raw;
 	return true;
 }
 
@@ -213,6 +251,7 @@ bool TargetParser::parsePath(
 			i++;
 		}
 	}
+	_path = raw;
 	return true;
 }
 
@@ -276,65 +315,6 @@ bool TargetParser::isSubDelim(
 {
 	return _sub_delim.find(c) != std::string::npos;
 }
-
-void TargetParser::splitRaw(const std::string & raw)
-{
-	size_t index = 0;
-	index = splitComponent(index, raw, _scheme);
-	if (raw[index] == ':') {
-		index += 1;
-	}
-	if (raw.find("//") == index)
-	{
-		index += 2;
-		index = splitComponent(index, raw, _authority);
-	}
-	index = splitComponent(index, raw, _path);
-	if (raw[index] == '?') {
-		index += 1;
-		index = splitComponent(index, raw, _query);
-	}
-	if (raw[index] == '#') {
-		index += 1;
-		index = splitComponent(index, raw, _fragment);
-	}
-	_progress = 0;
-}
-
-size_t TargetParser::splitComponent(
-	size_t start,
-	const std::string & raw,
-	std::string & target
-)
-{
-	size_t index = start;
-	bool f = true;
-	for (; index < raw.size(); index++) {
-		for (size_t i = _progress; i < _delims.size(); i++) {
-			if (raw[index] == _delims[i]) {
-				f = false;
-				break ;
-			}
-		}
-		if (f == false) {
-			break;
-		}
-	}
-	if (index < 2 && raw[index] != _delims[_progress]) {
-		_progress += 1;
-		return start;
-	}
-	if ((_progress == 0 && index - start < 1) ||
-			(_progress > 0 && index - start == 0))
-	{
-		_progress += 1;
-		return start;
-	}
-	target = raw.substr(start, index - start);
-	_progress += 1;
-	return index;
-}
-
 
 const std::string & TargetParser::getScheme() const
 {
