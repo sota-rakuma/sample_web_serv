@@ -33,20 +33,26 @@ int TargetParser::parse(
 	if (index == std::string::npos) {
 		return -1;
 	}
-	if (parseScheme(raw.substr(start, index)) == false) {
+	if (parseScheme(raw.substr(start, index - start)) == false) {
+		std::cout << "SCHEME ERROR" << std::endl;
 		return -1;
 	}
-	start = index + 1;
+	if (raw[index + 1] != '/' || raw[index + 2] != '/') {
+		return -1;
+	}
+	start = index + 3;
 	index = raw.find('/', start);
-	if (parseAuthority(raw.substr(start, index)) == false) {
+	if (parseAuthority(raw.substr(start, index - start)) == false) {
+		std::cout << "AUTHORITY ERROR" << std::endl;
 		return -1;
 	}
 	if (index == std::string::npos) {
 		return 0;
 	}
-	start = index + 1;
+	start = index;
 	index = raw.find_first_of("?#", start);
-	if (parsePath(raw.substr(start, index)) == false) {
+	if (parsePath(raw.substr(start, index - start)) == false) {
+		std::cout << "PATH ERROR" << std::endl;
 		return -1;
 	}
 	if (index == std::string::npos) {
@@ -55,9 +61,10 @@ int TargetParser::parse(
 	start = index + 1;
 	if (raw[index] == '?') {
 		index = raw.find('#', start);
-		const std::string & q = raw.substr(start, index);
+		const std::string & q = raw.substr(start, index - start);
 		if (parseQueryFragment(q) == false)
 		{
+			std::cout << "QUERY ERROR" << std::endl;
 			return -1;
 		}
 		_query = q;
@@ -70,6 +77,7 @@ int TargetParser::parse(
 		const std::string & frag = raw.substr(start);
 		if (parseQueryFragment(frag) == false)
 		{
+			std::cout << "FRAGMENT ERROR" << std::endl;
 			return -1;
 		}
 		_fragment = frag;
@@ -95,7 +103,7 @@ bool TargetParser::parseScheme(
 		return false;
 	}
 	for (size_t i = 1; i < raw.size(); i++) {
-		if (isAlpha(raw[i]) == false || isDigit(raw[i]) == false ||
+		if (isAlpha(raw[i]) == false && isDigit(raw[i]) == false &&
 			(raw[i] != '+' && raw[i] != '-' && raw[i] != '.'))
 		{
 			return false;
@@ -114,6 +122,7 @@ bool TargetParser::parseAuthority(
 	size_t delim = raw.find('@');
 	if (delim != std::string::npos) {
 		if (parseUserInfo(raw.substr(0, delim)) == false) {
+			std::cout << "USERINFO ERROR" << std::endl;
 			return false;
 		}
 		first = delim + 1;
@@ -124,6 +133,7 @@ bool TargetParser::parseAuthority(
 		last = index - 1;
 	}
 	if (parseHost(first, last, raw) == false) {
+		std::cout << "HOST ERROR" << std::endl;
 		return false;
 	}
 	_authority = raw;
@@ -219,7 +229,7 @@ bool TargetParser::parseRegName(
 )
 {
 	while (first < last) {
-		if (isUnreserved(raw[first]) == true &&
+		if (isUnreserved(raw[first]) == true ||
 			isSubDelim(raw[first]) == true)
 		{
 			first++;
@@ -237,9 +247,11 @@ bool TargetParser::parsePath(
 	const std::string & raw
 )
 {
+	std::cout << "raw: " << raw << std::endl;
 	for (size_t i = 0; i < raw.size();)
 	{
 		if (raw[i] != '/') {
+			std::cout << "raw[" << i << "]: " << raw[i] << std::endl;
 			return false;
 		}
 		i++;
@@ -282,11 +294,8 @@ bool TargetParser::isPchar(
 	if (isPercentEncoded(raw, index) == true) {
 		return true;
 	}
-	if (raw.size() != 1) {
-		return false;
-	}
 	return isUnreserved(raw[index]) || isSubDelim(raw[index]) ||
-			raw == ":" || raw == "@";
+			raw[index] == ':' || raw[index] == '@';
 }
 
 bool TargetParser::isPercentEncoded(
@@ -357,7 +366,11 @@ int main(void)
 	std::string test = "http://www.ics.uci.edu/pub/ietf/uri/#Related";
 
 	TargetParser p;
-	p.parse(test);
+	if (p.parse(test) == -1) {
+		std::cout << "PARSER ERROR" << std::endl;
+	} else {
+		std::cout << "PARSE SUCCESS" << std::endl;
+	}
 	std::cout << "test: " << test << std::endl;
 	std::cout << p << std::endl;
 	return 0;
