@@ -189,6 +189,7 @@ void AcceptedSocket::processRequestHeader(
 	/*
 		targetのルーティング
 		targetの情報設定
+		設定ファイルから、validation
 		_receiver = new File();
 			or
 		_receiver = new CGI();
