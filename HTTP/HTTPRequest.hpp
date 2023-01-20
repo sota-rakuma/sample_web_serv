@@ -28,11 +28,6 @@ public:
 			const std::string &
 		);
 		RequestLine(
-			const std::string &,
-			const std::string &,
-			const std::string &
-		);
-		RequestLine(
 			const RequestLine &
 		);
 		~RequestLine();

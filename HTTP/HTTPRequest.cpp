@@ -10,23 +10,6 @@ _version()
 }
 
 HTTPRequest::RequestLine::RequestLine(
-	const std::string &method,
-	const std::string &target,
-	const std::string &version
-)
-:_target(target),
-_version(version)
-{
-	if (method == "GET") {
-		_method = GET;
-	} else if (method == "POST") {
-		_method = POST;
-	} else if (method == "DELETE") {
-		_method = DELETE;
-	}
-}
-
-HTTPRequest::RequestLine::RequestLine(
 	const std::string & method,
 	const std::string & target,
 	const std::string & version
@@ -74,21 +57,6 @@ HTTPRequest::RequestLine::setMethod(
 )
 {
 	_method = method;
-	return *this;
-}
-
-HTTPRequest::RequestLine &
-HTTPRequest::RequestLine::setMethod(
-	const std::string & method
-)
-{
-	if (method == "GET") {
-		_method = GET;
-	} else if (method == "POST") {
-		_method = POST;
-	} else if (method == "DELETE") {
-		_method = DELETE;
-	}
 	return *this;
 }
 
