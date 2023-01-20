@@ -164,7 +164,7 @@ static void    perror_and_exit(std::string str) //
     std::exit(1);
 }
 
-void CGI::setMetaVariables(HTTPMethod method)
+void CGI::setMetaVariables(const std::string & method)
 {
 	if (method != POST)
 	{
@@ -199,22 +199,13 @@ void CGI::setMetaVariables(HTTPMethod method)
 	if (setenv("SERVER_SOFTWARE", "Debian", 1) == -1) // CGI プログラムを起動した Web サーバソフトウエアの名前 例:Apacheとか
 		perror_and_exit("setenv");
 
-
-	std::string m;
-	if (method == GET) {
-		m = "GET";
-	} else if (method == POST) {
-		m = "POST";
-	} else if (method == DELETE) {
-		m = "DELETE";
-	}
-	if (setenv("REQUEST_METHOD", m.c_str(), 1) == -1)
+	if (setenv("REQUEST_METHOD", method.c_str(), 1) == -1)
 		perror_and_exit("setenv");
 }
 
 extern char **environ;
 
-void CGI::executeCGI(HTTPMethod method)
+void CGI::executeCGI(const std::string & method)
 {
 	//int pipe_fd[2];
     pid_t   pid;

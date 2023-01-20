@@ -49,8 +49,8 @@ public:
 	virtual int httpGet();
 	virtual int httpPost();
 	virtual int httpDelete();
-	void executeCGI(HTTPMethod);
-	void setMetaVariables(HTTPMethod);
+	void executeCGI(const std::string &);
+	void setMetaVariables(const std::string &);
 	int getInFd() const;
 	int getOutFd() const;
 	const std::string & getPath() const;

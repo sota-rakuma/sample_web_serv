@@ -27,7 +27,7 @@ _version(version)
 }
 
 HTTPRequest::RequestLine::RequestLine(
-	HTTPMethod method,
+	const std::string & method,
 	const std::string & target,
 	const std::string & version
 )
@@ -50,7 +50,7 @@ HTTPRequest::RequestLine::~RequestLine()
 {
 }
 
-HTTPMethod
+const std::string &
 HTTPRequest::RequestLine::getMethod() const
 {
 	return _method;
@@ -70,7 +70,7 @@ HTTPRequest::RequestLine::getHTTPVersion() const
 
 HTTPRequest::RequestLine &
 HTTPRequest::RequestLine::setMethod(
-	HTTPMethod method
+	const std::string & method
 )
 {
 	_method = method;
@@ -147,7 +147,7 @@ HTTPRequest::getHeaderField() const
 	return _hf;
 }
 
-const std::string 
+const std::string
 HTTPRequest::getHeaderValue(
 	const std::string & key
 ) const
