@@ -30,7 +30,7 @@ public:
 	~HTTPRequestParser();
 	virtual int parse(const std::string &);
 	int parseRequestLine(const std::string &);
-	int parseHeaderFiled(const std::string &);
+	int parseHeaderField(const std::string &);
 	HTTPRequest *&getRequest();
 	RequestParsingState getState() const;
 	static bool isToken(

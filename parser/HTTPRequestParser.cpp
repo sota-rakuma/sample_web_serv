@@ -41,9 +41,18 @@ RequestParsingState HTTPRequestParser::getState() const
 int HTTPRequestParser::parse(const std::string & raw)
 {
 	if (_state == REQUEST_LINE) {
-		return parseRequestLine(raw);
+		size_t start = 0;
+		for (size_t i = 0; i + 2 < raw.size(); i+=2)
+		{
+			if (raw[i] != '\x0d' || raw[i + 1] != '\x0a') {
+				start = i + 2;
+				break;
+			}
+		}
+
+		return parseRequestLine(raw.substr(start));
 	}
-	return parseHeaderFiled(raw);
+	return parseHeaderField(raw);
 }
 
 int HTTPRequestParser::parseRequestLine(
@@ -107,7 +116,11 @@ int HTTPRequestParser::parseHTTPVersion(
 	return 0;
 }
 
-int HTTPRequestParser::parseHeaderFiled(
+/*
+OWSは除去
+
+*/
+int HTTPRequestParser::parseHeaderField(
 	const std::string & raw
 )
 {
