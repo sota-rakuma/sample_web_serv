@@ -365,8 +365,9 @@ void AcceptedSocket::processTest()
 	//					this);
 	_progress = EXECUTE_METHOD;
 	if (_req.getRequestLine().getMethod() == GET) {
-		getCommandList()->push_back(new Get(_receiver));
+		_receiver->setHTTPMethod(new Get(_receiver));
 	} else if (_req.getRequestLine().getMethod() == POST) {
-		getCommandList()->push_back(new Post(_receiver));
+		_receiver->setHTTPMethod(new Post(_receiver));
 	}
+	getCommandList()->push_back(_receiver->getHTTPMethod());
 }
