@@ -34,6 +34,21 @@ public:
 	File(
 		ISubject *,
 		std::list<ICommand *> *,
+		const std::string &,
+		int oflag,
+		AcceptedSocket *
+	);
+	File(
+		ISubject *,
+		std::list<ICommand *> *,
+		const std::string &,
+		int oflag,
+		int mode,
+		AcceptedSocket *
+	);
+	File(
+		ISubject *,
+		std::list<ICommand *> *,
 		ICommand *,
 		const std::string &,
 		int oflag,

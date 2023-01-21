@@ -29,6 +29,19 @@ public:
 	CGI(
 		ISubject *,
 		std::list<ICommand *> *,
+		const std::string &,
+		AcceptedSocket *
+	);
+	CGI(
+		ISubject *,
+		std::list<ICommand *> *,
+		const std::string &,
+		bool,
+		AcceptedSocket *
+	);
+	CGI(
+		ISubject *,
+		std::list<ICommand *> *,
 		ICommand *,
 		const std::string &,
 		AcceptedSocket *

@@ -26,6 +26,52 @@ File::File()
 File::File(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
+	const std::string & path,
+	int oflag,
+	AcceptedSocket *as
+)
+:HTTPMethodReceiver(subject, commands),
+_path(path),
+_nb(0),
+_is_exist(false),
+_as(as)
+{
+	_fd = open(_path.c_str(), oflag | O_CLOEXEC);
+	if (_fd == -1) {
+		throw FileError("open");
+	}
+}
+
+/**
+ * @brief Construct a new File:: File object
+ *
+ * @param oldobserver event monitor
+ * @param name getTarget();
+ * @param oflag O_RDWR | O_NONBLOCK | O_CREAT
+ */
+File::File(
+	ISubject * subject,
+	std::list<ICommand *> * commands,
+	const std::string & path,
+	int oflag,
+	int mode,
+	AcceptedSocket *as
+)
+:HTTPMethodReceiver(subject, commands),
+_path(path),
+_nb(0),
+_is_exist(false),
+_as(as)
+{
+	_fd = open(_path.c_str(), oflag | O_CLOEXEC, mode);
+	if (_fd == -1) {
+		throw FileError("open");
+	}
+}
+
+File::File(
+	ISubject * subject,
+	std::list<ICommand *> * commands,
 	ICommand *method,
 	const std::string & path,
 	int oflag,

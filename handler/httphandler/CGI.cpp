@@ -19,6 +19,36 @@ CGI::CGI()
 CGI::CGI(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
+	const std::string & path,
+	bool is_executable,
+	AcceptedSocket *as
+)
+:HTTPMethodReceiver(subject, commands),
+_buff(""),
+_path(path),
+_is_exutetable(is_executable),
+_as(as)
+{
+}
+
+CGI::CGI(
+	ISubject * subject,
+	std::list<ICommand *> * commands,
+	const std::string & path,
+	bool is_executable,
+	AcceptedSocket *as
+)
+:HTTPMethodReceiver(subject, commands),
+_buff(""),
+_path(path),
+_is_exutetable(is_executable),
+_as(as)
+{
+}
+
+CGI::CGI(
+	ISubject * subject,
+	std::list<ICommand *> * commands,
 	ICommand *method,
 	const std::string & path,
 	AcceptedSocket * as

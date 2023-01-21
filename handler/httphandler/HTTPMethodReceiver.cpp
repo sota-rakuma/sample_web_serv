@@ -4,6 +4,16 @@ HTTPMethodReceiver::HTTPMethodReceiver()
 {
 }
 
+
+HTTPMethodReceiver::HTTPMethodReceiver(
+	ISubject * subject,
+	std::list<ICommand *> * commands
+)
+:IOEventHandler(subject, commands),
+_method(static_cast<ICommand *>(NULL))
+{
+}
+
 HTTPMethodReceiver::HTTPMethodReceiver(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
@@ -28,4 +38,11 @@ HTTPMethodReceiver::~HTTPMethodReceiver()
 ICommand *HTTPMethodReceiver::getHTTPMethod() const
 {
 	return _method;
+}
+
+void HTTPMethodReceiver::setHTTPMethod(
+	ICommand *method
+)
+{
+	_method = method;
 }
