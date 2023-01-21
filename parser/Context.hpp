@@ -12,8 +12,9 @@ public:
 	Context(Parser *);
 	~Context();
 	void transitionTo(Parser *);
-	ParsingStatus execParse(
-		const std::vector<std::pair<Symbol, std::string> > &
+
+	int execParse(
+		const std::string &
 	);
 };
 

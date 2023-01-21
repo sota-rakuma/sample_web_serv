@@ -23,12 +23,12 @@ void Context::transitionTo(Parser *p)
 	_p = p;
 }
 
-ParsingStatus Context::execParse(
-	const std::vector<std::pair<Symbol, std::string> > & tokens
+int Context::execParse(
+	const std::string & raw
 )
 {
 	if (_p == static_cast<Parser *>(NULL)) {
 		throw std::runtime_error("Parser is not set");
 	}
-	return _p->parse(tokens);
+	return _p->parse(raw);
 }

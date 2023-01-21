@@ -28,6 +28,7 @@ int TargetParser::parse(
 	if (raw[0] == '/') {
 		return parseAbsolutePath(raw);
 	}
+
 	size_t start = 0;
 	size_t index = raw.find(':');
 	if (index == std::string::npos) {
@@ -40,8 +41,9 @@ int TargetParser::parse(
 	if (raw[index + 1] != '/' || raw[index + 2] != '/') {
 		return -1;
 	}
+
 	start = index + 3;
-	index = raw.find('/', start);
+	index = raw.find_first_of("/?#", start);
 	if (parseAuthority(raw.substr(start, index - start)) == false) {
 		std::cout << "AUTHORITY ERROR" << std::endl;
 		return -1;
@@ -49,6 +51,7 @@ int TargetParser::parse(
 	if (index == std::string::npos) {
 		return 0;
 	}
+
 	start = index;
 	index = raw.find_first_of("?#", start);
 	if (parsePath(raw.substr(start, index - start)) == false) {
@@ -58,6 +61,7 @@ int TargetParser::parse(
 	if (index == std::string::npos) {
 		return 0;
 	}
+
 	start = index + 1;
 	if (raw[index] == '?') {
 		index = raw.find('#', start);
@@ -92,7 +96,20 @@ int TargetParser::parseAbsolutePath(
 	if (raw.size() == 0) {
 		return false;
 	}
-	return parsePath(raw);
+	size_t index = raw.find('?');
+	if (index == std::string::npos) {
+		return parsePath(raw) == true ? 0 : -1;
+	}
+
+	if (parsePath(raw.substr(0, index)) == false) {
+		return -1;
+	}
+	const std::string & q = raw.substr(index + 1);
+	if (parseQueryFragment(q) == false) {
+		return -1;
+	}
+	_query = q;
+	return 0;
 }
 
 bool TargetParser::parseScheme(
@@ -161,11 +178,11 @@ bool TargetParser::parseHost(
 	const std::string & raw
 )
 {
-	if (raw[first] == '[' && raw[last] == '[') {
-		if (parseIPv6(first, last, raw) == true) {
+	if (raw[first] == '[' && raw[last] == ']') {
+		if (parseIPv6(first + 1, last, raw) == true) {
 			return true;
 		}
-		return parseIPvF(first + 1, last - 1, raw);
+		return parseIPvF(first + 1, last, raw);
 	}
 	if (parseIPv4(first, last, raw) == true) {
 		return true;
@@ -179,9 +196,12 @@ bool TargetParser::parseIPv6(
 	const std::string & raw
 )
 {
+	//const std::string &r = raw.substr(first, last - first);
+	//std::cout << "raw: " << r << std::endl;
+
 	unsigned char buf[sizeof(in6_addr)];
 	std::string ip = raw.substr(first, last - first);
-	return inet_pton(AF_INET6, ip.c_str(), buf);
+	return inet_pton(AF_INET6, ip.c_str(), buf) == 1;
 }
 
 bool TargetParser::parseIPvF(
@@ -218,8 +238,8 @@ bool TargetParser::parseIPv4(
 )
 {
 	unsigned char buf[sizeof(in_addr)];
-	std::string ip = raw.substr(first, last - first);
-	return inet_pton(AF_INET, ip.c_str(), buf);
+	std::string ip = raw.substr(first, last - first + 1);
+	return inet_pton(AF_INET, ip.c_str(), buf) == 1;
 }
 
 bool TargetParser::parseRegName(
@@ -247,11 +267,9 @@ bool TargetParser::parsePath(
 	const std::string & raw
 )
 {
-	std::cout << "raw: " << raw << std::endl;
 	for (size_t i = 0; i < raw.size();)
 	{
 		if (raw[i] != '/') {
-			std::cout << "raw[" << i << "]: " << raw[i] << std::endl;
 			return false;
 		}
 		i++;
@@ -359,19 +377,4 @@ std::ostream& operator<<(std::ostream & os, const TargetParser & p)
 	<< "Fragment: " << p.getFragment();
 
 	return os;
-}
-
-int main(void)
-{
-	std::string test = "http://www.ics.uci.edu/pub/ietf/uri/#Related";
-
-	TargetParser p;
-	if (p.parse(test) == -1) {
-		std::cout << "PARSER ERROR" << std::endl;
-	} else {
-		std::cout << "PARSE SUCCESS" << std::endl;
-	}
-	std::cout << "test: " << test << std::endl;
-	std::cout << p << std::endl;
-	return 0;
 }

@@ -29,8 +29,6 @@ _configfinder(configfinder),
 _config(),
 //_parser_ctx(new RequestLineParser()),
 _progress(RECEIVE_REQUEST_LINE),
-_read(new Read(this)),
-_write(new Write(this)),
 _receiver(static_cast<HTTPMethodReceiver *>(NULL))
 {
 	getSubject()->subscribe(_sockfd, POLLIN, this);
@@ -48,8 +46,6 @@ _config(another._config),
 _parser_ctx(another._parser_ctx),
 _info(another._info),
 _progress(another._progress),
-_read(new Read(this)),
-_write(new Write(this)),
 _receiver(static_cast<HTTPMethodReceiver *>(NULL))
 {
 	getSubject()->subscribe(_sockfd, POLLIN, this);
@@ -57,8 +53,6 @@ _receiver(static_cast<HTTPMethodReceiver *>(NULL))
 
 AcceptedSocket::~AcceptedSocket()
 {
-	delete _read;
-	delete _write;
 	::close(_sockfd);
 }
 
@@ -82,10 +76,10 @@ void AcceptedSocket::update(int event)
 	}
 
 	if (event & POLLOUT) {
-		getCommandList()->push_back(_write);
+		getCommandList()->push_back(getWriteCommand());
 	}
 	else if (event & POLLIN) {
-		getCommandList()->push_back(_read);
+		getCommandList()->push_back(getReadCommand());
 	}
 }
 
@@ -143,6 +137,7 @@ void AcceptedSocket::processRequestLine(
 		_buff += raw;
 		return ;
 	}
+	_buff += raw.substr(0, index);
 	//std::string raw = _buff.substr(0, index + 1);
 	//_buff = _buff.substr(index + 1, _buff.size() - index);
 	//std::vector<std::pair<Symbol, std::string>> tokens;
@@ -156,9 +151,13 @@ void AcceptedSocket::processRequestLine(
 			メソッドのセット
 			targetの文字列セット
 		*/
-		// header の パース
-		// _parser_ctx.transitionTo();
-		// _buff = "";
+		if (raw.size() > index + 3 &&
+			raw[index + 2] == '\x0d' && raw[index + 3] == '\x0a') {
+				_progress = EXECUTE_METHOD;
+		} else {
+			_buff = raw.substr(index + 2);
+			_progress = RECEIVE_REQUEST_HEADER;
+		}
 	//}
 	// BadRequest or HTTPVersion
 	// createResponse();
@@ -189,6 +188,7 @@ void AcceptedSocket::processRequestHeader(
 	/*
 		targetのルーティング
 		targetの情報設定
+		設定ファイルから、validation
 		_receiver = new File();
 			or
 		_receiver = new CGI();
@@ -365,8 +365,9 @@ void AcceptedSocket::processTest()
 	//					this);
 	_progress = EXECUTE_METHOD;
 	if (_req.getRequestLine().getMethod() == GET) {
-		getCommandList()->push_back(new Get(_receiver));
+		_receiver->setHTTPMethod(new Get(_receiver));
 	} else if (_req.getRequestLine().getMethod() == POST) {
-		getCommandList()->push_back(new Post(_receiver));
+		_receiver->setHTTPMethod(new Post(_receiver));
 	}
+	getCommandList()->push_back(_receiver->getHTTPMethod());
 }

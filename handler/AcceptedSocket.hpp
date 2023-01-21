@@ -46,8 +46,6 @@ private:
 	Progress _progress;
 	HTTPRequest _req;
 	HTTPResponse _res;
-	Read *_read;
-	Write *_write;
 	Context _parser_ctx;
 	HTTPMethodReceiver *_receiver;
 	// finderではなく、header解析時にconfigをセットしてしまっても構わない

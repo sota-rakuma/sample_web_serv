@@ -6,11 +6,9 @@
 #include <map>
 #include <iostream>
 
-enum HTTPMethod {
-	GET,
-	POST,
-	DELETE,
-};
+#define GET "GET"
+#define POST "POST"
+#define DELETE "DELETE"
 
 class HTTPRequest
 {
@@ -18,7 +16,7 @@ public:
 	class RequestLine
 	{
 	private:
-		HTTPMethod _method;
+		std::string _method;
 		// targetは権限とかのチェックを行っときたい
 		std::string _target;
 		std::string _version;
@@ -30,19 +28,14 @@ public:
 			const std::string &
 		);
 		RequestLine(
-			HTTPMethod,
-			const std::string &,
-			const std::string &
-		);
-		RequestLine(
 			const RequestLine &
 		);
 		~RequestLine();
-		HTTPMethod getMethod() const;
+		const std::string & getMethod() const;
 		const std::string & getTarget() const;
 		const std::string & getHTTPVersion() const;
 		RequestLine & setMethod(
-			HTTPMethod
+			const std::string &
 		);
 		RequestLine & setMethod(
 			const std::string &
