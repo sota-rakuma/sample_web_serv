@@ -34,7 +34,25 @@ void addAbnormalCase(
 	test.push_back("http:///");
 	test.push_back("/www.ics.uci.edu/pub/ietf/uri/#Related");
 }
+/*
+全て等しい値になってるか要チェック
+1.
+http://example.com:80/~smith/home.html
+http://EXAMPLE.com/%7Esmith/home.html
+http://EXAMPLE.com:/%7esmith/home.html
 
+2.
+example://a/b/c/%7Bfoo%7D
+eXAMPLE://a/./b/../b/%63/%7bfoo%7d
+*/
+
+/*
+URIの正規化
+・scheme, hostに関しては全て小文字で処理をする(他は区別する)
+・パーセントエンコーディングをデコードする
+・パスセグメント中に".", ".." が現れたら、それらに適切な処理を行う
+・pathが空っぽなら、それに / をつけてルートとして処理を行う
+*/
 void TargetParserTest(void)
 {
 	std::vector<std::string> test;
