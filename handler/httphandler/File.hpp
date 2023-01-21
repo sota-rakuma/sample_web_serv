@@ -29,13 +29,12 @@ private:
 	size_t _nb;
 	HTTPStatus _status;
 	AcceptedSocket * _as;
-	Read *_read;
-	Write *_write;
 public:
 	File();
 	File(
 		ISubject *,
 		std::list<ICommand *> *,
+		ICommand *,
 		const std::string &,
 		int oflag,
 		AcceptedSocket *
@@ -43,6 +42,7 @@ public:
 	File(
 		ISubject *,
 		std::list<ICommand *> *,
+		ICommand *,
 		const std::string &,
 		int oflag,
 		int mode,

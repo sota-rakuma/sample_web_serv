@@ -12,22 +12,19 @@
 
 
 CGI::CGI()
-:_buff(""),
-_read(new Read(this)),
-_write(new Write(this))
+:_buff("")
 {
 }
 
 CGI::CGI(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
+	ICommand *method,
 	const std::string & path,
 	AcceptedSocket * as
 )
-:HTTPMethodReceiver(subject, commands),
+:HTTPMethodReceiver(subject, commands, method),
 _buff(""),
-_read(new Read(this)),
-_write(new Write(this)),
 _path(path),
 _as(as)
 {
@@ -37,14 +34,13 @@ _as(as)
 CGI::CGI(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
+	ICommand *method,
 	const std::string & path,
 	bool is_executable,
 	AcceptedSocket *as
 )
-:HTTPMethodReceiver(subject, commands),
+:HTTPMethodReceiver(subject, commands, method),
 _buff(""),
-_read(new Read(this)),
-_write(new Write(this)),
 _path(path),
 _is_exutetable(is_executable),
 _as(as)
@@ -52,10 +48,8 @@ _as(as)
 }
 
 CGI::CGI(const CGI & another)
-:HTTPMethodReceiver(another.getSubject(), another.getCommandList()),
+:HTTPMethodReceiver(another.getSubject(), another.getCommandList(), another.getHTTPMethod()),
 _buff(another._buff),
-_read(new Read(this)),
-_write(new Write(this)),
 _path(another._path),
 _is_exutetable(another._is_exutetable)
 {
@@ -63,8 +57,6 @@ _is_exutetable(another._is_exutetable)
 
 CGI::~CGI()
 {
-	delete _read;
-	delete _write;
 }
 
 void CGI::update(int event)
@@ -84,10 +76,10 @@ void CGI::update(int event)
 		getSubject()->unsubscribe(_c_to_p[IN], false);
 		_as->processCGIResponse(_buff);
 	} else if (event & POLLOUT) {
-		getCommandList()->push_back(_write);
+		getCommandList()->push_back(getWriteCommand());
 	} else if (event & POLLIN) {
 		std::cout << "read " << std::endl;
-		getCommandList()->push_back(_read);
+		getCommandList()->push_back(getReadCommand());
 	}
 }
 

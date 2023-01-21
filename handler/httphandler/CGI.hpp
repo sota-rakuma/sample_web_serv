@@ -23,20 +23,20 @@ private:
 	bool _is_exutetable;
 	HTTPStatus _status;
 	std::string _path;
-	Read *_read;
-	Write *_write;
 	AcceptedSocket *_as;
 public:
 	CGI();
 	CGI(
 		ISubject *,
 		std::list<ICommand *> *,
+		ICommand *,
 		const std::string &,
 		AcceptedSocket *
 	);
 	CGI(
 		ISubject *,
 		std::list<ICommand *> *,
+		ICommand *,
 		const std::string &,
 		bool,
 		AcceptedSocket *

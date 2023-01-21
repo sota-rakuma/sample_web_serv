@@ -19,26 +19,23 @@ File::FileError::~FileError() throw()
 }
 
 File::File()
-:_read(new Read(this)),
-_write(new Write(this)),
-_is_exist(false)
+:_is_exist(false)
 {
 }
 
 File::File(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
+	ICommand *method,
 	const std::string & path,
 	int oflag,
 	AcceptedSocket *as
 )
-:HTTPMethodReceiver(subject, commands),
+:HTTPMethodReceiver(subject, commands, method),
 _path(path),
 _nb(0),
 _is_exist(false),
-_as(as),
-_read(new Read(this)),
-_write(new Write(this))
+_as(as)
 {
 	_fd = open(_path.c_str(), oflag | O_CLOEXEC);
 	if (_fd == -1) {
@@ -56,18 +53,17 @@ _write(new Write(this))
 File::File(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
+	ICommand *method,
 	const std::string & path,
 	int oflag,
 	int mode,
 	AcceptedSocket *as
 )
-:HTTPMethodReceiver(subject, commands),
+:HTTPMethodReceiver(subject, commands, method),
 _path(path),
 _nb(0),
 _is_exist(false),
-_as(as),
-_read(new Read(this)),
-_write(new Write(this))
+_as(as)
 {
 	_fd = open(_path.c_str(), oflag | O_CLOEXEC, mode);
 	if (_fd == -1) {
@@ -77,8 +73,6 @@ _write(new Write(this))
 
 File::~File()
 {
-	delete _read;
-	delete _write;
 	::close(_fd);
 }
 
@@ -90,9 +84,9 @@ void File::update(int event)
 		return ;
 	}
 	if (event & POLLOUT) {
-		getCommandList()->push_back(_write);
+		getCommandList()->push_back(getWriteCommand());
 	} else if (event == POLLIN) {
-		getCommandList()->push_back(_read);
+		getCommandList()->push_back(getReadCommand());
 	}
 }
 
