@@ -116,10 +116,6 @@ int HTTPRequestParser::parseHTTPVersion(
 	return 0;
 }
 
-/*
-OWSは除去
-
-*/
 int HTTPRequestParser::parseHeaderField(
 	const std::string & raw
 )
