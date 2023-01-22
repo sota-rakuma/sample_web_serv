@@ -195,9 +195,6 @@ bool HTTPRequestParser::isToken(
 	return true;
 }
 
-/*
- "!" / "#" / "$" / "%" / "&"/"'"/"*"/"+"/"-"/"."/"^"/"_"/"`"/"|"/"~"/ DIGIT / ALPHA
-*/
 bool HTTPRequestParser::isTcahr(char c)
 {
 	const std::string pchar_symbols("!#$%&'*+-.^_`|~");
