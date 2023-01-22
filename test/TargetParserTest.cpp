@@ -1,6 +1,4 @@
-#include <vector>
 #include "Test.hpp"
-#include "../parser/TargetParser.hpp"
 
 void addNormalCase(
 	std::vector<std::string> & test
@@ -18,6 +16,7 @@ void addNormalCase(
 	test.push_back("http://[::3:1000:100:127.0.0.1]:8080?query");
 	test.push_back("/www.ics.uci.edu/pub/ietf/uri/");
 	test.push_back("/www.ics.uci.edu/pub/ietf/uri/?query");
+	test.push_back("/");
 }
 
 void addAbnormalCase(
@@ -53,15 +52,14 @@ URIの正規化
 ・パスセグメント中に".", ".." が現れたら、それらに適切な処理を行う
 ・pathが空っぽなら、それに / をつけてルートとして処理を行う
 */
-void TargetParserTest(void)
+void TargetParserTest()
 {
 	std::vector<std::string> test;
 
 // 正常系
-	//addNormalCase(test);
+	addNormalCase(test);
 // 異常系
-	addAbnormalCase(test);
-
+	//addAbnormalCase(test);
 
 	for (size_t i = 0; i < test.size(); i++)
 	{
@@ -75,3 +73,4 @@ void TargetParserTest(void)
 		std::cout << p << std::endl << std::endl;
 	}
 }
+
