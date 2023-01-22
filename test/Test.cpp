@@ -3,5 +3,7 @@
 int main(void)
 {
 	//TargetParserTest();
-	requestLineTest();
+	//requestLineTest();
+	headerFieldTest();
+	return 0;
 }

@@ -46,6 +46,14 @@ HTTPRequestParser &HTTPRequestParser::setState(
 	return *this;
 }
 
+HTTPRequestParser & HTTPRequestParser::setRequest(
+	HTTPRequest * req
+)
+{
+	_req = req;
+	return *this;
+}
+
 int HTTPRequestParser::parse(const std::string & raw)
 {
 	if (_state == REQUEST_LINE) {
@@ -128,24 +136,6 @@ int HTTPRequestParser::parseHTTPVersion(
 	return 0;
 }
 
-static void trimSpace(
-	std::string & target,
-	const std::string & raw,
-	size_t first,
-	size_t last
-)
-{
-	while (first < last && (raw[first] == '\t' || raw[first] == ' '))
-	{
-		first++;
-	}
-	while (first < last && (raw[last - 1] == '\t' || raw[last - 1] == ' '))
-	{
-		last--;
-	}
-	target = raw.substr(first, last - first);
-}
-
 static void strToLow(
 	std::string & target,
 	const std::string & raw
@@ -160,27 +150,66 @@ static void strToLow(
 	}
 }
 
+static void allignValue(
+	std::string & target,
+	const std::string & raw,
+	size_t first,
+	size_t last
+)
+{
+	first = raw.find_first_not_of("\t ", first);
+	if (first == std::string::npos) {
+		target = "";
+		return ;
+	}
+	last = raw.find_last_not_of("\t ", last);
+
+	target = raw.substr(first, last - first + 1);
+
+	first = target.find_first_of("\t ");
+	while (first != std::string::npos)
+	{
+		last = target.find_first_not_of("\t ", first);
+		if (last == std::string::npos) {
+			last = target.size();
+		}
+		if (last - first > 1) {
+			target.replace(first, last - first, " ");
+		}
+		first = target.find_first_of("\t ", last);
+	}
+}
+
 int HTTPRequestParser::parseHeaderField(
 	const std::string & raw
 )
 {
 	size_t first = 0;
-	size_t last = raw.find("\x0d\x0a");
-	while (last != std::string::npos)
+	size_t last = raw.find("\r\n");
+	size_t eoh = raw.find("\r\n\r\n");
+	std::string name;
+
+	while (last != eoh)
 	{
 		size_t colon = raw.find(':', first);
-		if (colon != std::string::npos) {
-			std::string name;
-			std::string val;
-			strToLow(name, raw.substr(first, colon - first));
-			trimSpace(val, raw, first, colon - 1);
-			if (parseHeaderName(name) == -1 || parseHeaderValue(val) == -1) {
+		std::string val;
+		if (colon == std::string::npos) {
+			if (raw[first] != ' ' && raw[first] != '\t') {
 				return -1;
+			} else {
+				_req->setObsFold(true);
+				colon = first;
 			}
-			_req->insertHeaderField(name, val);
+		} else {
+			strToLow(name, raw.substr(first, colon - first));
 		}
+		allignValue(val, raw, colon + 1, last - 1);
+		if (parseHeaderName(name) == -1 || parseHeaderValue(val) == -1) {
+			return -1;
+		}
+		_req->insertHeaderField(name, val);
 		first = last + 2;
-		last = raw.find("\x0d\x0a", first);
+		last = raw.find("\r\n", first);
 	}
 	return 0;
 }
@@ -189,10 +218,8 @@ int HTTPRequestParser::parseHeaderName(
 	const std::string & raw
 )
 {
-	for (size_t i = 0; i < raw.size(); i++){
-		if (isTcahr(raw[i] == false)) {
-			return -1;
-		}
+	if (isToken(raw) == false) {
+		return -1;
 	}
 	return 0;
 }
@@ -204,6 +231,7 @@ int HTTPRequestParser::parseHeaderValue(
 	for (size_t i = 0; i < raw.size(); i++)
 	{
 		if (raw[i] > 0 && isPrintable(raw[i]) == false) {
+			std::cout << addColorText(raw[i], YELLOW) << std::endl;
 			return -1;
 		}
 	}
@@ -218,14 +246,14 @@ bool HTTPRequestParser::isToken(
 		return false;
 	}
 	for (size_t i = 0; i < raw.size(); i++) {
-		if (isTcahr(raw[i]) == false) {
+		if (isTchar(raw[i]) == false) {
 			return false;
 		}
 	}
 	return true;
 }
 
-bool HTTPRequestParser::isTcahr(char c)
+bool HTTPRequestParser::isTchar(char c)
 {
 	const std::string pchar_symbols("!#$%&'*+-.^_`|~");
 	return isDigit(c) || isAlpha(c) ||
