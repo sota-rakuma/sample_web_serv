@@ -59,7 +59,7 @@ public:
 	const RequestLine & getRequestLine() const;
 	const std::map<std::string, std::string> &
 	getHeaderField() const;
-	const std::string getHeaderValue(
+	const std::string &tryGetHeaderValue(
 		const std::string &
 	) const;
 	const std::string & getMessageBody() const;
@@ -72,7 +72,8 @@ public:
 		const std::map<std::string, std::string> &
 	);
 	HTTPRequest & insertHeaderField(
-		const std::pair<std::string, std::string> &
+		const std::string &,
+		const std::string &
 	);
 	HTTPRequest & setMessageBody(
 		const std::string &
