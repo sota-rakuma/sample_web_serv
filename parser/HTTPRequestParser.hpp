@@ -38,10 +38,13 @@ public:
 	HTTPRequestParser & setState(
 		RequestParsingState
 	);
+	HTTPRequestParser & setRequest(
+		HTTPRequest *
+	);
 	static bool isToken(
 		const std::string &
 	);
-	static bool isTcahr(char c);
+	static bool isTchar(char c);
 };
 
 #endif /* HTTPREQUESTPARSER_HPP */

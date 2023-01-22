@@ -88,6 +88,7 @@ HTTPRequest::RequestLine::operator=(const RequestLine & rhs)
 }
 
 HTTPRequest::HTTPRequest()
+:_obs_fold(false)
 {
 }
 
@@ -96,6 +97,7 @@ HTTPRequest::HTTPRequest(
 )
 :_reql(another._reql),
 _hf(another._hf),
+_obs_fold(another._obs_fold),
 _body(another._body)
 {
 }
@@ -127,6 +129,11 @@ const std::string &
 HTTPRequest::getMessageBody() const
 {
 	return _body;
+}
+
+bool HTTPRequest::hasObsFold() const
+{
+	return _obs_fold;
 }
 
 HTTPRequest &
@@ -170,6 +177,12 @@ HTTPRequest::setMessageBody(
 )
 {
 	_body = body;
+	return *this;
+}
+
+HTTPRequest & HTTPRequest::setObsFold(bool f)
+{
+	_obs_fold = f;
 	return *this;
 }
 

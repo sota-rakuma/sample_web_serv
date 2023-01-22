@@ -48,6 +48,7 @@ public:
 private:
 	RequestLine _reql;
 	std::map<std::string, std::string> _hf;
+	bool _obs_fold;
 	std::string _body;
 public:
 	HTTPRequest();
@@ -60,6 +61,7 @@ public:
 		const std::string &
 	) const;
 	const std::string & getMessageBody() const;
+	bool hasObsFold() const;
 	HTTPRequest & setRequestLine(
 		const std::string &,
 		const std::string &,
@@ -74,6 +76,9 @@ public:
 	);
 	HTTPRequest & setMessageBody(
 		const std::string &
+	);
+	HTTPRequest & setObsFold(
+		bool
 	);
 };
 
