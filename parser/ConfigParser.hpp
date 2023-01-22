@@ -50,7 +50,7 @@ class ConfigParser
         std::string getServerName(size_t i) const {return _sc_vec[i].getServerName();};
         int getMaxBodySize(size_t i) const {return _sc_vec[i].getMaxBodySize();};
         std::map<int, std::string> getDefaultErrorPage(size_t i) const {return _sc_vec[i].getDefaultErrorPage();};
-        std::map<std::string, ServerConfig::Location> getLocation(size_t i) const {return _sc_vec[i].getLocation();};
+        std::map<std::string, ServerConfig::Location> getLocationMap(size_t i) const {return _sc_vec[i].getLocationMap();};
 };
 
 #endif /* CONFIGPARSER_HPP */
