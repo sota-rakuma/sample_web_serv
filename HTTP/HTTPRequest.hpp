@@ -6,11 +6,9 @@
 #include <map>
 #include <iostream>
 
-enum HTTPMethod {
-	GET,
-	POST,
-	DELETE,
-};
+#define GET "GET"
+#define POST "POST"
+#define DELETE "DELETE"
 
 class HTTPRequest
 {
@@ -18,7 +16,7 @@ public:
 	class RequestLine
 	{
 	private:
-		HTTPMethod _method;
+		std::string _method;
 		// targetは権限とかのチェックを行っときたい
 		std::string _target;
 		std::string _version;
@@ -30,20 +28,12 @@ public:
 			const std::string &
 		);
 		RequestLine(
-			HTTPMethod,
-			const std::string &,
-			const std::string &
-		);
-		RequestLine(
 			const RequestLine &
 		);
 		~RequestLine();
-		HTTPMethod getMethod() const;
+		const std::string & getMethod() const;
 		const std::string & getTarget() const;
 		const std::string & getHTTPVersion() const;
-		RequestLine & setMethod(
-			HTTPMethod
-		);
 		RequestLine & setMethod(
 			const std::string &
 		);
@@ -66,7 +56,7 @@ public:
 	const RequestLine & getRequestLine() const;
 	const std::map<std::string, std::string> &
 	getHeaderField() const;
-	const std::string getHeaderValue(
+	const std::string &tryGetHeaderValue(
 		const std::string &
 	) const;
 	const std::string & getMessageBody() const;
@@ -79,7 +69,8 @@ public:
 		const std::map<std::string, std::string> &
 	);
 	HTTPRequest & insertHeaderField(
-		const std::pair<std::string, std::string> &
+		const std::string &,
+		const std::string &
 	);
 	HTTPRequest & setMessageBody(
 		const std::string &

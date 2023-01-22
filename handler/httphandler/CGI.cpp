@@ -12,27 +12,9 @@
 
 
 CGI::CGI()
-:_buff(""),
-_read(new Read(this)),
-_write(new Write(this))
+:_buff("")
 {
 }
-
-CGI::CGI(
-	ISubject * subject,
-	std::list<ICommand *> * commands,
-	const std::string & path,
-	AcceptedSocket * as
-)
-:HTTPMethodReceiver(subject, commands),
-_buff(""),
-_read(new Read(this)),
-_write(new Write(this)),
-_path(path),
-_as(as)
-{
-}
-
 
 CGI::CGI(
 	ISubject * subject,
@@ -43,8 +25,52 @@ CGI::CGI(
 )
 :HTTPMethodReceiver(subject, commands),
 _buff(""),
-_read(new Read(this)),
-_write(new Write(this)),
+_path(path),
+_is_exutetable(is_executable),
+_as(as)
+{
+}
+
+CGI::CGI(
+	ISubject * subject,
+	std::list<ICommand *> * commands,
+	const std::string & path,
+	bool is_executable,
+	AcceptedSocket *as
+)
+:HTTPMethodReceiver(subject, commands),
+_buff(""),
+_path(path),
+_is_exutetable(is_executable),
+_as(as)
+{
+}
+
+CGI::CGI(
+	ISubject * subject,
+	std::list<ICommand *> * commands,
+	ICommand *method,
+	const std::string & path,
+	AcceptedSocket * as
+)
+:HTTPMethodReceiver(subject, commands, method),
+_buff(""),
+_path(path),
+_as(as)
+{
+}
+
+
+CGI::CGI(
+	ISubject * subject,
+	std::list<ICommand *> * commands,
+	ICommand *method,
+	const std::string & path,
+	bool is_executable,
+	AcceptedSocket *as
+)
+:HTTPMethodReceiver(subject, commands, method),
+_buff(""),
 _path(path),
 _is_exutetable(is_executable),
 _as(as)
@@ -52,10 +78,8 @@ _as(as)
 }
 
 CGI::CGI(const CGI & another)
-:HTTPMethodReceiver(another.getSubject(), another.getCommandList()),
+:HTTPMethodReceiver(another.getSubject(), another.getCommandList(), another.getHTTPMethod()),
 _buff(another._buff),
-_read(new Read(this)),
-_write(new Write(this)),
 _path(another._path),
 _is_exutetable(another._is_exutetable)
 {
@@ -63,8 +87,6 @@ _is_exutetable(another._is_exutetable)
 
 CGI::~CGI()
 {
-	delete _read;
-	delete _write;
 }
 
 void CGI::update(int event)
@@ -84,10 +106,10 @@ void CGI::update(int event)
 		getSubject()->unsubscribe(_c_to_p[IN], false);
 		_as->processCGIResponse(_buff);
 	} else if (event & POLLOUT) {
-		getCommandList()->push_back(_write);
+		getCommandList()->push_back(getWriteCommand());
 	} else if (event & POLLIN) {
 		std::cout << "read " << std::endl;
-		getCommandList()->push_back(_read);
+		getCommandList()->push_back(getReadCommand());
 	}
 }
 
@@ -164,7 +186,7 @@ static void    perror_and_exit(std::string str) //
     std::exit(1);
 }
 
-void CGI::setMetaVariables(HTTPMethod method)
+void CGI::setMetaVariables(const std::string & method)
 {
 	if (method != POST)
 	{
@@ -199,22 +221,13 @@ void CGI::setMetaVariables(HTTPMethod method)
 	if (setenv("SERVER_SOFTWARE", "Debian", 1) == -1) // CGI プログラムを起動した Web サーバソフトウエアの名前 例:Apacheとか
 		perror_and_exit("setenv");
 
-
-	std::string m;
-	if (method == GET) {
-		m = "GET";
-	} else if (method == POST) {
-		m = "POST";
-	} else if (method == DELETE) {
-		m = "DELETE";
-	}
-	if (setenv("REQUEST_METHOD", m.c_str(), 1) == -1)
+	if (setenv("REQUEST_METHOD", method.c_str(), 1) == -1)
 		perror_and_exit("setenv");
 }
 
 extern char **environ;
 
-void CGI::executeCGI(HTTPMethod method)
+void CGI::executeCGI(const std::string & method)
 {
 	//int pipe_fd[2];
     pid_t   pid;

@@ -23,8 +23,6 @@ private:
 	bool _is_exutetable;
 	HTTPStatus _status;
 	std::string _path;
-	Read *_read;
-	Write *_write;
 	AcceptedSocket *_as;
 public:
 	CGI();
@@ -41,6 +39,21 @@ public:
 		bool,
 		AcceptedSocket *
 	);
+	CGI(
+		ISubject *,
+		std::list<ICommand *> *,
+		ICommand *,
+		const std::string &,
+		AcceptedSocket *
+	);
+	CGI(
+		ISubject *,
+		std::list<ICommand *> *,
+		ICommand *,
+		const std::string &,
+		bool,
+		AcceptedSocket *
+	);
 	CGI(const CGI &);
 	virtual ~CGI();
 	virtual void update(int);
@@ -49,8 +62,8 @@ public:
 	virtual int httpGet();
 	virtual int httpPost();
 	virtual int httpDelete();
-	void executeCGI(HTTPMethod);
-	void setMetaVariables(HTTPMethod);
+	void executeCGI(const std::string &);
+	void setMetaVariables(const std::string &);
 	int getInFd() const;
 	int getOutFd() const;
 	const std::string & getPath() const;

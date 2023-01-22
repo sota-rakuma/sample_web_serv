@@ -63,24 +63,24 @@ private:
 	bool parseQueryFragment(
 		const std::string &
 	);
-	bool isPchar(
-		const std::string &,
-		size_t
-	);
-	bool isPercentEncoded(
-		const std::string &,
-		size_t
-	);
-	bool isUnreserved(
-		char c
-	);
-	bool isSubDelim(
-		char c
-	);
 public:
 	TargetParser();
 	TargetParser(const TargetParser &);
 	~TargetParser();
+	static bool isPchar(
+		const std::string &,
+		size_t
+	);
+	static bool isPercentEncoded(
+		const std::string &,
+		size_t
+	);
+	static bool isUnreserved(
+		char c
+	);
+	static bool isSubDelim(
+		char c
+	);
 	const std::string & getScheme() const;
 	const std::string & getAuthority() const;
 	const std::string & getPath() const;

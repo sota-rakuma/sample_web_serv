@@ -10,24 +10,7 @@ _version()
 }
 
 HTTPRequest::RequestLine::RequestLine(
-	const std::string &method,
-	const std::string &target,
-	const std::string &version
-)
-:_target(target),
-_version(version)
-{
-	if (method == "GET") {
-		_method = GET;
-	} else if (method == "POST") {
-		_method = POST;
-	} else if (method == "DELETE") {
-		_method = DELETE;
-	}
-}
-
-HTTPRequest::RequestLine::RequestLine(
-	HTTPMethod method,
+	const std::string & method,
 	const std::string & target,
 	const std::string & version
 )
@@ -50,7 +33,7 @@ HTTPRequest::RequestLine::~RequestLine()
 {
 }
 
-HTTPMethod
+const std::string &
 HTTPRequest::RequestLine::getMethod() const
 {
 	return _method;
@@ -70,25 +53,10 @@ HTTPRequest::RequestLine::getHTTPVersion() const
 
 HTTPRequest::RequestLine &
 HTTPRequest::RequestLine::setMethod(
-	HTTPMethod method
-)
-{
-	_method = method;
-	return *this;
-}
-
-HTTPRequest::RequestLine &
-HTTPRequest::RequestLine::setMethod(
 	const std::string & method
 )
 {
-	if (method == "GET") {
-		_method = GET;
-	} else if (method == "POST") {
-		_method = POST;
-	} else if (method == "DELETE") {
-		_method = DELETE;
-	}
+	_method = method;
 	return *this;
 }
 
@@ -147,20 +115,12 @@ HTTPRequest::getHeaderField() const
 	return _hf;
 }
 
-const std::string 
-HTTPRequest::getHeaderValue(
+const std::string &
+HTTPRequest::tryGetHeaderValue(
 	const std::string & key
 ) const
 {
-	try
-	{
-		const std::string & val = _hf.at(key);
-		return val;
-	}
-	catch(const std::exception& e)
-	{
-	}
-	return std::string("");
+	return _hf.at(key);
 }
 
 const std::string &
@@ -193,10 +153,14 @@ HTTPRequest::setHeaderField(
 
 HTTPRequest &
 HTTPRequest::insertHeaderField(
-	const std::pair<std::string, std::string> & item
+	const std::string & name,
+	const std::string & val
 )
 {
-	_hf.insert(item);
+	std::pair<std::map<std::string, std::string>::iterator, bool> ret = _hf.insert(std::make_pair(name, val));
+	if (ret.second == false) {
+		_hf[name] += ", " + val;
+	}
 	return *this;
 }
 

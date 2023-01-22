@@ -25,7 +25,6 @@ public:
 	};
 private:
 	int _sockfd;
-	Read * _read;
 	std::string _host;
 	std::string _port;
 	ServerConfigFinder *_configs;
