@@ -36,6 +36,7 @@ public:
 	const std::vector<ServerConfig> & getConfigVec() const;
 	const std::map<std::string, size_t> getKeyMap() const;
 	const ServerConfig & getConfig(const std::string &) const;
+	// void setFactor(const size_t, const std::string);
 };
 
 #endif /*SERVERCONFIGFINDER_HPP*/

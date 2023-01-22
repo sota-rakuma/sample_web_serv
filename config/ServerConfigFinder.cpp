@@ -68,3 +68,7 @@ ServerConfigFinder::getConfig(
 	size_t index = _keys.at(server_name);
 	return _infos[index];
 }
+
+// void ServerConfigFinder::setFactor(const size_t server_index, const std::string value) {
+// 	_infos[server_index]
+// }
