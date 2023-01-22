@@ -9,5 +9,6 @@
 void TargetParserTest();
 void requestLineTest();
 void headerFieldTest();
+void normalizeURITest();
 
 #endif /* TEST_HPP */

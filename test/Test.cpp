@@ -4,6 +4,7 @@ int main(void)
 {
 	//TargetParserTest();
 	//requestLineTest();
-	headerFieldTest();
+	//headerFieldTest();
+	normalizeURITest();
 	return 0;
 }
