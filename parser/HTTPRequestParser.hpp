@@ -2,7 +2,7 @@
 #define HTTPREQUESTPARSER_HPP
 
 #include "TargetParser.hpp"
-#include "HTTPRequest.hpp"
+#include "../HTTP/HTTPRequest.hpp"
 
 enum RequestParsingState {
 	REQUEST_LINE,
@@ -25,13 +25,6 @@ private:
 	);
 	int parseHeaderName(const std::string &);
 	int parseHeaderValue(const std::string &);
-	int parseHeaderName(const std::string &);
-	int parseHeaderValue(const std::string &);
-	const std::string & trimOWS(
-		const std::string &,
-		size_t,
-		size_t
-	);
 public:
 	HTTPRequestParser();
 	HTTPRequestParser(HTTPRequest *);
@@ -42,6 +35,9 @@ public:
 	int parseHeaderField(const std::string &);
 	HTTPRequest *&getRequest();
 	RequestParsingState getState() const;
+	HTTPRequestParser & setState(
+		RequestParsingState
+	);
 	static bool isToken(
 		const std::string &
 	);

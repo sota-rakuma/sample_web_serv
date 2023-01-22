@@ -2,6 +2,6 @@
 
 int main(void)
 {
-	TargetParserTest();
-	//requestLineTest();
+	//TargetParserTest();
+	requestLineTest();
 }

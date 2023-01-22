@@ -38,6 +38,14 @@ RequestParsingState HTTPRequestParser::getState() const
 	return _state;
 }
 
+HTTPRequestParser &HTTPRequestParser::setState(
+	RequestParsingState s
+)
+{
+	_state = s;
+	return *this;
+}
+
 int HTTPRequestParser::parse(const std::string & raw)
 {
 	if (_state == REQUEST_LINE) {
@@ -60,7 +68,7 @@ int HTTPRequestParser::parseRequestLine(
 )
 {
 	size_t first_sp = raw.find(' ');
-	size_t second_sp = raw.find(first_sp + 1, ' ');
+	size_t second_sp = raw.find(' ', first_sp + 1);
 	if (first_sp == std::string::npos || second_sp == std::string::npos) {
 		return -1;
 	}
@@ -68,11 +76,12 @@ int HTTPRequestParser::parseRequestLine(
 	if (parseMethod(method) == -1) {
 		return -1;
 	}
+	first_sp += 1;
 	const std::string & target = raw.substr(first_sp, second_sp - first_sp);
 	if (parseRequestTarget(target) == -1) {
 		return -1;
 	}
-	const std::string & version = raw.substr(second_sp);
+	const std::string & version = raw.substr(second_sp + 1);
 	if (parseHTTPVersion(version) == -1) {
 		return -1;
 	}
@@ -84,7 +93,10 @@ int HTTPRequestParser::parseMethod(
 	const std::string & raw
 )
 {
-	return isToken(raw);
+	if (isToken(raw) == false) {
+		return -1;
+	}
+	return 0;
 }
 
 int HTTPRequestParser::parseRequestTarget(
@@ -107,7 +119,7 @@ int HTTPRequestParser::parseHTTPVersion(
 		return -1;
 	} else if (isDigit(raw[5]) == false) {
 		return -1;
-	} else if (raw[5] != '.') {
+	} else if (raw[6] != '.') {
 		return -1;
 	}
 	else if (isDigit(raw[7])== false) {
@@ -116,29 +128,8 @@ int HTTPRequestParser::parseHTTPVersion(
 	return 0;
 }
 
-int HTTPRequestParser::parseHeaderField(
-	const std::string & raw
-)
-{
-	size_t first = 0;
-	size_t last = raw.find("\x0d\x0a");
-	while (last != std::string::npos)
-	{
-		size_t colon = raw.find(':', first);
-		if (colon != std::string::npos) {
-			const std::string & name = raw.substr(first, colon - first);
-			const std::string & val = trimOWS(raw, first, colon - 1);
-			if (parseHeaderName(name) == -1 || parseHeaderValue(val) == -1) {
-				return -1;
-			}
-			_req->insertHeaderField(name, val);
-		}
-		first = last + 2;
-		last = raw.find("\x0d\x0a", first);
-	}
-}
-
-const std::string & trimOWS(
+static void trimSpace(
+	std::string & target,
 	const std::string & raw,
 	size_t first,
 	size_t last
@@ -152,7 +143,46 @@ const std::string & trimOWS(
 	{
 		last--;
 	}
-	return raw.substr(first, last - first);
+	target = raw.substr(first, last - first);
+}
+
+static void strToLow(
+	std::string & target,
+	const std::string & raw
+)
+{
+	target = raw;
+	for (size_t i = 0; i < target.size(); i++)
+	{
+		if (isUpperCase(target[i])) {
+			target[i] = toLower(target[i]);
+		}
+	}
+}
+
+int HTTPRequestParser::parseHeaderField(
+	const std::string & raw
+)
+{
+	size_t first = 0;
+	size_t last = raw.find("\x0d\x0a");
+	while (last != std::string::npos)
+	{
+		size_t colon = raw.find(':', first);
+		if (colon != std::string::npos) {
+			std::string name;
+			std::string val;
+			strToLow(name, raw.substr(first, colon - first));
+			trimSpace(val, raw, first, colon - 1);
+			if (parseHeaderName(name) == -1 || parseHeaderValue(val) == -1) {
+				return -1;
+			}
+			_req->insertHeaderField(name, val);
+		}
+		first = last + 2;
+		last = raw.find("\x0d\x0a", first);
+	}
+	return 0;
 }
 
 int HTTPRequestParser::parseHeaderName(

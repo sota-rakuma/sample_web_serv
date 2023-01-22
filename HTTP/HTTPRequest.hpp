@@ -37,9 +37,6 @@ public:
 		RequestLine & setMethod(
 			const std::string &
 		);
-		RequestLine & setMethod(
-			const std::string &
-		);
 		RequestLine & setTarget(
 			const std::string &
 		);

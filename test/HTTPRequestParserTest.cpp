@@ -4,6 +4,9 @@ void requestLineTest()
 {
 	std::vector<std::string> normal;
 	normal.push_back("GET / HTTP/1.1");
+	normal.push_back("fasffds / HTTP/1.1");
+	normal.push_back("GET /../..../ HTTP/1.1");
+	normal.push_back("GET http://a/ HTTP/1.1");
 	HTTPRequest req;
 	HTTPRequestParser p(&req);
 		std::cout << addColorText("normal test: ", GREEN) << std::endl;
@@ -17,10 +20,14 @@ void requestLineTest()
 		}
 	}
 
-	return ;
-
 	std::vector<std::string> abnormal;
 	abnormal.push_back("");
+	abnormal.push_back("GET/HTTP/1.1");
+	abnormal.push_back("GET /HTTP/1.1");
+	abnormal.push_back("GET  HTTP/1.1");
+	abnormal.push_back("@@@ / HTTP/1.1");
+	abnormal.push_back("GET fsdfsda HTTP/1.1");
+	abnormal.push_back("GET / HTTP/11");
 	std::cout << addColorText("abnormal test: ", RED) << std::endl;
 	for (size_t i = 0; i < abnormal.size(); i++)
 	{
