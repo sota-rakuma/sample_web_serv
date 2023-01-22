@@ -21,5 +21,6 @@ bool isAlpha(char);
 bool isUpperCase(char);
 bool isLowerCase(char);
 bool isHexDig(char);
+bool isPrintable(char);
 
 #endif /* UTILS_HPP */

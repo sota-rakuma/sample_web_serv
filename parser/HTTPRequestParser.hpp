@@ -23,6 +23,15 @@ private:
 	int parseHTTPVersion(
 		const std::string &
 	);
+	int parseHeaderName(const std::string &);
+	int parseHeaderValue(const std::string &);
+	int parseHeaderName(const std::string &);
+	int parseHeaderValue(const std::string &);
+	const std::string & trimOWS(
+		const std::string &,
+		size_t,
+		size_t
+	);
 public:
 	HTTPRequestParser();
 	HTTPRequestParser(HTTPRequest *);

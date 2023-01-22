@@ -124,6 +124,64 @@ int HTTPRequestParser::parseHeaderField(
 	const std::string & raw
 )
 {
+	size_t first = 0;
+	size_t last = raw.find("\x0d\x0a");
+	while (last != std::string::npos)
+	{
+		size_t colon = raw.find(':', first);
+		if (colon != std::string::npos) {
+			const std::string & name = raw.substr(first, colon - first);
+			const std::string & val = trimOWS(raw, first, colon - 1);
+			if (parseHeaderName(name) == -1 || parseHeaderValue(val) == -1) {
+				return -1;
+			}
+			_req->insertHeaderField(name, val);
+		}
+		first = last + 2;
+		last = raw.find("\x0d\x0a", first);
+	}
+}
+
+const std::string & trimOWS(
+	const std::string & raw,
+	size_t first,
+	size_t last
+)
+{
+	while (first < last && (raw[first] == '\t' || raw[first] == ' '))
+	{
+		first++;
+	}
+	while (first < last && (raw[last - 1] == '\t' || raw[last - 1] == ' '))
+	{
+		last--;
+	}
+	return raw.substr(first, last - first);
+}
+
+int HTTPRequestParser::parseHeaderName(
+	const std::string & raw
+)
+{
+	for (size_t i = 0; i < raw.size(); i++){
+		if (isTcahr(raw[i] == false)) {
+			return -1;
+		}
+	}
+	return 0;
+}
+
+int HTTPRequestParser::parseHeaderValue(
+	const std::string & raw
+)
+{
+	for (size_t i = 0; i < raw.size(); i++)
+	{
+		if (raw[i] > 0 && isPrintable(raw[i]) == false) {
+			return -1;
+		}
+	}
+	return 0;
 }
 
 bool HTTPRequestParser::isToken(
