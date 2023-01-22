@@ -115,20 +115,12 @@ HTTPRequest::getHeaderField() const
 	return _hf;
 }
 
-const std::string
-HTTPRequest::getHeaderValue(
+const std::string &
+HTTPRequest::tryGetHeaderValue(
 	const std::string & key
 ) const
 {
-	try
-	{
-		const std::string & val = _hf.at(key);
-		return val;
-	}
-	catch(const std::exception& e)
-	{
-	}
-	return std::string("");
+	return _hf.at(key);
 }
 
 const std::string &
@@ -161,10 +153,14 @@ HTTPRequest::setHeaderField(
 
 HTTPRequest &
 HTTPRequest::insertHeaderField(
-	const std::pair<std::string, std::string> & item
+	const std::string & name,
+	const std::string & val
 )
 {
-	_hf.insert(item);
+	std::pair<std::map<std::string, std::string>::iterator, bool> ret = _hf.insert(std::make_pair(name, val));
+	if (ret.second == false) {
+		_hf[name] += ", " + val;
+	}
 	return *this;
 }
 
