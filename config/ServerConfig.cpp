@@ -17,7 +17,7 @@ ServerConfig::~ServerConfig()
 }
 
 ServerConfig::Location::Location()
-:_alias("default"), _index_file("default"), _upload_place("default"), _autoindex(false)
+:_alias("default"), _index_file("default"), _upload_place("default"), _autoindex("off")
 {
 	_allowed_method.push_back("default");
 	_return = std::make_pair(0, "default");
@@ -68,10 +68,10 @@ void ServerConfig::setDefaultErrorPages(const std::vector<int> status_codes, con
 }
 
 void ServerConfig::setAllowedMethod(const std::string path, const std::vector<std::string> method_vec) {
-	for (size_t i = 0; i < method_vec.size(); i++) {
+	// for (size_t i = 0; i < method_vec.size(); i++) {
 		// _locations[path]._allowed_method[i] = method_vec[i]; //= method_vec[i];
 		_locations[path].setLocationAllowedMethod(method_vec); //= method_vec[i];
-	}
+	// }
 }
 
 void ServerConfig::setIndex(const std::string path, const std::string index_file) {
@@ -87,7 +87,7 @@ void ServerConfig::setUploadPlace(const std::string path, const std::string uplo
 	_locations[path].setLocationUploadPlace(upload_place);
 }
 
-void ServerConfig::setAutoIndex(const std::string path, const bool on) {
+void ServerConfig::setAutoIndex(const std::string path, const std::string on) {
 	_locations[path].setLocationAutoIndex(on);
 }
 
@@ -117,7 +117,7 @@ void ServerConfig::Location::setLocationUploadPlace(const std::string upload_pla
 	_upload_place = upload_place;
 }
 
-void ServerConfig::Location::setLocationAutoIndex(const bool on) {
+void ServerConfig::Location::setLocationAutoIndex(const std::string on) {
 	_autoindex = on;
 }
 
