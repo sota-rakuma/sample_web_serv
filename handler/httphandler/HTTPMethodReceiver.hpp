@@ -2,7 +2,7 @@
 #define HTTPMETHODRECIEVER_HPP
 
 #include "../IOEventHandler.hpp"
-#include "../../command/ICommand.hpp"
+#include "../../command/HTTPMethod.hpp"
 
 #ifndef BUFSIZE
 #define BUFSIZE 1024
@@ -11,7 +11,7 @@
 class HTTPMethodReceiver : public IOEventHandler
 {
 private:
-	ICommand *_method;
+	HTTPMethod *_method;
 public:
 	HTTPMethodReceiver();
 	HTTPMethodReceiver(
@@ -21,15 +21,16 @@ public:
 	HTTPMethodReceiver(
 		ISubject *,
 		std::list<ICommand *> *,
-		ICommand *method
+		HTTPMethod *method
 	);
 	HTTPMethodReceiver(const HTTPMethodReceiver &);
 	virtual ~HTTPMethodReceiver();
-	ICommand *getHTTPMethod() const;
-	void setHTTPMethod(ICommand *);
+	HTTPMethod *getHTTPMethod() const;
+	void setHTTPMethod(HTTPMethod *);
 	virtual int httpGet() = 0;
 	virtual int httpPost() = 0;
 	virtual int httpDelete() = 0;
+	bool checkPermission();
 };
 
 #endif /* HTTPMETHODRECIEVER_HPP */

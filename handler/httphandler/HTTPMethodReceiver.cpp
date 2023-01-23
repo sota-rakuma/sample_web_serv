@@ -10,14 +10,14 @@ HTTPMethodReceiver::HTTPMethodReceiver(
 	std::list<ICommand *> * commands
 )
 :IOEventHandler(subject, commands),
-_method(static_cast<ICommand *>(NULL))
+_method(static_cast<HTTPMethod *>(NULL))
 {
 }
 
 HTTPMethodReceiver::HTTPMethodReceiver(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
-	ICommand *method
+	HTTPMethod *method
 )
 :IOEventHandler(subject, commands),
 _method(method)
@@ -35,14 +35,18 @@ HTTPMethodReceiver::~HTTPMethodReceiver()
 	delete _method;
 }
 
-ICommand *HTTPMethodReceiver::getHTTPMethod() const
+HTTPMethod *HTTPMethodReceiver::getHTTPMethod() const
 {
 	return _method;
 }
 
 void HTTPMethodReceiver::setHTTPMethod(
-	ICommand *method
+	HTTPMethod *method
 )
 {
 	_method = method;
+}
+
+bool HTTPMethodReceiver::checkPermission()
+{
 }
