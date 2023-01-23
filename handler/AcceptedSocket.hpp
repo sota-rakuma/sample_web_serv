@@ -3,6 +3,7 @@
 
 #include "IOEventHandler.hpp"
 #include "../parser/Context.hpp"
+#include "../parser/HTTPRequestParser.hpp"
 #include "httphandler/HTTPMethodReceiver.hpp"
 #include "../HTTP/HTTPRequest.hpp"
 #include "../HTTP/HTTPResponse.hpp"
@@ -22,11 +23,14 @@ enum Progress
 	RECEIVE_REQUEST_LINE,
 	RECEIVE_REQUEST_HEADER,
 	RECEIVE_CHUNKED_SIZE,
+	RECEIVE_CHUNKED_BODY,
 	RECEIVE_REQUEST_BODY,
 	EXECUTE_METHOD,
+	CREATE_RESPONSE,
 	SEND_STATUS_LINE,
 	SEND_RESPONSE_HEADER,
 	SEND_RESPONSE_BODY,
+	ERROR,
 };
 
 class File;
@@ -42,6 +46,7 @@ private:
 	sockaddr_in _info;
 	ServerConfigFinder *_configfinder;
 	ServerConfig _config;
+	ServerConfig::Location _location;
 	HTTPStatus _status;
 	Progress _progress;
 	HTTPRequest _req;
@@ -64,6 +69,8 @@ private:
 	);
 	int validateRequest();
 	int processObsFold();
+	void prepareEvent();
+	void preparePostEvent();
 public:
 	AcceptedSocket();
 	AcceptedSocket(
