@@ -85,6 +85,7 @@ public:
 	virtual ~AcceptedSocket();
 	AcceptedSocket &setInfo(const sockaddr_in &);
 	AcceptedSocket &setFd(int);
+	AcceptedSocket &setStatus(HTTPStatus);
 	virtual void update(int);
 	virtual int read();
 	virtual int write();

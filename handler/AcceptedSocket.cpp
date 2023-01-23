@@ -69,6 +69,12 @@ AcceptedSocket &AcceptedSocket::setFd(int sockfd)
 	return *this;
 }
 
+AcceptedSocket &AcceptedSocket::setStatus(HTTPStatus status)
+{
+	_status = status;
+	return *this;
+}
+
 void AcceptedSocket::update(int event)
 {
 	if (event & (POLLERR | POLLHUP | POLLNVAL)) {
