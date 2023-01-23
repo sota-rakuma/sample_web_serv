@@ -13,6 +13,7 @@ public:
 	Get(HTTPMethodReceiver *);
 	~Get();
 	virtual int execute();
+	Get & setReceiver(HTTPMethodReceiver *);
 };
 
 #endif /* GET_HPP */

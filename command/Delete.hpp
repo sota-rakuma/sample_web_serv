@@ -13,6 +13,7 @@ public:
 	Delete(HTTPMethodReceiver *);
 	~Delete();
 	virtual int execute();
+	Delete & setReceiver(HTTPMethodReceiver *);
 };
 
 #endif /* DELETE_HPP */

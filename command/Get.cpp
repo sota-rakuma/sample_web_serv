@@ -18,3 +18,9 @@ int Get::execute()
 {
 	return _receiver->httpGet();
 }
+
+Get & Get::setReceiver(HTTPMethodReceiver * receiver)
+{
+	_receiver = receiver;
+	return *this;
+}

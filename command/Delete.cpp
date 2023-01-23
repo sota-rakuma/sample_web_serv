@@ -18,3 +18,9 @@ int Delete::execute()
 {
 	return _receiver->httpDelete();
 }
+
+Delete & Delete::setReceiver(HTTPMethodReceiver *receiver)
+{
+	_receiver = receiver;
+	return *this;
+}

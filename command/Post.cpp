@@ -18,3 +18,9 @@ int Post::execute()
 {
 	return _receiver->httpPost();
 }
+
+Post & Post::setReceiver(HTTPMethodReceiver * receiver)
+{
+	_receiver = receiver;
+	return *this;
+}

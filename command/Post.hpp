@@ -13,6 +13,7 @@ public:
 	Post(HTTPMethodReceiver *);
 	~Post();
 	virtual int execute();
+	Post & setReceiver(HTTPMethodReceiver *);
 };
 
 #endif /* POST_HPP */
