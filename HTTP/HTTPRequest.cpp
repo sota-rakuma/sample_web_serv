@@ -79,8 +79,6 @@ void HTTPRequest::RequestLine::normalizeTarget(
 {
 	if (normalized.size() == 0) {
 		normalized = "/";
-	} else if (normalized[normalized.size() - 1] != '/') {
-		normalized.push_back('/');
 	}
 	for (size_t i = 0; i < normalized.size(); i++)
 	{
@@ -107,11 +105,16 @@ void HTTPRequest::RequestLine::removeDotSegment(
 	std::string & normalized
 )
 {
-	size_t dot_seg = normalized.find("/../");
+	size_t dot_seg = normalized.find("/..");
 	while (dot_seg != std::string::npos)
 	{
 		size_t start;
 		size_t len;
+		if (normalized[dot_seg + 3] != '/' &&
+			normalized[dot_seg + 3] != '\0') {
+			dot_seg = normalized.find("/..", dot_seg + 1);
+			continue;
+		}
 		if (dot_seg > 0) {
 			size_t slash = normalized.rfind('/', dot_seg - 1);
 			if (slash == std::string::npos) {
@@ -124,13 +127,18 @@ void HTTPRequest::RequestLine::removeDotSegment(
 			len = 3;
 		}
 		normalized.erase(start, len);
-		dot_seg = normalized.find("/../");
+		dot_seg = normalized.find("/..");
 	}
-	dot_seg = normalized.find("/./");
+	dot_seg = normalized.find("/.");
 	while (dot_seg != std::string::npos)
 	{
+		if (normalized[dot_seg + 2] != '/' &&
+			normalized[dot_seg + 2] != '\0') {
+			dot_seg = normalized.find("/.", dot_seg + 1);
+			continue;
+		}
 		normalized.erase(dot_seg, 2);
-		dot_seg = normalized.find("/./");
+		dot_seg = normalized.find("/.");
 	}
 }
 
