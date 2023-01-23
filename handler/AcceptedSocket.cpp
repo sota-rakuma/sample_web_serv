@@ -1,10 +1,10 @@
 #include "AcceptedSocket.hpp"
 #include "httphandler/CGI.hpp"
 #include "httphandler/File.hpp"
-#include <unistd.h>
-#include <sstream>
 #include "../command/Get.hpp"
 #include "../command/Post.hpp"
+#include <unistd.h>
+#include <sstream>
 #include <fcntl.h>
 
 AcceptedSocket::AcceptedSocket()
@@ -27,10 +27,10 @@ _nb(0),
 _info(info),
 _configfinder(configfinder),
 _config(),
-//_parser_ctx(new RequestLineParser()),
 _progress(RECEIVE_REQUEST_LINE),
 _receiver(static_cast<HTTPMethodReceiver *>(NULL))
 {
+	_parser_ctx = new HTTPRequestParser(&this->_req);
 	getSubject()->subscribe(_sockfd, POLLIN, this);
 }
 
@@ -114,12 +114,23 @@ int AcceptedSocket::read()
 
 void AcceptedSocket::processRequest(const std::string & raw)
 {
-	if (_progress == RECEIVE_REQUEST_LINE) {
+	switch (_progress)
+	{
+	case RECEIVE_REQUEST_LINE:
 		processRequestLine(raw);
-	} else if (_progress == RECEIVE_REQUEST_HEADER) {
+	case RECEIVE_REQUEST_HEADER:
 		processRequestHeader(raw);
-	} else {
+	case RECEIVE_CHUNKED_SIZE:
 		processChunkedBody(raw);
+	case RECEIVE_CHUNKED_BODY:
+		processChunkedBody(raw);
+	case RECEIVE_REQUEST_BODY:
+		processRequestBody(raw);
+	case EXECUTE_METHOD:
+	case CREATE_RESPONSE:
+	case ERROR:
+	default:
+		break;
 	}
 }
 
@@ -136,10 +147,11 @@ void AcceptedSocket::processRequestLine(
 	if (_parser_ctx.execParse(_buff) == 0) {
 		_buff = raw.substr(index + 2);
 		_progress = RECEIVE_REQUEST_HEADER;
-	//}
-	// BadRequest or HTTPVersion
-	// createResponse();
+		return ;
 	}
+	_status = BAD_REQUEST;
+	// エラーレスポンス
+	_progress = ERROR;
 }
 
 void AcceptedSocket::processRequestHeader(
@@ -150,14 +162,28 @@ void AcceptedSocket::processRequestHeader(
 		_buff += raw;
 		return ;
 	}
+	if (_buff.size() > BUFFSIZE) {
+		_status = REQUEST_HEADER_FIELD_TOO_LARGE;
+		// エラーレスポンス
+		_progress = ERROR;
+		return;
+	}
 	if (_parser_ctx.execParse(_buff) == -1 || validateRequest() == -1) {
 		// エラーレスポンス
+		_progress = ERROR;
+		return;
 	}
-	/*
-		targetのルーティング
-		methodのvalidation(Not Implemented or Not Allowed)
-		↑locationゲットしたのち
-	*/
+	try
+	{
+		_location = _config.tryGetLocation(_req.getRequestLine().getTarget());
+	}
+	catch(const std::exception& e)
+	{
+		_status = FORBIDDEN;
+		_progress = ERROR;
+		return;
+	}
+	return prepareEvent();
 	if (_req.getRequestLine().getMethod() == POST) {
 		_buff = "";
 		//if (_req.getHeaderValue("Tranfer-Encoding").find("chunked") != std::string::npos) {
@@ -174,20 +200,11 @@ void AcceptedSocket::processRequestHeader(
 	}
 }
 
-/*
-✅httpのバージョン
-✅hostヘッダーの有無
-✅obs-foldがあれば、content-typeにmessage/httpが含まれていれば許容
-
-Transfer-encodingで、chunked以外のものがある場合、501
-content-lengthに複数の異なる値がある場合エラー 400
-↑validationの外でheaderの値を抽出するときに扱うべき。
-*/
 int AcceptedSocket::validateRequest()
 {
 	const HTTPRequest::RequestLine & rl = _req.getRequestLine();
 	if (rl.getHTTPVersion() != "HTTP/1.1") {
-		_status = BAD_REQUEST;
+		_status = HTTP_VERSION_NOT_SUPPORTED;
 		return -1;
 	}
 	try
@@ -225,27 +242,75 @@ int AcceptedSocket::processObsFold()
 	return -1;
 }
 
+void AcceptedSocket::prepareEvent()
+{
+	if (_location.getReturn().first != 0) {
+		_status = static_cast<HTTPStatus>(_location.getReturn().first);
+		_progress = CREATE_RESPONSE;
+		return;
+	}
+	const std::string & method = _req.getRequestLine().getMethod();
+	const std::map<std::string, bool>::const_iterator it = \
+		_location.getAllowedMethod().find(method);
+	if (it == _location.getAllowedMethod().end()) {
+		_status = NOT_IMPREMENTED;
+		_progress = ERROR;
+		return ;
+	} else if (it->second == false) {
+		_status = METHOD_NOT_ALLOWED;
+		_progress = ERROR;
+		return ;
+	} else if (it->first == POST) {
+		return preparePostEvent();
+	}
+	_progress = EXECUTE_METHOD;
+}
+
+void AcceptedSocket::preparePostEvent()
+{
+	try
+	{
+		const std::string & te = _req.tryGetHeaderValue("transfer-encoding");
+		if (te != "chunked") {
+			_status = NOT_IMPREMENTED;
+			_progress = ERROR;
+			return ;
+		}
+		_progress = RECEIVE_CHUNKED_SIZE;
+		return ;
+	}
+	catch(const std::exception& e){}
+	try
+	{
+		const std::string & te = _req.tryGetHeaderValue("content-length");
+		std::stringstream ss;
+		ss << te;
+		ss >> _body_size;
+		if (ss) {
+			_status = BAD_REQUEST;
+			_progress = ERROR;
+			return ;
+		}
+	}
+	catch(const std::exception& e){
+		_body_size = 0;
+	}
+	_progress = RECEIVE_REQUEST_BODY;
+}
+
 void AcceptedSocket::processRequestBody(
 	const std::string & raw
 )
 {
-	if (_progress == RECEIVE_CHUNKED_SIZE) {
-		processChunkedBody(raw);
-	} else {
-		std::stringstream ss;
-		// パースの段階で処理される想定
-		//ss << _req.getHeaderValue("Content-Length");
-		//ss >> _body_size;
-		/*
-		if (_conf.getMaxBodySize() < _body_size) {
-			// PAYLOAD_TOO_MUCH;
-		}
-		*/
-		_buff += raw.substr(0, _body_size - _buff.size());
-		if (_body_size == _buff.size()) {
-			_progress == EXECUTE_METHOD;
-			return ;
-		}
+	if (_config.getMaxBodySize() < _body_size) {
+		_status = PAYLOAD_TOO_LARGE;
+		_progress = ERROR;
+		return ;
+	}
+	_buff += raw.substr(0, _body_size - _buff.size());
+	if (_body_size == _buff.size()) {
+		_progress == EXECUTE_METHOD;
+		return ;
 	}
 }
 
@@ -255,38 +320,41 @@ void AcceptedSocket::processChunkedBody(
 {
 	for (size_t i = 0; i < raw.size();)
 	{
-		size_t index = raw.find("\r\n");
-		if (index == std::string::npos) {
-			index = raw.size() - 1;
-		}
-
+		size_t index = raw.find("\r\n", i);
+		size_t tmp;
 		if (_progress == RECEIVE_CHUNKED_SIZE) {
-			std::stringstream ss;
-			ss << std::dec << std::hex << raw.substr(i, index);
-			ss >> _body_size;
-			if (ss) {
-				// エラーレスポンス
-				std::cerr << "BAD_REQUEST" << std::endl;
+			if (index == std::string::npos) {
+				index = raw.size();
 			}
+			std::stringstream ss;
+			ss << std::dec << std::hex << raw.substr(i, index - i);
+			ss >> tmp;
+			_body_size += tmp;
 			if (_body_size == 0) {
 				_progress = EXECUTE_METHOD;
 				return ;
 			}
-			_progress = RECEIVE_REQUEST_BODY;
-		}
-		else if (_progress == RECEIVE_REQUEST_BODY)
-		{
-			std::string chunked_body = raw.substr(i, index);
+			_progress = RECEIVE_CHUNKED_BODY;
+		} else if (_progress == RECEIVE_CHUNKED_BODY) {
+			if (index == std::string::npos) {
+				_buff += raw.substr(i, raw.size() - i);
+				_body_size -= raw.size() - i;
+				return ;
+			}
+			std::string chunked_body = raw.substr(i, index - i);
 			if (chunked_body.size() != _body_size) {
-				// エラーレスポンス
-				std::cerr << "BAD_REQUEST" << std::endl;
+				_status = BAD_REQUEST;
+				_progress = ERROR;
+				return ;
 			}
 			_buff += chunked_body;
 			if (_config.getMaxBodySize() < _buff.size()) {
-				// エラーレスポンス
-				std::cerr << "PAYLOAD_TOO_LARGE" << std::endl;
+				_status = PAYLOAD_TOO_LARGE;
+				_progress = ERROR;
+				return ;
 			}
 			_progress = RECEIVE_CHUNKED_SIZE;
+			_body_size = 0;
 		}
 		i = index + 2;
 	}

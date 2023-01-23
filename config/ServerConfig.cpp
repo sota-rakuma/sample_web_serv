@@ -28,7 +28,7 @@ ServerConfig::Location::Location()
 }
 
 ServerConfig::Location::Location(const ServerConfig::Location & another)
-:_alias(another._alias), _index_file(another._index_file), _upload_place(another._upload_place), _autoindex(another._autoindex), \
+:_alias(another._alias), _index_file(another._index_file), _upload_place(another._upload_place), _autoindex(another._autoindex),
 _allowed_method(another._allowed_method), _return(another._return), _cgi_extensions(another._cgi_extensions)
 {
 }
@@ -47,7 +47,6 @@ ServerConfig::Location::~Location() {
 // 	return *this;
 // }
 
-// 見つからなかったら403にする
 const ServerConfig::Location & ServerConfig::tryGetLocation(
 	const std::string & path
 )
