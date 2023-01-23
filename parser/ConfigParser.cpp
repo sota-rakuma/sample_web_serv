@@ -218,7 +218,7 @@ int ConfigParser::parseIndex(std::string path) {
 
 int ConfigParser::parseAllowedMethod(std::string path) {
     _location_allowed_method_flag = true;
-    std::string find_word = ";\n";
+    const std::string & find_word = ";\n";
     size_t pos = _raw.find(find_word, _i);
     if (pos == std::string::npos) {
         std::cout << "find() in parseAllowedMethod failed" << std::endl;
@@ -228,19 +228,20 @@ int ConfigParser::parseAllowedMethod(std::string path) {
     size_t len = allowed_method.length();
     size_t i = 0;
     size_t j;
-    std::set<std::string> method_set;
     while (i < len) {
         j = 0;
         while (j < _allowed_methods.size()) {
             if (allowed_method.find(_allowed_methods[j], i) == i) {
-                method_set.insert(_allowed_methods[j]);
+                _sc_vec[_server_i].setAllowedMethod(
+                    path,
+                    _allowed_methods[j],
+                    true);
                 i += _allowed_methods[j].length();
                 if (i == len)
                     break;
                 if (_raw[_i + i] == ' ')
                     i++;
                 else {
-                    std::cout << "aaa" << std::endl;
                     std::cout << "allowed_method invalid" << std::endl;
                     return 1;
                 }
@@ -252,38 +253,8 @@ int ConfigParser::parseAllowedMethod(std::string path) {
             std::cout << "allowed_method invalid" << std::endl;
             return 1;
         }
-
-        // j = 0;
-        // while (j < 3 && i < len && end_flag == false) {
-        //     if (allowed_method.find(_allowed_methods[j], i) == i) {
-        //         method_vec.push_back(_allowed_methods[j]);
-        //         i += _allowed_methods[j].length();
-        //         if (allowed_method[i] == ' ') {
-        //             i++;
-        //             break;
-        //         }
-        //         else if (!allowed_method[i]) {
-        //             end_flag = true;
-        //             i--;
-        //             break;
-        //         }
-        //     }
-        //     j++;
-        //     if (allowed_method[i] != 'G' && allowed_method[i] != 'P' && allowed_method[i] != 'D') {
-        //         std::cout << "allowed_method invalid" << std::endl;
-        //         return 1;
-        //     }
-        //     // j = -1;
-        // }
-        // // i++;
-    }
-    std::vector<std::string> method_vec;
-    for (std::set<std::string>::iterator iter = method_set.begin(); iter != method_set.end(); iter++) {
-        method_vec.push_back(*iter);
     }
     _i = pos + find_word.length();
-    _sc_vec[_server_i].setAllowedMethod(path, method_vec);
-    // _sc[_server_index].setAllowedMethod(path, method_vec);
     return 0;
 }
 

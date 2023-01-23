@@ -24,8 +24,14 @@ void ConfigParserTest() {
         std::cout << "_sc_vec[" << i << "].location['/'].upload_place = " << cp.getLocationMap(i)["/"].getUploadPlace() << std::endl;
         std::cout << "_sc_vec[" << i << "].location['/'].autoindex = " << cp.getLocationMap(i)["/"].getAutoIndex() << std::endl;
         std::cout << "location['/'].allowedmethod.size = " << cp.getLocationMap(i)["/"].getAllowedMethod().size() << std::endl;
-        for (size_t j = 0; j < cp.getLocationMap(i)["/"].getAllowedMethod().size(); j++) {
-            std::cout << "_sc_vec[" << i << "].location['/'].allowed_method[" << j << "] = " << cp.getLocationMap(i)["/"].getAllowedMethod()[j] << std::endl;
+
+        const std::map<std::string, bool> &tmp =  cp.getLocationMap(i)["/"].getAllowedMethod();
+        for (std::map<std::string, bool>::const_iterator it = tmp.begin();
+            it != tmp.end();
+            it++) {
+            std::cout
+            << "_sc_vec[" << i << "].location['/'].allowed_method[" << it->first << "] = "
+            << it->second << std::endl;
         }
         for (size_t j = 0; j < cp.getLocationMap(i)["/"].getCgiExtensions().size(); j++) {
             std::cout << "_sc_vec[" << i << "].location['/'].extension[" << j << "] = " << cp.getLocationMap(i)["/"].getCgiExtensions()[j] << std::endl;

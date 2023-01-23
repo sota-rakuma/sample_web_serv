@@ -19,7 +19,9 @@ ServerConfig::~ServerConfig()
 ServerConfig::Location::Location()
 :_alias("default"), _index_file("default"), _upload_place("default"), _autoindex("off")
 {
-	_allowed_method.push_back("default");
+	_allowed_method["GET"] = false;
+	_allowed_method["POST"] = false;
+	_allowed_method["DELETE"] = false;
 	_return = std::make_pair(0, "default");
 	_cgi_extensions.push_back("default");
 }
@@ -67,11 +69,20 @@ void ServerConfig::setDefaultErrorPages(const std::vector<int> status_codes, con
 		_default_error_pages.insert(std::make_pair(status_codes[i], dep));
 }
 
-void ServerConfig::setAllowedMethod(const std::string path, const std::vector<std::string> method_vec) {
+void ServerConfig::setAllowedMethod(const std::string path, const std::map<std::string, bool> method_map) {
 	// for (size_t i = 0; i < method_vec.size(); i++) {
 		// _locations[path]._allowed_method[i] = method_vec[i]; //= method_vec[i];
-		_locations[path].setLocationAllowedMethod(method_vec); //= method_vec[i];
+		_locations[path].setLocationAllowedMethod(method_map); //= method_vec[i];
 	// }
+}
+
+void ServerConfig::setAllowedMethod(
+	const std::string & path,
+	const std::string & key,
+	bool val
+)
+{
+	_locations[path].changeAllowedMethodValue(key, val);
 }
 
 void ServerConfig::setIndex(const std::string path, const std::string index_file) {
@@ -99,10 +110,21 @@ void ServerConfig::setExtension(const std::string path, const std::vector<std::s
 	_locations[path].setLocationExtension(extension_vec);
 }
 
-void ServerConfig::Location::setLocationAllowedMethod(const std::vector<std::string> method_vec) {
-	for (size_t i = 0; i < method_vec.size(); i++) {
-		_allowed_method.push_back(method_vec[i]);
+void ServerConfig::Location::setLocationAllowedMethod(const std::map<std::string, bool> method_map) {
+	for (std::map<std::string, bool>::const_iterator it = method_map.begin();
+		it != method_map.end();
+		it++)
+	{
+		_allowed_method[it->first] = it->second;
 	}
+}
+
+void ServerConfig::Location::changeAllowedMethodValue(
+	const std::string & key,
+	bool val
+)
+{
+	_allowed_method[key] = val;
 }
 
 void ServerConfig::Location::setLocationIndex(const std::string index_file) {

@@ -11,7 +11,7 @@ class ServerConfig
 public:
 	class Location {
 	private:
-		std::vector<std::string> _allowed_method;
+		std::map<std::string, bool> _allowed_method;
 		std::string _alias;
 		std::string _index_file;
 		std::string _upload_place;
@@ -22,7 +22,11 @@ public:
 		Location();
 		Location(const ServerConfig::Location & another);
 		~Location();
-		void setLocationAllowedMethod(const std::vector<std::string> method_vec);
+		void setLocationAllowedMethod(const std::map<std::string, bool> method_map);
+		void changeAllowedMethodValue(
+			const std::string &,
+			bool
+		);
 		void setLocationAlias(const std::string alias_path);
 		void setLocationIndex(const std::string index_file);
 		void setLocationUploadPlace(const std::string upload_place);
@@ -34,7 +38,7 @@ public:
 		std::string getIndexFile() const {return _index_file;};
 		std::string getUploadPlace() const {return _upload_place;};
 		std::string getAutoIndex() const {return _autoindex;};
-		std::vector<std::string> getAllowedMethod() const {return _allowed_method;};
+		std::map<std::string, bool> getAllowedMethod() const {return _allowed_method;};
 		std::vector<std::string> getCgiExtensions() const {return _cgi_extensions;};
 		std::pair<int, std::string> getReturn() const {return _return;};
 	};
@@ -57,7 +61,12 @@ public:
 	void setServerName(const std::string);
 	void setMaxBodySize(const int);
 	void setDefaultErrorPages(const std::vector<int>, const std::string);
-	void setAllowedMethod(const std::string, const std::vector<std::string>);
+	void setAllowedMethod(const std::string, const std::map<std::string, bool>);
+	void setAllowedMethod(
+		const std::string &,
+		const std::string &,
+		bool
+	);
 	void setIndex(const std::string, const std::string);
 	void setAlias(const std::string, const std::string);
 	void setUploadPlace(const std::string, const std::string);
