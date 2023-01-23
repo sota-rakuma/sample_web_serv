@@ -577,7 +577,6 @@ int ConfigParser::parseArrangedDirectives() {
                     std::cout << "parseServerName() failed" << std::endl;
                     return 1;
                 }
-            } else if (_searched_directives[i] == _searched_directives[2]) { // \tmax_body_size
             } else if (_searched_directives[i] == _searched_directives[2]) { // "\tmax_body_size "
                 if (_max_body_size_flag) {
                     std::cout << "duplicate max_body_size directive" << std::endl;
@@ -587,7 +586,6 @@ int ConfigParser::parseArrangedDirectives() {
                     std::cout << "parseMaxBodySize() failed" << std::endl;
                     return 1;
                 }
-            } else if (_searched_directives[i] == _searched_directives[3]) { // \terror_page
             } else if (_searched_directives[i] == _searched_directives[3]) { // "\terror_page "
                 if (parseErrorPage() != 0) {
                     std::cout << "parseErrorPage() failed" << std::endl;
