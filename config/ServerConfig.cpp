@@ -18,13 +18,13 @@ ServerConfig::~ServerConfig()
 }
 
 ServerConfig::Location::Location()
-:_alias("default"), _index_file("default"), _upload_place("default"), _autoindex("off")
+:_alias("default"), _index_file("default"), _upload_place("default"), _autoindex("off"),
+_cgi_extensions()
 {
 	_allowed_method["GET"] = false;
 	_allowed_method["POST"] = false;
 	_allowed_method["DELETE"] = false;
 	_return = std::make_pair(0, "default");
-	_cgi_extensions.push_back("default");
 }
 
 ServerConfig::Location::Location(const ServerConfig::Location & another)

@@ -71,6 +71,7 @@ private:
 	int processObsFold();
 	void prepareEvent();
 	void preparePostEvent();
+	void addEvent();
 public:
 	AcceptedSocket();
 	AcceptedSocket(

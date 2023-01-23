@@ -3,6 +3,7 @@
 #include "httphandler/File.hpp"
 #include "../command/Get.hpp"
 #include "../command/Post.hpp"
+#include "../command/Delete.hpp"
 #include <unistd.h>
 #include <sstream>
 #include <fcntl.h>
@@ -127,6 +128,7 @@ void AcceptedSocket::processRequest(const std::string & raw)
 	case RECEIVE_REQUEST_BODY:
 		processRequestBody(raw);
 	case EXECUTE_METHOD:
+		addEvent();
 	case CREATE_RESPONSE:
 	case ERROR:
 	default:
@@ -358,6 +360,35 @@ void AcceptedSocket::processChunkedBody(
 		}
 		i = index + 2;
 	}
+}
+
+// GET/POSTの中でファイルオープン
+void AcceptedSocket::addEvent()
+{
+	const HTTPRequest::RequestLine & rl =  _req.getRequestLine();
+	HTTPMethod *command;
+	if (rl.getMethod() == "GET") {
+		command = new Get();
+	} else if (rl.getMethod() == "POST") {
+		command = new Post();
+	} else {
+		command = new Delete();
+	}
+	if (_location.getCgiExtensions().size() > 0) {
+		_receiver = new CGI(getSubject(),
+						getCommandList(),
+						command,
+						rl.getTarget(),
+						this);
+	} else {
+		_receiver = new File(getSubject(),
+						getCommandList(),
+						command,
+						rl.getTarget(),
+						this);
+	}
+	command->setReceiver(_receiver);
+	getCommandList()->push_back(_receiver->getHTTPMethod());
 }
 
 // for test
