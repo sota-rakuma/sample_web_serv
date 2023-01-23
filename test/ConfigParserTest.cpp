@@ -17,23 +17,23 @@ void ConfigParserTest() {
         std::cout << "_sc_vec[" << "0" << "]._default_error_page[404] = " << cp.getDefaultErrorPage(0)[404] << std::endl;
         std::cout << "_default_error_page[" << "0" << "][500] = " << cp.getDefaultErrorPage(0)[500] << std::endl;
         std::cout << "_default_error_page[" << "1" << "][404] = " << cp.getDefaultErrorPage(1)[404] << std::endl;
-        std::cout << "_sc_vec[" << i << "].location['/'].alias = " << cp.getLocation(i)["/"].getAlias() << std::endl;
-        std::cout << "_sc_vec[" << i << "].location['/bbb'].alias = " << cp.getLocation(i)["/bbb"].getAlias() << std::endl;
-        std::cout << "_sc_vec[" << i << "].location['/'].index_file = " << cp.getLocation(i)["/"].getIndexFile() << std::endl;
-        std::cout << "_sc_vec[" << i << "].location['/bbb'].index_file = " << cp.getLocation(i)["/bbb"].getIndexFile() << std::endl;
-        std::cout << "_sc_vec[" << i << "].location['/'].upload_place = " << cp.getLocation(i)["/"].getUploadPlace() << std::endl;
-        std::cout << "_sc_vec[" << i << "].location['/'].autoindex = " << cp.getLocation(i)["/"].getAutoIndex() << std::endl;
-        std::cout << "location['/'].allowedmethod.size = " << cp.getLocation(i)["/"].getAllowedMethod().size() << std::endl;
-        for (size_t j = 0; j < cp.getLocation(i)["/"].getAllowedMethod().size(); j++) {
-            std::cout << "_sc_vec[" << i << "].location['/'].allowed_method[" << j << "] = " << cp.getLocation(i)["/"].getAllowedMethod()[j] << std::endl;
+        std::cout << "_sc_vec[" << i << "].location['/'].alias = " << cp.getLocationMap(i)["/"].getAlias() << std::endl;
+        std::cout << "_sc_vec[" << i << "].location['/bbb'].alias = " << cp.getLocationMap(i)["/bbb"].getAlias() << std::endl;
+        std::cout << "_sc_vec[" << i << "].location['/'].index_file = " << cp.getLocationMap(i)["/"].getIndexFile() << std::endl;
+        std::cout << "_sc_vec[" << i << "].location['/bbb'].index_file = " << cp.getLocationMap(i)["/bbb"].getIndexFile() << std::endl;
+        std::cout << "_sc_vec[" << i << "].location['/'].upload_place = " << cp.getLocationMap(i)["/"].getUploadPlace() << std::endl;
+        std::cout << "_sc_vec[" << i << "].location['/'].autoindex = " << cp.getLocationMap(i)["/"].getAutoIndex() << std::endl;
+        std::cout << "location['/'].allowedmethod.size = " << cp.getLocationMap(i)["/"].getAllowedMethod().size() << std::endl;
+        for (size_t j = 0; j < cp.getLocationMap(i)["/"].getAllowedMethod().size(); j++) {
+            std::cout << "_sc_vec[" << i << "].location['/'].allowed_method[" << j << "] = " << cp.getLocationMap(i)["/"].getAllowedMethod()[j] << std::endl;
         }
-        for (size_t j = 0; j < cp.getLocation(i)["/"].getCgiExtensions().size(); j++) {
-            std::cout << "_sc_vec[" << i << "].location['/'].extension[" << j << "] = " << cp.getLocation(i)["/"].getCgiExtensions()[j] << std::endl;
+        for (size_t j = 0; j < cp.getLocationMap(i)["/"].getCgiExtensions().size(); j++) {
+            std::cout << "_sc_vec[" << i << "].location['/'].extension[" << j << "] = " << cp.getLocationMap(i)["/"].getCgiExtensions()[j] << std::endl;
         }
-        std::cout << "_sc_vec[" << i << "].location['/'].return.key = " << cp.getLocation(i)["/"].getReturn().first << std::endl;
-        std::cout << "_sc_vec[" << i << "].location['/'].return.value = " << cp.getLocation(i)["/"].getReturn().second << std::endl;
-        std::cout << "_sc_vec[" << i << "].location['/bbb'].return.key = " << cp.getLocation(i)["/bbb"].getReturn().first << std::endl;
-        std::cout << "_sc_vec[" << i << "].location['/bbb'].return.value = " << cp.getLocation(i)["/bbb"].getReturn().second << std::endl;
+        std::cout << "_sc_vec[" << i << "].location['/'].return.key = " << cp.getLocationMap(i)["/"].getReturn().first << std::endl;
+        std::cout << "_sc_vec[" << i << "].location['/'].return.value = " << cp.getLocationMap(i)["/"].getReturn().second << std::endl;
+        std::cout << "_sc_vec[" << i << "].location['/bbb'].return.key = " << cp.getLocationMap(i)["/bbb"].getReturn().first << std::endl;
+        std::cout << "_sc_vec[" << i << "].location['/bbb'].return.value = " << cp.getLocationMap(i)["/bbb"].getReturn().second << std::endl;
         std::cout << "-----------------------------------------" << std::endl;
     }
 }

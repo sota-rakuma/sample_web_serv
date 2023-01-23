@@ -727,21 +727,21 @@ int ConfigParser::parse(const std::string &file) {
 //         std::cout << "_default_error_page[" << "0" << "][404] = " << cp.getDefaultErrorPage(0)[404] << std::endl;
 //         std::cout << "_default_error_page[" << "0" << "][500] = " << cp.getDefaultErrorPage(0)[500] << std::endl;
 //         std::cout << "_default_error_page[" << "1" << "][404] = " << cp.getDefaultErrorPage(1)[404] << std::endl;
-//         std::cout << "alias[/] = " << cp.getLocation(i)["/"].getAlias() << std::endl;
-//         std::cout << "alias[/bbb] = " << cp.getLocation(i)["/bbb"].getAlias() << std::endl;
-//         std::cout << "index_file[/] = " << cp.getLocation(i)["/"].getIndexFile() << std::endl;
-//         std::cout << "index_file[/bbb] = " << cp.getLocation(i)["/bbb"].getIndexFile() << std::endl;
-//         std::cout << "upload_place[/] = " << cp.getLocation(i)["/"].getUploadPlace() << std::endl;
-//         std::cout << "autoindex[/] = " << cp.getLocation(i)["/"].getAutoIndex() << std::endl;
-//         std::cout << cp.getLocation(i)["/"].getAllowedMethod().size() << std::endl;
-//         for (size_t j = 0; j < cp.getLocation(i)["/"].getAllowedMethod().size(); j++) {
-//             std::cout << "allowed_method[/] = " << cp.getLocation(i)["/"].getAllowedMethod()[j] << std::endl;
+//         std::cout << "alias[/] = " << cp.getLocationMap(i)["/"].getAlias() << std::endl;
+//         std::cout << "alias[/bbb] = " << cp.getLocationMap(i)["/bbb"].getAlias() << std::endl;
+//         std::cout << "index_file[/] = " << cp.getLocationMap(i)["/"].getIndexFile() << std::endl;
+//         std::cout << "index_file[/bbb] = " << cp.getLocationMap(i)["/bbb"].getIndexFile() << std::endl;
+//         std::cout << "upload_place[/] = " << cp.getLocationMap(i)["/"].getUploadPlace() << std::endl;
+//         std::cout << "autoindex[/] = " << cp.getLocationMap(i)["/"].getAutoIndex() << std::endl;
+//         std::cout << cp.getLocationMap(i)["/"].getAllowedMethod().size() << std::endl;
+//         for (size_t j = 0; j < cp.getLocationMap(i)["/"].getAllowedMethod().size(); j++) {
+//             std::cout << "allowed_method[/] = " << cp.getLocationMap(i)["/"].getAllowedMethod()[j] << std::endl;
 //         }
-//         for (size_t j = 0; j < cp.getLocation(i)["/"].getCgiExtensions().size(); j++) {
-//             std::cout << "extension[/] = " << cp.getLocation(i)["/"].getCgiExtensions()[j] << std::endl;
+//         for (size_t j = 0; j < cp.getLocationMap(i)["/"].getCgiExtensions().size(); j++) {
+//             std::cout << "extension[/] = " << cp.getLocationMap(i)["/"].getCgiExtensions()[j] << std::endl;
 //         }
-//         std::cout << "return.key = " << cp.getLocation(i)["/"].getReturn().first << std::endl;
-//         std::cout << "return.value = " << cp.getLocation(i)["/"].getReturn().second << std::endl;
+//         std::cout << "return.key = " << cp.getLocationMap(i)["/"].getReturn().first << std::endl;
+//         std::cout << "return.value = " << cp.getLocationMap(i)["/"].getReturn().second << std::endl;
 //         std::cout << "-----------------------------------------" << std::endl;
 //     }
 //     return 0;
