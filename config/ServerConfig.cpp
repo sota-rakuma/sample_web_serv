@@ -1,4 +1,5 @@
 #include "ServerConfig.hpp"
+#include <stdexcept>
 
 ServerConfig::ServerConfig()
 :_listen(""), _server_name("default"), _max_body_size(8192)
@@ -46,11 +47,26 @@ ServerConfig::Location::~Location() {
 // 	return *this;
 // }
 
-// const ServerConfig::Location & getLocation(
-// 	const std::string & url
-// )
-// {
-// }
+// 見つからなかったら403にする
+const ServerConfig::Location & ServerConfig::tryGetLocation(
+	const std::string & path
+)
+{
+	std::map<std::string, Location>::iterator candidate = _locations.end();
+	for (std::map<std::string, Location>::iterator it = _locations.begin();
+		it != _locations.end();
+		it++)
+	{
+		if (path.rfind(it->first, it->first.size() - 1) != std::string::npos)
+		{
+			candidate = it;
+		}
+	}
+	if (candidate == _locations.end()) {
+		throw std::runtime_error("this resource is forbidden");
+	}
+	return candidate->second;
+}
 
 void ServerConfig::setListen(const std::string value) {
 	_listen = value;

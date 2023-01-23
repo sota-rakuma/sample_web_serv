@@ -56,7 +56,7 @@ public:
 	~ServerConfig();
 	// size_t getMaxBodySize() const;
 	// ServerConfig & setMaxBodySize(size_t);
-	// const Location & getLocation(const std::string &);
+	const Location & tryGetLocation(const std::string &);
 	void setListen(const std::string);
 	void setServerName(const std::string);
 	void setMaxBodySize(const int);
