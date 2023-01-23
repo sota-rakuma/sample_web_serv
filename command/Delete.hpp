@@ -1,19 +1,17 @@
 #ifndef DELETE_HPP
 #define DELETE_HPP
 
-#include "ICommand.hpp"
+#include "HTTPMethod.hpp"
 #include "../handler/httphandler/HTTPMethodReceiver.hpp"
 
-class Delete : public ICommand
+class Delete : public HTTPMethod
 {
 private:
-	HTTPMethodReceiver *_receiver;
 public:
 	Delete();
 	Delete(HTTPMethodReceiver *);
 	~Delete();
 	virtual int execute();
-	Delete & setReceiver(HTTPMethodReceiver *);
 };
 
 #endif /* DELETE_HPP */

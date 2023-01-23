@@ -1,19 +1,17 @@
 #ifndef GET_HPP
 #define GET_HPP
 
-#include "ICommand.hpp"
+#include "HTTPMethod.hpp"
 #include "../handler/httphandler/HTTPMethodReceiver.hpp"
 
-class Get : public ICommand
+class Get : public HTTPMethod
 {
 private:
-	HTTPMethodReceiver *_receiver;
 public:
 	Get();
 	Get(HTTPMethodReceiver *);
 	~Get();
 	virtual int execute();
-	Get & setReceiver(HTTPMethodReceiver *);
 };
 
 #endif /* GET_HPP */
