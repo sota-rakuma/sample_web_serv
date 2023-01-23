@@ -15,7 +15,7 @@ public:
 		std::string _alias;
 		std::string _index_file;
 		std::string _upload_place;
-		bool _autoindex;
+		std::string _autoindex;
 		std::pair<int, std::string> _return;
 		std::vector<std::string> _cgi_extensions;
 	public:
@@ -26,15 +26,17 @@ public:
 		void setLocationAlias(const std::string alias_path);
 		void setLocationIndex(const std::string index_file);
 		void setLocationUploadPlace(const std::string upload_place);
-		void setLocationAutoIndex(const bool on);
+		void setLocationAutoIndex(const std::string on);
 		void setLocationReturn(const int, const std::string);
 		void setLocationExtension(const std::vector<std::string>);
 		// for test
 		std::string getAlias() const {return _alias;};
 		std::string getIndexFile() const {return _index_file;};
 		std::string getUploadPlace() const {return _upload_place;};
-		bool getAutoIndex() const {return _autoindex;};
+		std::string getAutoIndex() const {return _autoindex;};
 		std::vector<std::string> getAllowedMethod() const {return _allowed_method;};
+		std::vector<std::string> getCgiExtensions() const {return _cgi_extensions;};
+		std::pair<int, std::string> getReturn() const {return _return;};
 	};
 private:
 	std::string _listen;
@@ -59,7 +61,7 @@ public:
 	void setIndex(const std::string, const std::string);
 	void setAlias(const std::string, const std::string);
 	void setUploadPlace(const std::string, const std::string);
-	void setAutoIndex(const std::string, const bool);
+	void setAutoIndex(const std::string, const std::string);
 	void setReturn(const std::string, const int, const std::string);
 	void setExtension(const std::string, const std::vector<std::string>);
 	 // for test

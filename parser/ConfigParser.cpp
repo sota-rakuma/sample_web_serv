@@ -6,7 +6,7 @@ ConfigParser::ConfigParser() : _i(0), _server_i(0){
     for (size_t i = 0; i < sizeof(sd_tmp) / sizeof(std::string); i++) {
         _searched_directives.push_back(sd_tmp[i]);
     }
-    std::string sld_tmp[] = {"\t\tallowed_method ", "\t\tindex ", "\t\talias ", "\t\tautoindex on", "\t\treturn ", "\t\tupload_place ", "\t\textension "};
+    std::string sld_tmp[] = {"\t\tallowed_method ", "\t\tindex ", "\t\talias ", "\t\tautoindex ", "\t\treturn\t", "\t\tupload_place ", "\t\textension "};
     for (size_t i = 0; i < sizeof(sld_tmp) / sizeof(std::string); i++) {
         _searched_location_directives.push_back(sld_tmp[i]);
     }
@@ -20,6 +20,7 @@ ConfigParser::~ConfigParser() {
 }
 
 int ConfigParser::parseExtension(std::string path) {
+    _location_extension_flag = true;
     std::string find_word = ";\n";
     size_t pos = _raw.find(find_word, _i);
     if (pos == std::string::npos) {
@@ -33,23 +34,33 @@ int ConfigParser::parseExtension(std::string path) {
     std::string separator = " ";
     size_t vec_pos;
     while (i < len) {
-        vec_pos = extension.find(separator, i);
-        if (vec_pos == std::string::npos || vec_pos == i) {
-            std::cout << "find() in parseExtension failed" << std::endl;
-            return 1;
-        }
+        size_t i_tmp = i;
         if (extension[i++] != '.') {
             std::cout << "extension invalid" << std::endl;
             return 1;
         }
-        while (i < vec_pos) {
-            if (std::isalpha(extension[i]) == 0) {
-                std::cout << "extension invalid" << std::endl;
-                return 1;
+        vec_pos = extension.find(separator, i);
+        if (vec_pos == std::string::npos) {
+            while (i < len) {
+                if (std::isalnum(extension[i]) == 0) {
+                    std::cout << "extension invalid" << std::endl;
+                    return 1;
+                }
+                i++;
             }
-            i++;
+            vec.push_back(extension.substr(i_tmp, i));
+            // i = vec_pos + separator.length();
+            break;
+        } else {
+            while (i < vec_pos) {
+                if (std::isalpha(extension[i]) == 0) {
+                    std::cout << "extension invalid" << std::endl;
+                    return 1;
+                }
+                i++;
+            }
         }
-        vec.push_back(extension.substr(i, vec_pos - i));
+        vec.push_back(extension.substr(i_tmp, vec_pos - i_tmp));
         i = vec_pos + separator.length();
     }
     _i = pos + find_word.length();
@@ -58,6 +69,7 @@ int ConfigParser::parseExtension(std::string path) {
 }
 
 int ConfigParser::parseUploadPlace(std::string path) {
+    _location_upload_place_flag = true;
     std::string find_word = ";\n";
     size_t pos = _raw.find(find_word, _i);
     if (pos == std::string::npos) {
@@ -73,9 +85,8 @@ int ConfigParser::parseUploadPlace(std::string path) {
             return 1;
         }
         while (i < len) {
-            if (std::isalpha(upload_place[i])) {
+            if (std::isalnum(upload_place[i])) {
             } else if (upload_place[i] == '/') {
-                i++;
                 break;
             } else {
                 std::cout << "upload_place invalid" << std::endl;
@@ -90,61 +101,67 @@ int ConfigParser::parseUploadPlace(std::string path) {
 }
 
 int ConfigParser::parseReturn(std::string path) {
-    size_t i = 0;
-    int status_code;
-    while (i < 3) {
-        if (std::isdigit(_raw[_i++]) == 0) {
-            std::cout << "status_code in parseReturn invalid" << std::endl;
-            return 1;
-        }
-        i++;
-    }
-    status_code = std::atoi((_raw.substr(_i - 3, _i)).c_str());
-    if (_raw[_i++] != ' ') {
-        std::cout << "status_code in parseReturn invalid" << std::endl;
-        return 1;
-    }
-    // TargetParserでパースする　（今のところALPHAしか許可してない）
+    _location_return_flag = true;
     std::string find_word = ";\n";
     size_t pos = _raw.find(find_word, _i);
     if (pos == std::string::npos) {
         std::cout << "find() in parseReturn failed" << std::endl;
         return 1;
     }
-    std::string return_uri = _raw.substr(_i, pos - _i);
-    size_t len = return_uri.length();
-    i = 0;
-    while (i < len) {
-        if (std::isalpha(return_uri[i++]) == 0) {
-            std::cout << "return_uri invalid" << std::endl;
+    std::string ret = _raw.substr(_i, pos - _i);
+    size_t i = 0;
+    while (i < 3) {
+        if (std::isdigit(ret[i]) == 0) {
+            std::cout << "status_code in parseReturn invalid" << std::endl;
             return 1;
         }
+        i++;
     }
+    if (ret[i++] != ' ') {
+        std::cout << "status_code in parseReturn invalid" << std::endl;
+        return 1;
+    }
+    int status_code = std::atoi((ret.substr(0, 3)).c_str());
+    // TargetParserでパースする　（今のところALPHAしか許可してない）
+    std::string return_uri = ret.substr(i, pos - _i - i);
+    // size_t len = return_uri.length();
+    TargetParser tp;
+    if (tp.parse(return_uri) == -1) {
+        std::cout << "return_uri invalid" << std::endl;
+        return 1;
+    }
+    // i = 0;
+    // while (i < len) {
+    //     if (std::isalpha(return_uri[i++]) == 0) {
+    //         std::cout << "return_uri invalid" << std::endl;
+    //         return 1;
+    //     }
+    // }
     _i = pos + find_word.length();
     _sc_vec[_server_i].setReturn(path, status_code, return_uri);
     return 0;
 }
 
 int ConfigParser::parseAutoIndex(std::string path) {
+    _location_autoindex_flag = true;
     std::string find_word = ";\n";
     size_t pos = _raw.find(find_word, _i);
     if (pos == std::string::npos) {
         std::cout << "find() in parseIndex failed" << std::endl;
         return 1;
     }
-    std::string ai_on = "autoindex on";
-    size_t len = ai_on.length();
-    std::string auto_index = _raw.substr(_i - len, len);
-    if (auto_index != "autoindex on") {
+    std::string auto_index = _raw.substr(_i, pos - _i);
+    if (auto_index != "on" && auto_index != "off") {
         std::cout << "auto_index invalid" << std::endl;
         return 1;
     }
     _i = pos + find_word.length();
-    _sc_vec[_server_i].setAutoIndex(path, true);
+    _sc_vec[_server_i].setAutoIndex(path, auto_index);
     return 0;
 }
 
 int ConfigParser::parseAlias(std::string path) {
+    _location_alias_flag = true;
     std::string find_word = ";\n";
     size_t pos = _raw.find(find_word, _i);
     if (pos == std::string::npos) {
@@ -152,7 +169,6 @@ int ConfigParser::parseAlias(std::string path) {
         return 1;
     }
     std::string alias_path = _raw.substr(_i, pos - _i);
-    // std::cout << alias_path << std::endl;
     size_t len = alias_path.length();
     size_t i = 0;
     while (i < len) {
@@ -161,7 +177,7 @@ int ConfigParser::parseAlias(std::string path) {
             return 1;
         }
         while (i < len) {
-            if (std::isalpha(alias_path[i])) {
+            if (std::isalnum(alias_path[i])) {
             } else if (alias_path[i] == '/') {
                 // i++;
                 break;
@@ -178,6 +194,7 @@ int ConfigParser::parseAlias(std::string path) {
 }
 
 int ConfigParser::parseIndex(std::string path) {
+    _location_index_flag = true;
     std::string find_word = ";\n";
     size_t pos = _raw.find(find_word, _i);
     if (pos == std::string::npos) {
@@ -188,7 +205,7 @@ int ConfigParser::parseIndex(std::string path) {
     size_t len = index.length();
     size_t i = 0;
     while (i < len) {
-        if (std::isalpha(index[i]) == 0 && index[i] != '.') {
+        if (std::isalnum(index[i]) == 0 && index[i] != '.') {
             std::cout << "index invalid" << std::endl;
             return 1;
         }
@@ -200,6 +217,7 @@ int ConfigParser::parseIndex(std::string path) {
 }
 
 int ConfigParser::parseAllowedMethod(std::string path) {
+    _location_allowed_method_flag = true;
     std::string find_word = ";\n";
     size_t pos = _raw.find(find_word, _i);
     if (pos == std::string::npos) {
@@ -210,19 +228,27 @@ int ConfigParser::parseAllowedMethod(std::string path) {
     size_t len = allowed_method.length();
     size_t i = 0;
     size_t j;
-    std::vector<std::string> method_vec;
-    bool end_flag = false;
-    while (i < len && end_flag == false) {
-        std::string separator = " ";
+    std::set<std::string> method_set;
+    while (i < len) {
         j = 0;
-        while (j < 3) {
+        while (j < _allowed_methods.size()) {
             if (allowed_method.find(_allowed_methods[j], i) == i) {
+                method_set.insert(_allowed_methods[j]);
                 i += _allowed_methods[j].length();
+                if (i == len)
+                    break;
+                if (_raw[_i + i] == ' ')
+                    i++;
+                else {
+                    std::cout << "aaa" << std::endl;
+                    std::cout << "allowed_method invalid" << std::endl;
+                    return 1;
+                }
                 break;
             }
             j++;
         }
-        if (j == 3) {
+        if (j == _allowed_methods.size()) {
             std::cout << "allowed_method invalid" << std::endl;
             return 1;
         }
@@ -251,16 +277,31 @@ int ConfigParser::parseAllowedMethod(std::string path) {
         // }
         // // i++;
     }
+    std::vector<std::string> method_vec;
+    for (std::set<std::string>::iterator iter = method_set.begin(); iter != method_set.end(); iter++) {
+        method_vec.push_back(*iter);
+    }
     _i = pos + find_word.length();
     _sc_vec[_server_i].setAllowedMethod(path, method_vec);
     // _sc[_server_index].setAllowedMethod(path, method_vec);
     return 0;
 }
 
+void ConfigParser::initLocationDirectiveFlag() {
+    _location_allowed_method_flag = false;
+    _location_alias_flag = false;
+    _location_index_flag = false;
+    _location_upload_place_flag = false;
+    _location_autoindex_flag = false;
+    _location_return_flag = false;
+    _location_extension_flag = false;
+}
+
 int ConfigParser::parseArrangedLocationDirectives(std::string path) {
     size_t i = 0;
     std::string find_word = "\t\t";
     size_t pos;
+    initLocationDirectiveFlag();
     while (_raw[_i]) {
         pos = _raw.find(find_word, _i);
         if (pos != _i) {
@@ -268,46 +309,72 @@ int ConfigParser::parseArrangedLocationDirectives(std::string path) {
             pos = _raw.find(find_word, _i);
             if (pos == _i) {
                 _i = pos + find_word.length();
-                std::cout << "parseArrangedLocationDirectives successed" << std::endl;
                 break;
             }
             std::cout << "find() in parseArrangedLocationDirectives failed" << std::endl;
             return 1;
         }
-        // _i = pos + find_word.length();
         if (_raw.find(_searched_location_directives[i], _i) == _i) {
             _i += _searched_location_directives[i].length();
             if (_searched_location_directives[i] == _searched_location_directives[0]) { // "\t\tallowed_method "
+                if (_location_allowed_method_flag) {
+                    std::cout << "duplicate allowed_method directive" << std::endl;
+                    return 1;
+                }
                 if (parseAllowedMethod(path) != 0) {
                     std::cout << "parseAllowedMethod() failed" << std::endl;
                     return 1;
                 }
             } else if (_searched_location_directives[i] == _searched_location_directives[1]) { // "\t\tindex "
+                if (_location_index_flag) {
+                    std::cout << "duplicate index directive" << std::endl;
+                    return 1;
+                }
                 if (parseIndex(path) != 0) {
                     std::cout << "parseIndex() failed" << std::endl;
                     return 1;
                 }
             } else if (_searched_location_directives[i] == _searched_location_directives[2]) { // "\t\talias "
+                if (_location_alias_flag) {
+                    std::cout << "duplicate alias directive" << std::endl;
+                    return 1;
+                }
                 if (parseAlias(path) != 0) {
                     std::cout << "parseAlias() failed" << std::endl;
                     return 1;
                 }
-            } else if (_searched_location_directives[i] == _searched_location_directives[3]) { // "\t\tautoindex on"
+            } else if (_searched_location_directives[i] == _searched_location_directives[3]) { // "\t\tautoindex "
+                if (_location_autoindex_flag) {
+                    std::cout << "duplicate autoindex directive" << std::endl;
+                    return 1;
+                }
                 if (parseAutoIndex(path) != 0) {
                     std::cout << "parseAutoIndex() failed" << std::endl;
                     return 1;
                 }
-            } else if (_searched_location_directives[i] == _searched_location_directives[4]) { // "\t\treturn "
+            } else if (_searched_location_directives[i] == _searched_location_directives[4]) { // "\t\treturn\t"
+                if (_location_return_flag) {
+                    std::cout << "duplicate return directive" << std::endl;
+                    return 1;
+                }
                 if (parseReturn(path) != 0) {
                     std::cout << "parseReturn() failed" << std::endl;
                     return 1;
                 }
             } else if (_searched_location_directives[i] == _searched_location_directives[5]) { // "\t\tupload_place "
+                if (_location_upload_place_flag) {
+                    std::cout << "duplicate upload_place directive" << std::endl;
+                    return 1;
+                }
                 if (parseUploadPlace(path) != 0) {
                     std::cout << "parseUploadPlace() failed" << std::endl;
                     return 1;
                 }
             } else if (_searched_location_directives[i] == _searched_location_directives[6]) { // "\t\textension "
+                if (_location_extension_flag) {
+                    std::cout << "duplicate extension directive" << std::endl;
+                    return 1;
+                }
                 if (parseExtension(path) != 0) {
                     std::cout << "parseExtension() failed" << std::endl;
                     return 1;
@@ -440,6 +507,7 @@ int ConfigParser::parseErrorPage() {
 }
 
 int ConfigParser::parseMaxBodySize() {
+    _max_body_size_flag = true;
     std::string find_word = ";\n";
     size_t pos;
     pos = _raw.find(find_word, _i);
@@ -467,6 +535,7 @@ int ConfigParser::parseMaxBodySize() {
 }
 
 int ConfigParser::parseServerName() {
+    _server_name_flag = true;
     std::string find_word = ";\n";
     size_t pos = _raw.find(find_word, _i);
     if (pos == std::string::npos) {
@@ -488,6 +557,7 @@ int ConfigParser::parseServerName() {
 }
 
 int ConfigParser::parseListen() {
+    _listen_flag = true;
     std::string find_word = ";\n";
     size_t pos = _raw.find(find_word, _i);
     if (pos == std::string::npos) {
@@ -519,21 +589,35 @@ int ConfigParser::parseArrangedDirectives() {
         if (_raw.find(_searched_directives[i], _i) == _i) {
             _i += _searched_directives[i].length();
             if (_searched_directives[i] == _searched_directives[0]) { // "\tlisten "
+                if (_listen_flag) {
+                    std::cout << "duplicate listen directive" << std::endl;
+                    return 1;
+                }
                 if (parseListen() != 0) {
                     std::cout << "parseListen() failed" << std::endl;
                     return 1;
                 }
             } else if (_searched_directives[i] == _searched_directives[1]) { // "\tserver_name "
+                if (_server_name_flag) {
+                    std::cout << "duplicate server_name directive" << std::endl;
+                    return 1;
+                }
                 if (parseServerName() != 0) {
                     std::cout << "parseServerName() failed" << std::endl;
                     return 1;
                 }
             } else if (_searched_directives[i] == _searched_directives[2]) { // \tmax_body_size
+            } else if (_searched_directives[i] == _searched_directives[2]) { // "\tmax_body_size "
+                if (_max_body_size_flag) {
+                    std::cout << "duplicate max_body_size directive" << std::endl;
+                    return 1;
+                }
                 if (parseMaxBodySize() != 0) {
                     std::cout << "parseMaxBodySize() failed" << std::endl;
                     return 1;
                 }
             } else if (_searched_directives[i] == _searched_directives[3]) { // \terror_page
+            } else if (_searched_directives[i] == _searched_directives[3]) { // "\terror_page "
                 if (parseErrorPage() != 0) {
                     std::cout << "parseErrorPage() failed" << std::endl;
                     return 1;
@@ -561,16 +645,33 @@ int ConfigParser::parseArrangedDirectives() {
     return 0;
 }
 
+void ConfigParser::initDirectiveFlag() {
+    _listen_flag = false;
+    _server_name_flag = false;
+    _max_body_size_flag = false;
+    _location_allowed_method_flag = false;
+    _location_alias_flag = false;
+    _location_index_flag = false;
+    _location_upload_place_flag = false;
+    _location_autoindex_flag = false;
+    _location_return_flag = false;
+    _location_extension_flag = false;
+}
+
 int ConfigParser::parseServer() {
     std::string find_word = "server {\n";
     if (_raw.find(find_word, _i) == _i) {
         _i += find_word.length();
         _sc_vec.push_back(ServerConfig());
+        initDirectiveFlag();
         if (parseArrangedDirectives() != 0) {
             std::cout << "parseArrangedDirectives() failed" << std::endl;
             return 1;
         }
         _server_i++;
+    } else if (_raw[_i]) {
+        std::cout << "server_directive invalid" << std::endl;
+        return 1;
     } else {
         std::cout << "parse end" << std::endl;
         return 0;
@@ -608,39 +709,40 @@ int ConfigParser::parse(const std::string &file) {
     return 0;
 }
 
-int main() {
-    ConfigParser cp;
-    if (cp.parse("../test.conf") != 0) {
-        std::cout << "parse() failed" << std::endl;
-        return 1;
-    }
-    std::cout << "parse() successed" << std::endl;
-    // for test
-    std::cout << "sc_vec_size = " << cp.getScVecSize() << std::endl;
-    std::cout << "-----------------------------------------" << std::endl;
-    for (size_t i = 0; i < cp.getScVecSize(); i++) {
-        std::cout << "_listen[" << i << "] = " << cp.getListen(i) << std::endl;
-        std::cout << "_server_name[" << i << "] = " << cp.getServerName(i) << std::endl;
-        std::cout << "_max_body_size[" << i << "] = " << cp.getMaxBodySize(i) << std::endl;
-        std::cout << "_default_error_page[" << "0" << "][400] = " << cp.getDefaultErrorPage(0)[400] << std::endl;
-        std::cout << "_default_error_page[" << "0" << "][404] = " << cp.getDefaultErrorPage(0)[404] << std::endl;
-        std::cout << "_default_error_page[" << "0" << "][500] = " << cp.getDefaultErrorPage(0)[500] << std::endl;
-        std::cout << "_default_error_page[" << "1" << "][404] = " << cp.getDefaultErrorPage(1)[404] << std::endl;
-        // for (std::map<int, std::string>::iterator iter = cp.getDefaultErrorPage(i).begin(); iter != cp.getDefaultErrorPage(i).end(); iter++) {
-        //     std::cout << "_default_error_page[" << i << "](key) = " << iter->first << std::endl;
-        //     std::cout << "_default_error_page[" << i << "](value) = " << iter->second << std::endl;
-        //     break;
-        // }
-        std::cout << "alias[/] = " << cp.getLocationMap(i)["/"].getAlias() << std::endl;
-        std::cout << "alias[/bbb] = " << cp.getLocationMap(i)["/bbb"].getAlias() << std::endl;
-        std::cout << "index_file[/] = " << cp.getLocationMap(i)["/"].getIndexFile() << std::endl;
-        std::cout << "index_file[/bbb] = " << cp.getLocationMap(i)["/bbb"].getIndexFile() << std::endl;
-        std::cout << "upload_place[/] = " << cp.getLocationMap(i)["/"].getUploadPlace() << std::endl;
-        // std::cout << cp.getLocationMap(i)["/"].getAllowedMethod().size() << std::endl;
-        for (size_t i = 0; i < cp.getLocationMap(i)["/"].getAllowedMethod().size(); i++) {
-            std::cout << "allowed_method[/] = " << cp.getLocationMap(i)["/"].getAllowedMethod()[i] << std::endl;
-        }
-        std::cout << "-----------------------------------------" << std::endl;
-    }
-    return 0;
-}
+// int main() {
+//     ConfigParser cp;
+//     if (cp.parse("zzz.conf") != 0) {
+//         std::cout << "parse() failed" << std::endl;
+//         return 1;
+//     }
+//     // for test
+//     std::cout << "parse() successed" << std::endl;
+//     std::cout << "sc_vec_size = " << cp.getScVecSize() << std::endl;
+//     std::cout << "-----------------------------------------" << std::endl;
+//     for (size_t i = 0; i < cp.getScVecSize(); i++) {
+//         std::cout << "_listen[" << i << "] = " << cp.getListen(i) << std::endl;
+//         std::cout << "_server_name[" << i << "] = " << cp.getServerName(i) << std::endl;
+//         std::cout << "_max_body_size[" << i << "] = " << cp.getMaxBodySize(i) << std::endl;
+//         std::cout << "_default_error_page[" << "0" << "][400] = " << cp.getDefaultErrorPage(0)[400] << std::endl;
+//         std::cout << "_default_error_page[" << "0" << "][404] = " << cp.getDefaultErrorPage(0)[404] << std::endl;
+//         std::cout << "_default_error_page[" << "0" << "][500] = " << cp.getDefaultErrorPage(0)[500] << std::endl;
+//         std::cout << "_default_error_page[" << "1" << "][404] = " << cp.getDefaultErrorPage(1)[404] << std::endl;
+//         std::cout << "alias[/] = " << cp.getLocation(i)["/"].getAlias() << std::endl;
+//         std::cout << "alias[/bbb] = " << cp.getLocation(i)["/bbb"].getAlias() << std::endl;
+//         std::cout << "index_file[/] = " << cp.getLocation(i)["/"].getIndexFile() << std::endl;
+//         std::cout << "index_file[/bbb] = " << cp.getLocation(i)["/bbb"].getIndexFile() << std::endl;
+//         std::cout << "upload_place[/] = " << cp.getLocation(i)["/"].getUploadPlace() << std::endl;
+//         std::cout << "autoindex[/] = " << cp.getLocation(i)["/"].getAutoIndex() << std::endl;
+//         std::cout << cp.getLocation(i)["/"].getAllowedMethod().size() << std::endl;
+//         for (size_t j = 0; j < cp.getLocation(i)["/"].getAllowedMethod().size(); j++) {
+//             std::cout << "allowed_method[/] = " << cp.getLocation(i)["/"].getAllowedMethod()[j] << std::endl;
+//         }
+//         for (size_t j = 0; j < cp.getLocation(i)["/"].getCgiExtensions().size(); j++) {
+//             std::cout << "extension[/] = " << cp.getLocation(i)["/"].getCgiExtensions()[j] << std::endl;
+//         }
+//         std::cout << "return.key = " << cp.getLocation(i)["/"].getReturn().first << std::endl;
+//         std::cout << "return.value = " << cp.getLocation(i)["/"].getReturn().second << std::endl;
+//         std::cout << "-----------------------------------------" << std::endl;
+//     }
+//     return 0;
+// }
