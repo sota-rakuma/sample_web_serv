@@ -42,14 +42,14 @@ public:
 	CGI(
 		ISubject *,
 		std::list<ICommand *> *,
-		ICommand *,
+		HTTPMethod *,
 		const std::string &,
 		AcceptedSocket *
 	);
 	CGI(
 		ISubject *,
 		std::list<ICommand *> *,
-		ICommand *,
+		HTTPMethod *,
 		const std::string &,
 		bool,
 		AcceptedSocket *

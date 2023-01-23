@@ -49,7 +49,7 @@ _as(as)
 CGI::CGI(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
-	ICommand *method,
+	HTTPMethod *method,
 	const std::string & path,
 	AcceptedSocket * as
 )
@@ -64,7 +64,7 @@ _as(as)
 CGI::CGI(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
-	ICommand *method,
+	HTTPMethod*method,
 	const std::string & path,
 	bool is_executable,
 	AcceptedSocket *as

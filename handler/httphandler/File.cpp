@@ -26,6 +26,21 @@ File::File()
 File::File(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
+	HTTPMethod *method,
+	const std::string & path,
+	AcceptedSocket *as
+)
+:HTTPMethodReceiver(subject, commands, method),
+_path(path),
+_nb(0),
+_is_exist(false),
+_as(as)
+{
+}
+
+File::File(
+	ISubject * subject,
+	std::list<ICommand *> * commands,
 	const std::string & path,
 	int oflag,
 	AcceptedSocket *as
@@ -72,7 +87,7 @@ _as(as)
 File::File(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
-	ICommand *method,
+	HTTPMethod *method,
 	const std::string & path,
 	int oflag,
 	AcceptedSocket *as
@@ -99,7 +114,7 @@ _as(as)
 File::File(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
-	ICommand *method,
+	HTTPMethod *method,
 	const std::string & path,
 	int oflag,
 	int mode,

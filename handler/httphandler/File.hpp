@@ -34,6 +34,13 @@ public:
 	File(
 		ISubject *,
 		std::list<ICommand *> *,
+		HTTPMethod *,
+		const std::string &,
+		AcceptedSocket *
+	);
+	File(
+		ISubject *,
+		std::list<ICommand *> *,
 		const std::string &,
 		int oflag,
 		AcceptedSocket *
@@ -49,7 +56,7 @@ public:
 	File(
 		ISubject *,
 		std::list<ICommand *> *,
-		ICommand *,
+		HTTPMethod *,
 		const std::string &,
 		int oflag,
 		AcceptedSocket *
@@ -57,7 +64,7 @@ public:
 	File(
 		ISubject *,
 		std::list<ICommand *> *,
-		ICommand *,
+		HTTPMethod *,
 		const std::string &,
 		int oflag,
 		int mode,
