@@ -219,6 +219,7 @@ HTTPRequest::getHeaderField() const
 	return _hf;
 }
 
+// 全て小文字
 const std::string &
 HTTPRequest::tryGetHeaderValue(
 	const std::string & key

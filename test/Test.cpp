@@ -5,8 +5,8 @@ int main(void)
 	//TargetParserTest();
 	//requestLineTest();
 	//headerFieldTest();
-	normalizeURITest();
-	//ConfigParserTest();
+	//normalizeURITest();
+	ConfigParserTest();
 	return 0;
 }
 // ↓ConfigParserTest時のコンパイル用↓

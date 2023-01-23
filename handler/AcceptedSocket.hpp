@@ -63,8 +63,7 @@ private:
 		const std::string &
 	);
 	int validateRequest();
-	int validateRequestLine();
-	int validateRequestHeader();
+	int processObsFold();
 public:
 	AcceptedSocket();
 	AcceptedSocket(

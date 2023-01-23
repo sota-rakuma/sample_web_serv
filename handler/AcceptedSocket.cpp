@@ -150,18 +150,13 @@ void AcceptedSocket::processRequestHeader(
 		_buff += raw;
 		return ;
 	}
-	// Host なかったらエラー
-	if (_parser_ctx.execParse(_buff) == -1 ||
-		validateRequest() == -1) {
-		// BadRequest or HTTPVersion
-		// createResponse();
+	if (_parser_ctx.execParse(_buff) == -1 || validateRequest() == -1) {
+		// エラーレスポンス
 	}
-	// _config = _configfinder->getConfig(
-	//	_req.getHeaderValue("Host"));
 	/*
 		targetのルーティング
-		targetの情報設定
-		設定ファイルから、validation
+		methodのvalidation(Not Implemented or Not Allowed)
+		↑locationゲットしたのち
 	*/
 	if (_req.getRequestLine().getMethod() == POST) {
 		_buff = "";
@@ -180,22 +175,54 @@ void AcceptedSocket::processRequestHeader(
 }
 
 /*
-methodのvalidation(Not Implemented or Not Allowed)
-httpのバージョン
-hostヘッダーの有無
-obs-foldがあれば、content-typeにmessage/httpが含まれていれば許容
-content-lengthに複数の異なる値がある場合エラー 400
+✅httpのバージョン
+✅hostヘッダーの有無
+✅obs-foldがあれば、content-typeにmessage/httpが含まれていれば許容
+
 Transfer-encodingで、chunked以外のものがある場合、501
+content-lengthに複数の異なる値がある場合エラー 400
+↑validationの外でheaderの値を抽出するときに扱うべき。
 */
 int AcceptedSocket::validateRequest()
 {
 	const HTTPRequest::RequestLine & rl = _req.getRequestLine();
-	const std::string & path = rl.getTarget();
+	if (rl.getHTTPVersion() != "HTTP/1.1") {
+		_status = BAD_REQUEST;
+		return -1;
+	}
+	try
+	{
+		const std::string & host = _req.tryGetHeaderValue("host");
+		_config = _configfinder->getConfig(host);
+	}
+	catch(const std::exception& e)
+	{
+		_status = BAD_REQUEST;
+		return -1;
+	}
+	if (_req.hasObsFold() == true) {
+		return processObsFold();
+	}
 	return 0;
 }
 
-int AcceptedSocket::validateRequestLine()
+int AcceptedSocket::processObsFold()
 {
+	try
+	{
+		if (_req.tryGetHeaderValue("content-type") != "message/http")
+		{
+			_status = BAD_REQUEST;
+			return -1;
+		}
+	}
+	catch(const std::exception& e)
+	{
+		_status = BAD_REQUEST;
+		return -1;
+	}
+	_status = UNSUPPORTED_MEDIA_TYPE;
+	return -1;
 }
 
 void AcceptedSocket::processRequestBody(
