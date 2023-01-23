@@ -48,8 +48,6 @@ private:
 	HTTPResponse _res;
 	Context _parser_ctx;
 	HTTPMethodReceiver *_receiver;
-	// finderではなく、header解析時にconfigをセットしてしまっても構わない
-	// error-pageの内容は持っていてもいいのか？
 private:
 	void processRequest(const std::string &);
 	void processRequestLine(
@@ -64,6 +62,9 @@ private:
 	void processChunkedBody(
 		const std::string &
 	);
+	int validateRequest();
+	int validateRequestLine();
+	int validateRequestHeader();
 public:
 	AcceptedSocket();
 	AcceptedSocket(

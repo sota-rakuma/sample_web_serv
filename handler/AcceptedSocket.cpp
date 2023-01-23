@@ -92,11 +92,7 @@ recv → add buff → headerパース
 
 POSTの場合のみ:
 recv → リクエストのmessage bodyにセット
-
-execMethod:
-eventlist.add(_receiver.getHandler(_req.getMethod()));
 */
-// チャンクの時の処理も必要
 int AcceptedSocket::read()
 {
 	char buff[BUFFSIZE];
@@ -116,7 +112,6 @@ int AcceptedSocket::read()
 	return 1;
 }
 
-// \x0d\x0a → \r\n → CRLF
 void AcceptedSocket::processRequest(const std::string & raw)
 {
 	if (_progress == RECEIVE_REQUEST_LINE) {
@@ -132,74 +127,49 @@ void AcceptedSocket::processRequestLine(
 	const std::string &raw
 )
 {
-	size_t index = raw.find("\x0d\x0a");
+	size_t index = raw.find("\r\n");
 	if (index == std::string::npos) {
 		_buff += raw;
 		return ;
 	}
 	_buff += raw.substr(0, index);
-	//std::string raw = _buff.substr(0, index + 1);
-	//_buff = _buff.substr(index + 1, _buff.size() - index);
-	//std::vector<std::pair<Symbol, std::string>> tokens;
-	// 現状 raw の tokenize 必須
-	/*
-		パースの方法によっては、
-		生のデータをトークンせずに渡す方式に変更してもいい
-	*/
-	//if (_parser_ctx.execParse(tokens) == SUCCESS) {
-		/*
-			メソッドのセット
-			targetの文字列セット
-		*/
-		if (raw.size() > index + 3 &&
-			raw[index + 2] == '\x0d' && raw[index + 3] == '\x0a') {
-				_progress = EXECUTE_METHOD;
-		} else {
-			_buff = raw.substr(index + 2);
-			_progress = RECEIVE_REQUEST_HEADER;
-		}
+	if (_parser_ctx.execParse(_buff) == 0) {
+		_buff = raw.substr(index + 2);
+		_progress = RECEIVE_REQUEST_HEADER;
 	//}
 	// BadRequest or HTTPVersion
 	// createResponse();
+	}
 }
 
 void AcceptedSocket::processRequestHeader(
 	const std::string & raw
 )
 {
-	if (raw.find("\x0d\x0a\x0d\x0a") == std::string::npos) {
+	if (raw.find("\r\n\r\n") == std::string::npos) {
 		_buff += raw;
 		return ;
 	}
-	//std::vector<std::pair<Symbol, std::string>> tokens;
-	// 現状 raw の tokenize 必須
-	/*
-		パースの方法によっては、
-		生のデータをトークンせずに渡す方式に変更してもいい
-	*/
-	// Host なかったらパースエラー
-	//if (_parser_ctx.execParse(tokens) == ERROR) {
+	// Host なかったらエラー
+	if (_parser_ctx.execParse(_buff) == -1 ||
+		validateRequest() == -1) {
 		// BadRequest or HTTPVersion
 		// createResponse();
-	//}
-
-	//_config = _configfinder->getConfig(
+	}
+	// _config = _configfinder->getConfig(
 	//	_req.getHeaderValue("Host"));
 	/*
 		targetのルーティング
 		targetの情報設定
 		設定ファイルから、validation
-		_receiver = new File();
-			or
-		_receiver = new CGI();
 	*/
 	if (_req.getRequestLine().getMethod() == POST) {
 		_buff = "";
-		if (_req.getHeaderValue("Tranfer-Encoding").find("chunked") != std::string::npos) {
-			_progress = RECEIVE_CHUNKED_SIZE;
-		} else {
-			_progress = RECEIVE_REQUEST_BODY;
-		}
+		//if (_req.getHeaderValue("Tranfer-Encoding").find("chunked") != std::string::npos) {
+		//	_progress = RECEIVE_CHUNKED_SIZE;
+		//} else {
+		//	_progress = RECEIVE_REQUEST_BODY;
+		//}
 	} else {
 		_progress = EXECUTE_METHOD;
 		//_receiver = new File() or CGI();
@@ -207,6 +177,25 @@ void AcceptedSocket::processRequestHeader(
 			getCommandList()->push_back(new Get(_receiver));
 		}
 	}
+}
+
+/*
+methodのvalidation(Not Implemented or Not Allowed)
+httpのバージョン
+hostヘッダーの有無
+obs-foldがあれば、content-typeにmessage/httpが含まれていれば許容
+content-lengthに複数の異なる値がある場合エラー 400
+Transfer-encodingで、chunked以外のものがある場合、501
+*/
+int AcceptedSocket::validateRequest()
+{
+	const HTTPRequest::RequestLine & rl = _req.getRequestLine();
+	const std::string & path = rl.getTarget();
+	return 0;
+}
+
+int AcceptedSocket::validateRequestLine()
+{
 }
 
 void AcceptedSocket::processRequestBody(
@@ -239,7 +228,7 @@ void AcceptedSocket::processChunkedBody(
 {
 	for (size_t i = 0; i < raw.size();)
 	{
-		size_t index = raw.find("\x0d\x0a");
+		size_t index = raw.find("\r\n");
 		if (index == std::string::npos) {
 			index = raw.size() - 1;
 		}

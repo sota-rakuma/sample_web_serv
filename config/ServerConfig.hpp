@@ -11,7 +11,6 @@ class ServerConfig
 public:
 	class Location {
 	private:
-		// int _accepted_method;// HTTPMethodをintに変換
 		std::vector<std::string> _allowed_method;
 		std::string _alias;
 		std::string _index_file;
@@ -68,7 +67,7 @@ public:
 	std::string getServerName() const {return _server_name;};
 	int getMaxBodySize() const {return _max_body_size;};
 	std::map<int, std::string> getDefaultErrorPage() const {return _default_error_pages;};
-	std::map<std::string, Location> getLocation() const {return _locations;};
+	std::map<std::string, Location> getLocationMap() const {return _locations;};
 };
 
 #endif /* SERVERCONFIG_HPP */
