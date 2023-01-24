@@ -5,11 +5,13 @@
 #include "../parser/HTTPRequestParser.hpp"
 #include "../parser/TargetParser.hpp"
 #include "../parser/ConfigParser.hpp"
+#include "../parser/CGIResponseParser.hpp"
 #include <vector>
 
 void TargetParserTest();
 void requestLineTest();
 void headerFieldTest();
 void ConfigParserTest();
+void CGIResponseParserTest();
 
 #endif /* TEST_HPP */

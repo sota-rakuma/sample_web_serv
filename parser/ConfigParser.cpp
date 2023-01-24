@@ -1,7 +1,7 @@
 #include "ConfigParser.hpp"
 
 // ConfigParser::ConfigParser() : _i(0), _server_index(0) {
-ConfigParser::ConfigParser() : _i(0), _server_i(0){
+ConfigParser::ConfigParser() : _i(0), _server_i(0) {
     std::string sd_tmp[] = {"\tlisten ", "\tserver_name ", "\tmax_body_size ", "\terror_page ", "\n\tlocation "};
     for (size_t i = 0; i < sizeof(sd_tmp) / sizeof(std::string); i++) {
         _searched_directives.push_back(sd_tmp[i]);
@@ -386,7 +386,7 @@ int ConfigParser::parseLocation() {
             return 1;
         }
         while (i < len) {
-            if (std::isalpha(path[i])) {
+            if (std::isalnum(path[i])) {
             } else if (path[i] == '/') {
                 i++;
                 break;
