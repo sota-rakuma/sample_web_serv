@@ -76,16 +76,17 @@ HTTPRequest::RequestLine::setTarget(
 	if (q != std::string::npos) {
 		_path = target.substr(0, q + 1);
 		_query = target.substr(q);
-		normalizeTarget(_query);
+		normalizeTarget(true, _query);
 	} else {
 		_path = target;
 	}
-	normalizeTarget(_path);
+	normalizeTarget(false, _path);
 	return *this;
 }
 
 
 void HTTPRequest::RequestLine::normalizeTarget(
+	bool is_query,
 	std::string & normalized
 )
 {
@@ -94,6 +95,9 @@ void HTTPRequest::RequestLine::normalizeTarget(
 	}
 	for (size_t i = 0; i < normalized.size(); i++)
 	{
+		if (is_query == true && normalized[i] == '+') {
+			normalized[i] = ' ';
+		}
 		if (TargetParser::isPercentEncoded(normalized, i) == true)
 		{
 			if (isLowerCase(normalized[i + 1]) == true) {
@@ -108,9 +112,10 @@ void HTTPRequest::RequestLine::normalizeTarget(
 			normalized[i] += ('a' - 'A');
 		}
 	}
-
-	removeDotSegment(normalized);
-	percentDocode(normalized);
+	if (is_query == false) {
+		removeDotSegment(normalized);
+		percentDocode(normalized);
+	}
 }
 
 void HTTPRequest::RequestLine::removeDotSegment(

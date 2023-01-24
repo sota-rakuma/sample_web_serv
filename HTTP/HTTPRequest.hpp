@@ -43,6 +43,7 @@ public:
 			const std::string &
 		);
 		void normalizeTarget(
+			bool,
 			std::string &
 		);
 		void removeDotSegment(
