@@ -64,7 +64,8 @@ int ConfigParser::parseExtension(std::string path) {
         i = vec_pos + separator.length();
     }
     _i = pos + find_word.length();
-    _sc_vec[_server_i].setExtension(path, vec);
+    size_t index = _sc_vec[_server_i].getLocationVec().size() - 1;
+    _sc_vec[_server_i].setExtension(index, vec);
     return 0;
 }
 
@@ -96,7 +97,8 @@ int ConfigParser::parseUploadPlace(std::string path) {
         }
     }
     _i = pos + find_word.length();
-    _sc_vec[_server_i].setUploadPlace(path, upload_place);
+    size_t index = _sc_vec[_server_i].getLocationVec().size() - 1;
+    _sc_vec[_server_i].setUploadPlace(index, upload_place);
     return 0;
 }
 
@@ -138,7 +140,8 @@ int ConfigParser::parseReturn(std::string path) {
     //     }
     // }
     _i = pos + find_word.length();
-    _sc_vec[_server_i].setReturn(path, status_code, return_uri);
+    size_t index = _sc_vec[_server_i].getLocationVec().size() - 1;
+    _sc_vec[_server_i].setReturn(index, status_code, return_uri);
     return 0;
 }
 
@@ -156,7 +159,8 @@ int ConfigParser::parseAutoIndex(std::string path) {
         return 1;
     }
     _i = pos + find_word.length();
-    _sc_vec[_server_i].setAutoIndex(path, auto_index);
+    size_t index = _sc_vec[_server_i].getLocationVec().size() - 1;
+    _sc_vec[_server_i].setAutoIndex(index, auto_index);
     return 0;
 }
 
@@ -189,7 +193,8 @@ int ConfigParser::parseAlias(std::string path) {
         }
     }
     _i = pos + find_word.length();
-    _sc_vec[_server_i].setAlias(path, alias_path);
+    size_t index = _sc_vec[_server_i].getLocationVec().size() - 1;
+    _sc_vec[_server_i].setAlias(index, alias_path);
     return 0;
 }
 
@@ -201,18 +206,19 @@ int ConfigParser::parseIndex(std::string path) {
         std::cout << "find() in parseIndex failed" << std::endl;
         return 1;
     }
-    std::string index = _raw.substr(_i, pos - _i);
-    size_t len = index.length();
+    std::string index_file = _raw.substr(_i, pos - _i);
+    size_t len = index_file.length();
     size_t i = 0;
     while (i < len) {
-        if (std::isalnum(index[i]) == 0 && index[i] != '.') {
+        if (std::isalnum(index_file[i]) == 0 && index_file[i] != '.') {
             std::cout << "index invalid" << std::endl;
             return 1;
         }
         i++;
     }
     _i = pos + find_word.length();
-    _sc_vec[_server_i].setIndex(path, index);
+    size_t index = _sc_vec[_server_i].getLocationVec().size() - 1;
+    _sc_vec[_server_i].setIndex(index, index_file);
     return 0;
 }
 
@@ -228,12 +234,13 @@ int ConfigParser::parseAllowedMethod(std::string path) {
     size_t len = allowed_method.length();
     size_t i = 0;
     size_t j;
+    size_t index = _sc_vec[_server_i].getLocationVec().size() - 1;
     while (i < len) {
         j = 0;
         while (j < _allowed_methods.size()) {
             if (allowed_method.find(_allowed_methods[j], i) == i) {
                 _sc_vec[_server_i].setAllowedMethod(
-                    path,
+                    index,
                     _allowed_methods[j],
                     true);
                 i += _allowed_methods[j].length();
@@ -268,7 +275,10 @@ void ConfigParser::initLocationDirectiveFlag() {
     _location_extension_flag = false;
 }
 
-int ConfigParser::parseArrangedLocationDirectives(std::string path) {
+int ConfigParser::parseArrangedLocationDirectives
+(
+    const std::string & path
+) {
     size_t i = 0;
     std::string find_word = "\t\t";
     size_t pos;
@@ -392,7 +402,11 @@ int ConfigParser::parseLocation() {
             i++;
         }
     }
+    _sc_vec[_server_i].addLocation();
+    size_t index = _sc_vec[_server_i].getLocationVec().size() - 1;
+    _sc_vec[_server_i].setPath(index, path);
     _i = pos + find_word.length();
+
     if (parseArrangedLocationDirectives(path) != 0) {
         std::cout << "parseArrangedLocations() failed" << std::endl;
         return 1;
@@ -591,7 +605,8 @@ int ConfigParser::parseArrangedDirectives() {
                     std::cout << "parseErrorPage() failed" << std::endl;
                     return 1;
                 }
-            } else if (_searched_directives[i] == _searched_directives[4]) { // \n\tlocation
+            } else if (_searched_directives[i] == _searched_directives[4]) {
+                // \n\tlocation
                 if (parseLocation() != 0) {
                     std::cout << "parseLocation() failed" << std::endl;
                     return 1;
@@ -696,21 +711,21 @@ int ConfigParser::parse(const std::string &file) {
 //         std::cout << "_default_error_page[" << "0" << "][404] = " << cp.getDefaultErrorPage(0)[404] << std::endl;
 //         std::cout << "_default_error_page[" << "0" << "][500] = " << cp.getDefaultErrorPage(0)[500] << std::endl;
 //         std::cout << "_default_error_page[" << "1" << "][404] = " << cp.getDefaultErrorPage(1)[404] << std::endl;
-//         std::cout << "alias[/] = " << cp.getLocationMap(i)["/"].getAlias() << std::endl;
-//         std::cout << "alias[/bbb] = " << cp.getLocationMap(i)["/bbb"].getAlias() << std::endl;
-//         std::cout << "index_file[/] = " << cp.getLocationMap(i)["/"].getIndexFile() << std::endl;
-//         std::cout << "index_file[/bbb] = " << cp.getLocationMap(i)["/bbb"].getIndexFile() << std::endl;
-//         std::cout << "upload_place[/] = " << cp.getLocationMap(i)["/"].getUploadPlace() << std::endl;
-//         std::cout << "autoindex[/] = " << cp.getLocationMap(i)["/"].getAutoIndex() << std::endl;
-//         std::cout << cp.getLocationMap(i)["/"].getAllowedMethod().size() << std::endl;
-//         for (size_t j = 0; j < cp.getLocationMap(i)["/"].getAllowedMethod().size(); j++) {
-//             std::cout << "allowed_method[/] = " << cp.getLocationMap(i)["/"].getAllowedMethod()[j] << std::endl;
+//         std::cout << "alias[/] = " << cp.getLocationVec(i)["/"].getAlias() << std::endl;
+//         std::cout << "alias[/bbb] = " << cp.getLocationVec(i)["/bbb"].getAlias() << std::endl;
+//         std::cout << "index_file[/] = " << cp.getLocationVec(i)["/"].getIndexFile() << std::endl;
+//         std::cout << "index_file[/bbb] = " << cp.getLocationVec(i)["/bbb"].getIndexFile() << std::endl;
+//         std::cout << "upload_place[/] = " << cp.getLocationVec(i)["/"].getUploadPlace() << std::endl;
+//         std::cout << "autoindex[/] = " << cp.getLocationVec(i)["/"].getAutoIndex() << std::endl;
+//         std::cout << cp.getLocationVec(i)["/"].getAllowedMethod().size() << std::endl;
+//         for (size_t j = 0; j < cp.getLocationVec(i)["/"].getAllowedMethod().size(); j++) {
+//             std::cout << "allowed_method[/] = " << cp.getLocationVec(i)["/"].getAllowedMethod()[j] << std::endl;
 //         }
-//         for (size_t j = 0; j < cp.getLocationMap(i)["/"].getCgiExtensions().size(); j++) {
-//             std::cout << "extension[/] = " << cp.getLocationMap(i)["/"].getCgiExtensions()[j] << std::endl;
+//         for (size_t j = 0; j < cp.getLocationVec(i)["/"].getCgiExtensions().size(); j++) {
+//             std::cout << "extension[/] = " << cp.getLocationVec(i)["/"].getCgiExtensions()[j] << std::endl;
 //         }
-//         std::cout << "return.key = " << cp.getLocationMap(i)["/"].getReturn().first << std::endl;
-//         std::cout << "return.value = " << cp.getLocationMap(i)["/"].getReturn().second << std::endl;
+//         std::cout << "return.key = " << cp.getLocationVec(i)["/"].getReturn().first << std::endl;
+//         std::cout << "return.value = " << cp.getLocationVec(i)["/"].getReturn().second << std::endl;
 //         std::cout << "-----------------------------------------" << std::endl;
 //     }
 //     return 0;

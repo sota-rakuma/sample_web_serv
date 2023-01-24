@@ -43,7 +43,7 @@ public:
 		const std::string & getIndexFile() const;
 		const std::string & getUploadPlace() const;
 		const std::string & getAutoIndex() const;
-		std::map<std::string, bool> &getAllowedMethod();
+		const std::map<std::string, bool> &getAllowedMethod() const;
 		const std::vector<std::string> & getCgiExtensions() const;
 		const std::pair<int, std::string>& getReturn() const;
 	};
@@ -61,7 +61,7 @@ public:
 	~ServerConfig();
 	// size_t getMaxBodySize() const;
 	// ServerConfig & setMaxBodySize(size_t);
-	const Location & tryGetLocation(const std::string &);
+	const Location & tryGetLocation(const std::string &) const;
 	void setListen(const std::string&);
 	void setServerName(const std::string&);
 	void setMaxBodySize(const int);
@@ -84,6 +84,11 @@ public:
 	void setAutoIndex(size_t, const std::string &);
 	void setReturn(size_t, const int, const std::string&);
 	void setExtension(size_t, const std::vector<std::string> &);
+	void setPath(
+		size_t,
+		const std::string &
+	);
+	void addLocation();
 	 // for test
 	const std::string &getListen() const;
 	const std::string &getServerName() const;

@@ -49,7 +49,7 @@ ServerConfig::Location::~Location() {
 
 const ServerConfig::Location & ServerConfig::tryGetLocation(
 	const std::string & path
-)
+) const
 {
 	size_t candidate = _locations.size();
 	for (size_t i = 0; i < _locations.size(); i++)
@@ -148,6 +148,19 @@ void ServerConfig::setExtension(
 	_locations[index].setLocationExtension(extension_vec);
 }
 
+void ServerConfig::setPath(
+	size_t index,
+	const std::string &path
+)
+{
+	_locations[index].setLocationPath(path);
+}
+
+void ServerConfig::addLocation()
+{
+	_locations.push_back(Location());
+}
+
 void ServerConfig::Location::setLocationAllowedMethod(const std::map<std::string, bool> &method_map) {
 	for (std::map<std::string, bool>::const_iterator it = method_map.begin();
 		it != method_map.end();
@@ -236,7 +249,7 @@ const std::string & ServerConfig::Location::getAutoIndex() const
 	return _autoindex;
 };
 
-std::map<std::string, bool> &ServerConfig::Location::getAllowedMethod()
+const std::map<std::string, bool> &ServerConfig::Location::getAllowedMethod() const
 {
 	return _allowed_method;
 };
