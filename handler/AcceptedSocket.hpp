@@ -68,8 +68,9 @@ private:
 	int validateRequest();
 	int processObsFold();
 	void prepareEvent();
-	void preparePostEvent();
+	void prepareReceivingBody();
 	void addEvent();
+	bool isCGI() const;
 public:
 	AcceptedSocket();
 	AcceptedSocket(

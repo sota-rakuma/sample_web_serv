@@ -21,9 +21,10 @@ public:
 	};
 private:
 	int _fd;
-	bool _is_exist;
 	std::string _buff;
 	size_t _nb;
+	bool _autoindex;
+	std::string _index_file;
 public:
 	File();
 	File(
@@ -31,39 +32,9 @@ public:
 		std::list<ICommand *> *,
 		HTTPMethod *,
 		const std::string &,
-		AcceptedSocket *
-	);
-	File(
-		ISubject *,
-		std::list<ICommand *> *,
-		const std::string &,
-		int oflag,
-		AcceptedSocket *
-	);
-	File(
-		ISubject *,
-		std::list<ICommand *> *,
-		const std::string &,
-		int oflag,
-		int mode,
-		AcceptedSocket *
-	);
-	File(
-		ISubject *,
-		std::list<ICommand *> *,
-		HTTPMethod *,
-		const std::string &,
-		int oflag,
-		AcceptedSocket *
-	);
-	File(
-		ISubject *,
-		std::list<ICommand *> *,
-		HTTPMethod *,
-		const std::string &,
-		int oflag,
-		int mode,
-		AcceptedSocket *
+		AcceptedSocket *,
+		bool,
+		const std::string &
 	);
 	File(const File &);
 	virtual ~File();
@@ -71,6 +42,7 @@ public:
 	virtual int read();
 	virtual int write();
 	virtual int httpGet();
+	int processAutoindex();
 	virtual int httpPost();
 	virtual int httpDelete();
 	int getFd() const;
