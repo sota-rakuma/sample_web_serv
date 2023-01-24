@@ -94,7 +94,7 @@ int HTTPRequestParser::parseRequestLine(
 		return -1;
 	}
 	//_req->setRequestLine(method, target, version);
-	_req->setRequestLine(method, _tp.getPath(), version);
+	_req->setRequestLine(method, _tp.getPath() + _tp.getQuery(), version);
 	return 0;
 }
 
