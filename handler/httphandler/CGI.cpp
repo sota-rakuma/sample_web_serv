@@ -150,6 +150,9 @@ int CGI::write()
 
 int CGI::httpGet()
 {
+	if (isExecutable() == false) {
+		return -1;
+	}
 	executeCGI(GET);
 	getSubject()->subscribe(_c_to_p[IN], POLLIN, this);
 	return 0;
@@ -157,6 +160,9 @@ int CGI::httpGet()
 
 int CGI::httpPost()
 {
+	if (isExecutable() == false) {
+		return -1;
+	}
 	executeCGI(POST);
 	_buff = "value=aaaa&value_2=bbbb";
 	getSubject()->subscribe(_p_to_c[OUT], POLLOUT, this);
@@ -166,9 +172,32 @@ int CGI::httpPost()
 
 int CGI::httpDelete()
 {
+	if (isExecutable() == false) {
+		return -1;
+	}
 	executeCGI(DELETE);
 	getSubject()->subscribe(_c_to_p[IN], POLLIN, this);
 	return 0;
+}
+
+bool CGI::isExecutable()
+{
+	if (execStat() == -1) {
+		if (errno ==  ENOENT) {
+			getAcceptedSocket()->setStatus(NOT_FOUND);
+		} else if(errno == EACCES) {
+			getAcceptedSocket()->setStatus(FORBIDDEN);
+		} else {
+			getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
+		}
+		return false;
+	}
+	if (checkPermission(S_IXOTH) == false ||
+		isDirectory() == true) {
+		getAcceptedSocket()->setStatus(FORBIDDEN);
+		return false;
+	}
+	return true;
 }
 
 static void    perror_and_exit(std::string str) //

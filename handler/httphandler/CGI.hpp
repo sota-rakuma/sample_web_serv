@@ -16,6 +16,8 @@ private:
 	std::string _buff;
 	size_t _nb;
 	bool _is_exutetable;
+private:
+	bool isExecutable();
 public:
 	CGI();
 	CGI(

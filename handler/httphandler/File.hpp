@@ -25,6 +25,8 @@ private:
 	size_t _nb;
 	bool _autoindex;
 	std::string _index_file;
+private:
+	int processAutoindex();
 public:
 	File();
 	File(
@@ -42,7 +44,6 @@ public:
 	virtual int read();
 	virtual int write();
 	virtual int httpGet();
-	int processAutoindex();
 	virtual int httpPost();
 	virtual int httpDelete();
 	int getFd() const;
