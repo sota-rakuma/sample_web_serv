@@ -8,22 +8,14 @@
 #include <string>
 #include <stdexcept>
 
-class AcceptedSocket;
-
 class CGI : public HTTPMethodReceiver, public IObserver
 {
 private:
-	// int _pipe_fd[2];
 	int _p_to_c[2];
 	int _c_to_p[2];
-	//int _in_fd;
-	//int _out_fd;
 	std::string _buff;
 	size_t _nb;
 	bool _is_exutetable;
-	HTTPStatus _status;
-	std::string _path;
-	AcceptedSocket *_as;
 public:
 	CGI();
 	CGI(

@@ -4,7 +4,6 @@
 #include "IOEventHandler.hpp"
 #include "../parser/Context.hpp"
 #include "../parser/HTTPRequestParser.hpp"
-#include "httphandler/HTTPMethodReceiver.hpp"
 #include "../HTTP/HTTPRequest.hpp"
 #include "../HTTP/HTTPResponse.hpp"
 #include "../command/Read.hpp"
@@ -33,8 +32,7 @@ enum Progress
 	ERROR,
 };
 
-class File;
-class CGI;
+class HTTPMethodReciever;
 
 class AcceptedSocket : public IOEventHandler, public IObserver
 {

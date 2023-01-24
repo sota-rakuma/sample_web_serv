@@ -1,4 +1,5 @@
 #include "AcceptedSocket.hpp"
+#include "httphandler/HTTPMethodReceiver.hpp"
 #include "httphandler/CGI.hpp"
 #include "httphandler/File.hpp"
 #include "../command/Get.hpp"
@@ -136,6 +137,7 @@ void AcceptedSocket::processRequest(const std::string & raw)
 	case EXECUTE_METHOD:
 		addEvent();
 	case CREATE_RESPONSE:
+		//createResponse();
 	case ERROR:
 	default:
 		break;
@@ -380,6 +382,11 @@ void AcceptedSocket::addEvent()
 	} else {
 		command = new Delete();
 	}
+	// pathを書き換えないといけない。
+	//std::string path = rl.getTarget();
+	//if (_location.getAlias() != "default") {
+		//path.replace(path.find)
+	//}
 	if (_location.getCgiExtensions().size() > 0) {
 		_receiver = new CGI(getSubject(),
 						getCommandList(),
@@ -436,8 +443,6 @@ void AcceptedSocket::createResponse(const std::string & body)
 	_buff = body;
 	getSubject()->subscribe(_sockfd, POLLOUT, this);
 }
-
-
 
 // for test
 void AcceptedSocket::processTest()

@@ -9,8 +9,6 @@
 #include <stdexcept>
 #include <list>
 
-class AcceptedSocket;
-
 class File : public HTTPMethodReceiver, public IObserver
 {
 public:
@@ -24,11 +22,8 @@ public:
 private:
 	int _fd;
 	bool _is_exist;
-	std::string _path;
 	std::string _buff;
 	size_t _nb;
-	HTTPStatus _status;
-	AcceptedSocket * _as;
 public:
 	File();
 	File(
