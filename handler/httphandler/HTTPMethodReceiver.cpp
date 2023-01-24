@@ -29,16 +29,6 @@ _method(static_cast<HTTPMethod *>(NULL)),
 _as(as),
 _path(path)
 {
-	if (stat(path.c_str(), &_state) == -1) {
-		if (errno ==  ENOENT) {
-			as->setStatus(NOT_FOUND);
-		} else if(errno == EACCES) {
-			as->setStatus(FORBIDDEN);
-		} else {
-			as->setStatus(INTERNAL_SERVER_ERROR);
-		}
-		throw std::runtime_error("stat error");
-	}
 }
 
 HTTPMethodReceiver::HTTPMethodReceiver(
@@ -53,16 +43,6 @@ _method(method),
 _as(as),
 _path(path)
 {
-	if (stat(path.c_str(), &_state) == -1) {
-		if (errno == ENOENT) {
-			as->setStatus(NOT_FOUND);
-		} else if (errno == EACCES) {
-			as->setStatus(FORBIDDEN);
-		}else {
-			as->setStatus(INTERNAL_SERVER_ERROR);
-		}
-		throw std::runtime_error("stat error");
-	}
 }
 
 HTTPMethodReceiver::~HTTPMethodReceiver()
@@ -102,6 +82,11 @@ void HTTPMethodReceiver::setAcceptedSocket(
 void HTTPMethodReceiver::setPath(const std::string & path)
 {
 	_path = path;
+}
+
+int HTTPMethodReceiver::execStat()
+{
+	return stat(_path.c_str(), &_state);
 }
 
 bool HTTPMethodReceiver::isDirectory() const

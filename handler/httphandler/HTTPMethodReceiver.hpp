@@ -16,8 +16,9 @@ class HTTPMethodReceiver : public IOEventHandler
 private:
 	HTTPMethod *_method;
 	AcceptedSocket *_as;
-	std::string _path;
 	struct stat _state;
+protected:
+	std::string _path;
 public:
 	HTTPMethodReceiver();
 	HTTPMethodReceiver(
@@ -44,6 +45,7 @@ public:
 	virtual int httpGet() = 0;
 	virtual int httpPost() = 0;
 	virtual int httpDelete() = 0;
+	int execStat();
 	bool isDirectory() const;
 	bool isRegularFile() const;
 	bool checkPermission(mode_t) const;

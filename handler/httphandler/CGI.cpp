@@ -20,25 +20,12 @@ CGI::CGI(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
 	const std::string & path,
-	bool is_executable,
-	AcceptedSocket *as
+	const std::string & query,
+	AcceptedSocket * as
 )
 :HTTPMethodReceiver(subject, commands, as, path),
-_buff(""),
-_is_exutetable(is_executable)
-{
-}
-
-CGI::CGI(
-	ISubject * subject,
-	std::list<ICommand *> * commands,
-	const std::string & path,
-	bool is_executable,
-	AcceptedSocket *as
-)
-:HTTPMethodReceiver(subject, commands, as, path),
-_buff(),
-_is_exutetable(is_executable)
+_query(query),
+_buff()
 {
 }
 
@@ -47,32 +34,19 @@ CGI::CGI(
 	std::list<ICommand *> * commands,
 	HTTPMethod *method,
 	const std::string & path,
+	const std::string & query,
 	AcceptedSocket * as
 )
 :HTTPMethodReceiver(subject, commands, method, as, path),
+_query(query),
 _buff()
-{
-}
-
-
-CGI::CGI(
-	ISubject * subject,
-	std::list<ICommand *> * commands,
-	HTTPMethod*method,
-	const std::string & path,
-	bool is_executable,
-	AcceptedSocket *as
-)
-:HTTPMethodReceiver(subject, commands, method, as, path),
-_buff(""),
-_is_exutetable(is_executable)
 {
 }
 
 CGI::CGI(const CGI & another)
 :HTTPMethodReceiver(another.getSubject(), another.getCommandList(), another.getHTTPMethod(), another.getAcceptedSocket(), another.getPath()),
 _buff(another._buff),
-_is_exutetable(another._is_exutetable)
+_query(another._query)
 {
 }
 
@@ -150,6 +124,9 @@ int CGI::write()
 
 int CGI::httpGet()
 {
+	if (isExecutable() == false) {
+		return -1;
+	}
 	executeCGI(GET);
 	getSubject()->subscribe(_c_to_p[IN], POLLIN, this);
 	return 0;
@@ -157,6 +134,9 @@ int CGI::httpGet()
 
 int CGI::httpPost()
 {
+	if (isExecutable() == false) {
+		return -1;
+	}
 	executeCGI(POST);
 	_buff = "value=aaaa&value_2=bbbb";
 	getSubject()->subscribe(_p_to_c[OUT], POLLOUT, this);
@@ -166,9 +146,32 @@ int CGI::httpPost()
 
 int CGI::httpDelete()
 {
+	if (isExecutable() == false) {
+		return -1;
+	}
 	executeCGI(DELETE);
 	getSubject()->subscribe(_c_to_p[IN], POLLIN, this);
 	return 0;
+}
+
+bool CGI::isExecutable()
+{
+	if (execStat() == -1) {
+		if (errno ==  ENOENT) {
+			getAcceptedSocket()->setStatus(NOT_FOUND);
+		} else if(errno == EACCES) {
+			getAcceptedSocket()->setStatus(FORBIDDEN);
+		} else {
+			getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
+		}
+		return false;
+	}
+	if (checkPermission(S_IXOTH) == false ||
+		isDirectory() == true) {
+		getAcceptedSocket()->setStatus(FORBIDDEN);
+		return false;
+	}
+	return true;
 }
 
 static void    perror_and_exit(std::string str) //
@@ -282,15 +285,4 @@ int CGI::getInFd() const
 int CGI::getOutFd() const
 {
 	return _p_to_c[OUT];
-}
-
-bool CGI::getExectableFlag() const
-{
-	return _is_exutetable;
-}
-
-CGI &CGI::setExectableFlag(bool f)
-{
-	_is_exutetable = f;
-	return *this;
 }

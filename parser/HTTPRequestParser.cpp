@@ -93,8 +93,11 @@ int HTTPRequestParser::parseRequestLine(
 	if (parseHTTPVersion(version) == -1) {
 		return -1;
 	}
-	//_req->setRequestLine(method, target, version);
-	_req->setRequestLine(method, _tp.getPath(), version);
+	if (_tp.getQuery().size() > 0) {
+		_req->setRequestLine(method, _tp.getPath() + "?" + _tp.getQuery(), version);
+	} else {
+		_req->setRequestLine(method, _tp.getPath(), version);
+	}
 	return 0;
 }
 

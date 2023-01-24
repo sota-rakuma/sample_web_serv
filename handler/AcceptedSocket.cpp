@@ -185,7 +185,7 @@ void AcceptedSocket::processRequestHeader(
 	}
 	try
 	{
-		_location = _config.tryGetLocation(_req.getRequestLine().getTarget());
+		_location = _config.tryGetLocation(_req.getRequestLine().getPath());
 	}
 	catch(const std::exception& e)
 	{
@@ -271,13 +271,13 @@ void AcceptedSocket::prepareEvent()
 		_progress = ERROR;
 		return ;
 	} else if (it->first == POST) {
-		return preparePostEvent();
+		return prepareReceivingBody();
 	}
 	_progress = EXECUTE_METHOD;
 }
 
 // これでcontent-dis
-void AcceptedSocket::preparePostEvent()
+void AcceptedSocket::prepareReceivingBody()
 {
 	try
 	{
@@ -371,47 +371,53 @@ void AcceptedSocket::processChunkedBody(
 	}
 }
 
-// GET/POSTの中でファイルオープン
 void AcceptedSocket::addEvent()
 {
-	// pathを書き換えないといけない。
-	// postならupload_placeに
-	//std::string path = rl.getTarget();
-	//if (_location.getAlias() != "default") {
-		//path.replace(path.find)
-	//}
 	const HTTPRequest::RequestLine & rl =  _req.getRequestLine();
+	std::string path = rl.getPath();
+	if (_location.getAlias() != "default") {
+		path.replace(0,
+			_location.getPath().size(),
+			_location.getAlias());
+	}
 	HTTPMethod *command;
+
 	if (rl.getMethod() == "GET") {
 		command = new Get();
 	} else if (rl.getMethod() == "POST") {
+		if (_location.getUploadPlace() != "default") {
+			path.replace(0,
+				_location.getPath().size(),
+				_location.getUploadPlace());
+		}
 		command = new Post();
 	} else {
 		command = new Delete();
 	}
-	try
-	{
-		if (_location.getCgiExtensions().size() > 0) {
-			_receiver = new CGI(getSubject(),
-							getCommandList(),
-							command,
-							rl.getTarget(),
-							this);
-		} else {
-			_receiver = new File(getSubject(),
-							getCommandList(),
-							command,
-							rl.getTarget(),
-							this);
-		}
-	}
-	catch(const std::exception& e)
-	{
-		_progress = ERROR;
-		return ;
+	if (isCGI() == true) {
+		_receiver = new CGI(getSubject(),
+						getCommandList(),
+						command,
+						path,
+						rl.getQuery(),
+						this);
+	} else {
+		_receiver = new File(getSubject(),
+						getCommandList(),
+						command,
+						path,
+						this,
+						_location.getAutoIndex() == "on",
+						_location.getIndexFile()
+						);
 	}
 	command->setReceiver(_receiver);
 	getCommandList()->push_back(_receiver->getHTTPMethod());
+}
+
+bool AcceptedSocket::isCGI() const
+{
+	return _location.getCgiExtensions().size() > 0;
 }
 
 // for test
@@ -486,14 +492,14 @@ void AcceptedSocket::processTest()
 	//	this
 	//);
 
-	_receiver = new File (
-		getSubject(),
-		getCommandList(),
-		current_dir,
-		O_RDWR | O_CREAT | O_EXCL,
-		S_IWGRP,
-		this
-	);
+	//_receiver = new File (
+	//	getSubject(),
+	//	getCommandList(),
+	//	current_dir,
+	//	O_RDWR | O_CREAT | O_EXCL,
+	//	S_IWGRP,
+	//	this
+	//);
 
 	//_receiver = new CGI(getSubject(),
 	//					getCommandList(),

@@ -15,26 +15,15 @@ private:
 	int _c_to_p[2];
 	std::string _buff;
 	size_t _nb;
-	bool _is_exutetable;
+	std::string _query;
+private:
+	bool isExecutable();
 public:
 	CGI();
 	CGI(
 		ISubject *,
 		std::list<ICommand *> *,
 		const std::string &,
-		AcceptedSocket *
-	);
-	CGI(
-		ISubject *,
-		std::list<ICommand *> *,
-		const std::string &,
-		bool,
-		AcceptedSocket *
-	);
-	CGI(
-		ISubject *,
-		std::list<ICommand *> *,
-		HTTPMethod *,
 		const std::string &,
 		AcceptedSocket *
 	);
@@ -43,7 +32,7 @@ public:
 		std::list<ICommand *> *,
 		HTTPMethod *,
 		const std::string &,
-		bool,
+		const std::string &,
 		AcceptedSocket *
 	);
 	CGI(const CGI &);

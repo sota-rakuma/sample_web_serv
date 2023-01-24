@@ -18,7 +18,8 @@ public:
 	private:
 		std::string _method;
 		// targetは権限とかのチェックを行っときたい
-		std::string _target;
+		std::string _path;
+		std::string _query;
 		std::string _version;
 	public:
 		RequestLine();
@@ -32,7 +33,8 @@ public:
 		);
 		~RequestLine();
 		const std::string & getMethod() const;
-		const std::string & getTarget() const;
+		const std::string & getPath() const;
+		const std::string & getQuery() const;
 		const std::string & getHTTPVersion() const;
 		RequestLine & setMethod(
 			const std::string &
@@ -41,6 +43,7 @@ public:
 			const std::string &
 		);
 		void normalizeTarget(
+			bool,
 			std::string &
 		);
 		void removeDotSegment(
