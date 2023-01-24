@@ -94,10 +94,6 @@ int File::write()
 
 int File::httpGet()
 {
-	size_t q = _path.find('?');
-	if (q != std::string::npos) {
-		_path.erase(q, _path.size() - q);
-	}
 	if (execStat() == -1) {
 		if (errno ==  ENOENT) {
 			getAcceptedSocket()->setStatus(NOT_FOUND);
