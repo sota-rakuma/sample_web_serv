@@ -149,6 +149,10 @@ int File::httpPost()
 		getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
 		return -1;
 	}
+	if (isRegularFile() == false) {
+		getAcceptedSocket()->setStatus(FORBIDDEN);
+		return -1;
+	}
 	if (checkPermission(S_IWOTH) == false) {
 		getAcceptedSocket()->setStatus(FORBIDDEN);
 		return -1;
