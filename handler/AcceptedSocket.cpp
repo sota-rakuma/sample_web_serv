@@ -399,6 +399,7 @@ void AcceptedSocket::addEvent()
 						getCommandList(),
 						command,
 						path,
+						rl.getQuery(),
 						this);
 	} else {
 		_receiver = new File(getSubject(),

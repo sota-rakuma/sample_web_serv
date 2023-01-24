@@ -20,25 +20,12 @@ CGI::CGI(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
 	const std::string & path,
-	bool is_executable,
-	AcceptedSocket *as
+	const std::string & query,
+	AcceptedSocket * as
 )
 :HTTPMethodReceiver(subject, commands, as, path),
-_buff(""),
-_is_exutetable(is_executable)
-{
-}
-
-CGI::CGI(
-	ISubject * subject,
-	std::list<ICommand *> * commands,
-	const std::string & path,
-	bool is_executable,
-	AcceptedSocket *as
-)
-:HTTPMethodReceiver(subject, commands, as, path),
-_buff(),
-_is_exutetable(is_executable)
+_query(query),
+_buff()
 {
 }
 
@@ -47,32 +34,19 @@ CGI::CGI(
 	std::list<ICommand *> * commands,
 	HTTPMethod *method,
 	const std::string & path,
+	const std::string & query,
 	AcceptedSocket * as
 )
 :HTTPMethodReceiver(subject, commands, method, as, path),
+_query(query),
 _buff()
-{
-}
-
-
-CGI::CGI(
-	ISubject * subject,
-	std::list<ICommand *> * commands,
-	HTTPMethod*method,
-	const std::string & path,
-	bool is_executable,
-	AcceptedSocket *as
-)
-:HTTPMethodReceiver(subject, commands, method, as, path),
-_buff(""),
-_is_exutetable(is_executable)
 {
 }
 
 CGI::CGI(const CGI & another)
 :HTTPMethodReceiver(another.getSubject(), another.getCommandList(), another.getHTTPMethod(), another.getAcceptedSocket(), another.getPath()),
 _buff(another._buff),
-_is_exutetable(another._is_exutetable)
+_query(another._query)
 {
 }
 
@@ -311,15 +285,4 @@ int CGI::getInFd() const
 int CGI::getOutFd() const
 {
 	return _p_to_c[OUT];
-}
-
-bool CGI::getExectableFlag() const
-{
-	return _is_exutetable;
-}
-
-CGI &CGI::setExectableFlag(bool f)
-{
-	_is_exutetable = f;
-	return *this;
 }
