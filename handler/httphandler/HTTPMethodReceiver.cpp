@@ -31,9 +31,11 @@ _path(path)
 {
 	if (stat(path.c_str(), &_state) == -1) {
 		if (errno ==  ENOENT) {
-			_as->setStatus(NOT_FOUND);
+			as->setStatus(NOT_FOUND);
+		} else if(errno == EACCES) {
+			as->setStatus(FORBIDDEN);
 		} else {
-			_as->setStatus(INTERNAL_SERVER_ERROR);
+			as->setStatus(INTERNAL_SERVER_ERROR);
 		}
 		throw std::runtime_error("stat error");
 	}
@@ -52,10 +54,12 @@ _as(as),
 _path(path)
 {
 	if (stat(path.c_str(), &_state) == -1) {
-		if (errno ==  ENOENT) {
-			_as->setStatus(NOT_FOUND);
-		} else {
-			_as->setStatus(INTERNAL_SERVER_ERROR);
+		if (errno == ENOENT) {
+			as->setStatus(NOT_FOUND);
+		} else if (errno == EACCES) {
+			as->setStatus(FORBIDDEN);
+		}else {
+			as->setStatus(INTERNAL_SERVER_ERROR);
 		}
 		throw std::runtime_error("stat error");
 	}

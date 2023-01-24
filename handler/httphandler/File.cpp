@@ -163,11 +163,13 @@ int File::write()
 int File::httpGet()
 {
 	// autoindex ha?
+	if (checkPermission(S_IROTH) == false) {
+		getAcceptedSocket()->setStatus(FORBIDDEN);
+		return -1;
+	}
 	_fd = open(getPath().c_str(), O_RDONLY | O_CLOEXEC);
 	if (_fd == -1) {
 		getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
-		//throw FileError("open");
-		//_as->createResponse();
 		return -1;
 	}
 	getSubject()->subscribe(_fd, POLLIN, this);
@@ -177,6 +179,21 @@ int File::httpGet()
 // writeした後にファイルの内容を取得
 int File::httpPost()
 {
+	if (checkPermission(S_IWOTH) == false) {
+		getAcceptedSocket()->setStatus(FORBIDDEN);
+		return -1;
+	}
+	if (isDirectory() == true) {
+// content-typeから拡張子を
+		_fd = open(getPath().c_str(), O_RDWR | O_CREAT | O_EXCL | O_CLOEXEC);
+	} else {
+		_fd = open(getPath().c_str(), O_WRONLY | O_APPEND | O_CLOEXEC);
+	}
+	if (_fd == -1) {
+		getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
+		//_as->createResponse();
+		return -1;
+	}
 	_buff = "value=aaaa&value_2=bbbb";
 	getSubject()->subscribe(_fd, POLLOUT, this);
 	return 0;
@@ -184,12 +201,16 @@ int File::httpPost()
 
 int File::httpDelete()
 {
-	int file_fd;
-	// ファイルのpathをセット
-	std::string file_path = "confファイルから取得"; //
-	// ファイルの存在を確認
-	close(file_fd);
-	getSubject()->subscribe(_fd, POLLOUT, this);
+	if (unlink(getPath().c_str()) == -1) {
+		if (errno == EACCES) {
+			getAcceptedSocket()->setStatus(UNAUTHORIZED);
+		} else if (errno == EBUSY) {
+			getAcceptedSocket()->setStatus(CONFLICT);
+		} else {
+			getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
+		}
+		return -1;
+	}
 	return 0;
 }
 

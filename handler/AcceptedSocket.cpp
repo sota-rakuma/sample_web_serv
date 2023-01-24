@@ -276,6 +276,7 @@ void AcceptedSocket::prepareEvent()
 	_progress = EXECUTE_METHOD;
 }
 
+// これでcontent-dis
 void AcceptedSocket::preparePostEvent()
 {
 	try
@@ -373,6 +374,12 @@ void AcceptedSocket::processChunkedBody(
 // GET/POSTの中でファイルオープン
 void AcceptedSocket::addEvent()
 {
+	// pathを書き換えないといけない。
+	// postならupload_placeに
+	//std::string path = rl.getTarget();
+	//if (_location.getAlias() != "default") {
+		//path.replace(path.find)
+	//}
 	const HTTPRequest::RequestLine & rl =  _req.getRequestLine();
 	HTTPMethod *command;
 	if (rl.getMethod() == "GET") {
@@ -382,11 +389,6 @@ void AcceptedSocket::addEvent()
 	} else {
 		command = new Delete();
 	}
-	// pathを書き換えないといけない。
-	//std::string path = rl.getTarget();
-	//if (_location.getAlias() != "default") {
-		//path.replace(path.find)
-	//}
 	try
 	{
 		if (_location.getCgiExtensions().size() > 0) {
@@ -489,7 +491,7 @@ void AcceptedSocket::processTest()
 		getCommandList(),
 		current_dir,
 		O_RDWR | O_CREAT | O_EXCL,
-		S_IRWXU,
+		S_IWGRP,
 		this
 	);
 
