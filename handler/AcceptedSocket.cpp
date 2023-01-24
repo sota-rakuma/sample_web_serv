@@ -185,7 +185,7 @@ void AcceptedSocket::processRequestHeader(
 	}
 	try
 	{
-		_location = _config.tryGetLocation(_req.getRequestLine().getTarget());
+		_location = _config.tryGetLocation(_req.getRequestLine().getPath());
 	}
 	catch(const std::exception& e)
 	{
@@ -374,7 +374,7 @@ void AcceptedSocket::processChunkedBody(
 void AcceptedSocket::addEvent()
 {
 	const HTTPRequest::RequestLine & rl =  _req.getRequestLine();
-	std::string path = rl.getTarget();
+	std::string path = rl.getPath();
 	if (_location.getAlias() != "default") {
 		path.replace(0,
 			_location.getPath().size(),

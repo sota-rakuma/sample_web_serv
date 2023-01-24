@@ -5,7 +5,7 @@
 
 HTTPRequest::RequestLine::RequestLine()
 :_method(),
-_target(),
+_path(),
 _version()
 {
 }
@@ -16,7 +16,7 @@ HTTPRequest::RequestLine::RequestLine(
 	const std::string & version
 )
 :_method(method),
-_target(target),
+_path(target),
 _version(version)
 {
 }
@@ -25,7 +25,7 @@ HTTPRequest::RequestLine::RequestLine(
 	const RequestLine & another
 )
 :_method(another._method),
-_target(another._target),
+_path(another._path),
 _version(another._version)
 {
 }
@@ -41,9 +41,15 @@ HTTPRequest::RequestLine::getMethod() const
 }
 
 const std::string &
-HTTPRequest::RequestLine::getTarget() const
+HTTPRequest::RequestLine::getPath() const
 {
-	return _target;
+	return _path;
+}
+
+const std::string &
+HTTPRequest::RequestLine::getQuery() const
+{
+	return _query;
 }
 
 const std::string &
@@ -66,12 +72,18 @@ HTTPRequest::RequestLine::setTarget(
 	const std::string & target
 )
 {
-	std::string normalized;
-	normalized = target;
-	normalizeTarget(normalized);
-	_target = normalized;
+	size_t q = target.rfind('?');
+	if (q != std::string::npos) {
+		_path = target.substr(0, q + 1);
+		_query = target.substr(q);
+		normalizeTarget(_query);
+	} else {
+		_path = target;
+	}
+	normalizeTarget(_path);
 	return *this;
 }
+
 
 void HTTPRequest::RequestLine::normalizeTarget(
 	std::string & normalized
@@ -184,7 +196,7 @@ HTTPRequest::RequestLine &
 HTTPRequest::RequestLine::operator=(const RequestLine & rhs)
 {
 	_method = rhs._method;
-	_target = rhs._target;
+	_path = rhs._path;
 	_version = rhs._version;
 	return *this;
 }
@@ -299,7 +311,8 @@ std::ostream &operator<<(
 	const HTTPRequest::RequestLine & reql = req.getRequestLine();
 	os << "REQUEST LINE" << std::endl
 	<< "Method: " << addColorText(reql.getMethod(), BLUE) << std::endl
-	<< "Target: " << reql.getTarget() << std::endl
+	<< "Path: " << reql.getPath() << std::endl
+	<< "Query: " << reql.getQuery() << std::endl
 	<< "HTTPVersion: " << reql.getHTTPVersion() << std::endl << std::endl;
 
 	const std::map<std::string, std::string> & hf = req.getHeaderField();
