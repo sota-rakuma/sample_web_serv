@@ -51,27 +51,26 @@ const ServerConfig::Location & ServerConfig::tryGetLocation(
 	const std::string & path
 )
 {
-	std::map<std::string, Location>::iterator candidate = _locations.end();
-	for (std::map<std::string, Location>::iterator it = _locations.begin();
-		it != _locations.end();
-		it++)
+	size_t candidate = _locations.size();
+	for (size_t i = 0; i < _locations.size(); i++)
 	{
-		if (path.rfind(it->first, it->first.size() - 1) != std::string::npos)
+		if (path.rfind(_locations[i].getPath(),
+					_locations[i].getPath().size() - 1) != std::string::npos)
 		{
-			candidate = it;
+			candidate = i;
 		}
 	}
-	if (candidate == _locations.end()) {
+	if (candidate == _locations.size()) {
 		throw std::runtime_error("this resource is forbidden");
 	}
-	return candidate->second;
+	return _locations[candidate];
 }
 
-void ServerConfig::setListen(const std::string value) {
+void ServerConfig::setListen(const std::string &value) {
 	_listen = value;
 }
 
-void ServerConfig::setServerName(const std::string value) {
+void ServerConfig::setServerName(const std::string &value) {
 	_server_name = value;
 }
 
@@ -79,53 +78,77 @@ void ServerConfig::setMaxBodySize(const int value) {
 	_max_body_size = value;
 }
 
-void ServerConfig::setDefaultErrorPages(const std::vector<int> status_codes, const std::string dep) {
+void ServerConfig::setDefaultErrorPages(
+	const std::vector<int> &status_codes,
+	const std::string &dep
+)
+{
 	for (size_t i = 0; i < status_codes.size(); i++)
 		_default_error_pages.insert(std::make_pair(status_codes[i], dep));
 }
 
-void ServerConfig::setAllowedMethod(const std::string path, const std::map<std::string, bool> method_map) {
-	// for (size_t i = 0; i < method_vec.size(); i++) {
-		// _locations[path]._allowed_method[i] = method_vec[i]; //= method_vec[i];
-		_locations[path].setLocationAllowedMethod(method_map); //= method_vec[i];
-	// }
+void ServerConfig::setAllowedMethod(
+	size_t index,
+	const std::map<std::string, bool> &method_map
+)
+{
+		_locations[index].setLocationAllowedMethod(method_map);
 }
 
 void ServerConfig::setAllowedMethod(
-	const std::string & path,
+	size_t index,
 	const std::string & key,
 	bool val
 )
 {
-	_locations[path].changeAllowedMethodValue(key, val);
+	_locations[index].changeAllowedMethodValue(key, val);
 }
 
-void ServerConfig::setIndex(const std::string path, const std::string index_file) {
-	_locations[path].setLocationIndex(index_file);
+void ServerConfig::setIndex(
+	size_t index,
+	const std::string &index_file
+) {
+	_locations[index].setLocationIndex(index_file);
 }
 
-void ServerConfig::setAlias(const std::string path, const std::string alias_path) {
+void ServerConfig::setAlias(
+	size_t index,
+	const std::string &alias_path
+) {
 	// std::cout << "alias_path in setAlias = " << alias_path << std::endl;
-	_locations[path].setLocationAlias(alias_path);
+	_locations[index].setLocationAlias(alias_path);
 }
 
-void ServerConfig::setUploadPlace(const std::string path, const std::string upload_place) {
-	_locations[path].setLocationUploadPlace(upload_place);
+void ServerConfig::setUploadPlace(
+	size_t index,
+	const std::string &upload_place
+) {
+	_locations[index].setLocationUploadPlace(upload_place);
 }
 
-void ServerConfig::setAutoIndex(const std::string path, const std::string on) {
-	_locations[path].setLocationAutoIndex(on);
+void ServerConfig::setAutoIndex(
+	size_t index,
+	 const std::string &on
+) {
+	_locations[index].setLocationAutoIndex(on);
 }
 
-void ServerConfig::setReturn(const std::string path, const int status_code, const std::string return_uri) {
-	_locations[path].setLocationReturn(status_code, return_uri);
+void ServerConfig::setReturn(
+	size_t index,
+	const int status_code,
+	const std::string &return_uri
+) {
+	_locations[index].setLocationReturn(status_code, return_uri);
 }
 
-void ServerConfig::setExtension(const std::string path, const std::vector<std::string> extension_vec) {
-	_locations[path].setLocationExtension(extension_vec);
+void ServerConfig::setExtension(
+	size_t index,
+	const std::vector<std::string> &extension_vec
+) {
+	_locations[index].setLocationExtension(extension_vec);
 }
 
-void ServerConfig::Location::setLocationAllowedMethod(const std::map<std::string, bool> method_map) {
+void ServerConfig::Location::setLocationAllowedMethod(const std::map<std::string, bool> &method_map) {
 	for (std::map<std::string, bool>::const_iterator it = method_map.begin();
 		it != method_map.end();
 		it++)
@@ -142,31 +165,56 @@ void ServerConfig::Location::changeAllowedMethodValue(
 	_allowed_method[key] = val;
 }
 
-void ServerConfig::Location::setLocationIndex(const std::string index_file) {
+void ServerConfig::Location::setLocationPath(
+	const std::string & path
+)
+{
+	_path = path;
+}
+
+void ServerConfig::Location::setLocationIndex(
+	const std::string &index_file
+) {
 	_index_file = index_file;
 }
 
-void ServerConfig::Location::setLocationAlias(const std::string alias_path) {
+void ServerConfig::Location::setLocationAlias(
+	const std::string &alias_path
+) {
 	_alias = alias_path;
 }
 
-void ServerConfig::Location::setLocationUploadPlace(const std::string upload_place) {
+void ServerConfig::Location::setLocationUploadPlace(
+	const std::string &upload_place
+) {
 	_upload_place = upload_place;
 }
 
-void ServerConfig::Location::setLocationAutoIndex(const std::string on) {
+void ServerConfig::Location::setLocationAutoIndex(
+	const std::string &on
+) {
 	_autoindex = on;
 }
 
-void ServerConfig::Location::setLocationReturn(const int status_code, const std::string return_uri) {
+void ServerConfig::Location::setLocationReturn(
+	const int status_code,
+	const std::string &return_uri
+) {
 	_return.first = status_code;
 	_return.second = return_uri;
 }
 
-void ServerConfig::Location::setLocationExtension(const std::vector<std::string> extension_vec) {
+void ServerConfig::Location::setLocationExtension(
+	const std::vector<std::string> &extension_vec
+) {
 	for (size_t i = 0; i < extension_vec.size(); i++) {
 		_cgi_extensions.push_back(extension_vec[i]);
 	}
+}
+
+const std::string & ServerConfig::Location::getPath() const
+{
+	return _path;
 }
 
 const std::string & ServerConfig::Location::getAlias() const {
@@ -223,7 +271,8 @@ std::map<int, std::string> &ServerConfig::getDefaultErrorPage()
 	return _default_error_pages;
 };
 
-std::map<std::string, ServerConfig::Location> & ServerConfig::getLocationMap()
+const std::vector<ServerConfig::Location> &
+ ServerConfig::getLocationVec()
 {
 	return _locations;
 };
