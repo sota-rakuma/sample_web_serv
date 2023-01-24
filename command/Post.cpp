@@ -1,12 +1,12 @@
 #include "Post.hpp"
 
 Post::Post()
-:_receiver(static_cast<HTTPMethodReceiver *>(NULL))
+:HTTPMethod()
 {
 }
 
 Post::Post(HTTPMethodReceiver *eh)
-:_receiver(eh)
+:HTTPMethod(eh)
 {
 }
 
@@ -16,5 +16,6 @@ Post::~Post()
 
 int Post::execute()
 {
-	return _receiver->httpPost();
+	return getReceiver()->httpPost();
 }
+

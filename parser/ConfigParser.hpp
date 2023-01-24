@@ -8,6 +8,7 @@
 #include <cctype>
 #include <unistd.h>
 #include <set>
+#include <map>
 #include "../config/ServerConfigFinder.hpp"
 #include "../config/ServerConfig.hpp"
 #include "TargetParser.hpp"
@@ -49,7 +50,7 @@ class ConfigParser
         int parseMaxBodySize();
         int parseErrorPage();
         int parseLocation();
-        int parseArrangedLocationDirectives(std::string);
+        int parseArrangedLocationDirectives(const std::string &);
         int parseAllowedMethod(std::string);
         int parseIndex(std::string);
         int parseAlias(std::string);
@@ -64,8 +65,19 @@ class ConfigParser
         std::string getListen(size_t i) const {return _sc_vec[i].getListen();};
         std::string getServerName(size_t i) const {return _sc_vec[i].getServerName();};
         int getMaxBodySize(size_t i) const {return _sc_vec[i].getMaxBodySize();};
-        std::map<int, std::string> getDefaultErrorPage(size_t i) const {return _sc_vec[i].getDefaultErrorPage();};
-        std::map<std::string, ServerConfig::Location> getLocationMap(size_t i) const {return _sc_vec[i].getLocationMap();};
+
+        std::map<int, std::string> &
+        getDefaultErrorPage(size_t i) {return _sc_vec[i].getDefaultErrorPage();};
+
+        const std::vector<ServerConfig::Location> &getLocationVec(size_t i) {return _sc_vec[i].getLocationVec();};
+        const ServerConfig::Location & getLocation
+        (
+            size_t index,
+            const std::string & path
+        ) const
+        {
+            return _sc_vec[index].tryGetLocation(path);
+        }
 };
 
 #endif /* CONFIGPARSER_HPP */

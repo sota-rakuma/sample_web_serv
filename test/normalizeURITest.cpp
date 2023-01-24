@@ -17,4 +17,15 @@ void normalizeURITest()
 	}
 	std::cout << "r1: " << r1.getRequestLine().getTarget() << std::endl;
 	std::cout << "r2: " << r2.getRequestLine().getTarget() << std::endl;
+	test.push_back("/..");
+	test.push_back("/sdaf/fds/..");
+	test.push_back("/sdaf/fds/........../");
+	test.push_back("/sdaf/fds/..........");
+	test.push_back("/sdaf/fds/......../../");
+	for (size_t i = 2; i < test.size(); i++)
+	{
+		r1.setRequestLine("", test[i], "");
+		std::cout << r1.getRequestLine().getTarget() << std::endl;
+	}
+
 }

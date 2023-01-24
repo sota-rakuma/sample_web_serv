@@ -1,12 +1,12 @@
 #include "Delete.hpp"
 
 Delete::Delete()
-:_receiver(static_cast<HTTPMethodReceiver *>(NULL))
+:HTTPMethod()
 {
 }
 
 Delete::Delete(HTTPMethodReceiver *eh)
-:_receiver(eh)
+:HTTPMethod(eh)
 {
 }
 
@@ -16,5 +16,5 @@ Delete::~Delete()
 
 int Delete::execute()
 {
-	return _receiver->httpDelete();
+	return getReceiver()->httpDelete();
 }
