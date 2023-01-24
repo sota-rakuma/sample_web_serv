@@ -168,3 +168,62 @@ void ServerConfig::Location::setLocationExtension(const std::vector<std::string>
 		_cgi_extensions.push_back(extension_vec[i]);
 	}
 }
+
+const std::string & ServerConfig::Location::getAlias() const {
+	return _alias;
+}
+
+const std::string & ServerConfig::Location::getIndexFile() const
+{
+	return _index_file;
+};
+
+const std::string & ServerConfig::Location::getUploadPlace() const
+{
+	return _upload_place;
+};
+
+const std::string & ServerConfig::Location::getAutoIndex() const
+{
+	return _autoindex;
+};
+
+std::map<std::string, bool> &ServerConfig::Location::getAllowedMethod()
+{
+	return _allowed_method;
+};
+
+const std::vector<std::string> & ServerConfig::Location::getCgiExtensions() const
+{
+	return _cgi_extensions;
+};
+
+const std::pair<int, std::string>& ServerConfig::Location::getReturn() const
+{
+	return _return;
+};
+
+const std::string &ServerConfig::getListen() const
+{
+	return _listen;
+};
+
+const std::string &ServerConfig::getServerName() const
+{
+	return _server_name;
+};
+
+int ServerConfig::getMaxBodySize() const
+{
+	return _max_body_size;
+};
+
+std::map<int, std::string> &ServerConfig::getDefaultErrorPage()
+{
+	return _default_error_pages;
+};
+
+std::map<std::string, ServerConfig::Location> & ServerConfig::getLocationMap()
+{
+	return _locations;
+};

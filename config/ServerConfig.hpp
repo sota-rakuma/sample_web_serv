@@ -34,13 +34,13 @@ public:
 		void setLocationReturn(const int, const std::string);
 		void setLocationExtension(const std::vector<std::string>);
 		// for test
-		std::string getAlias() const {return _alias;};
-		std::string getIndexFile() const {return _index_file;};
-		std::string getUploadPlace() const {return _upload_place;};
-		std::string getAutoIndex() const {return _autoindex;};
-		std::map<std::string, bool> getAllowedMethod() const {return _allowed_method;};
-		std::vector<std::string> getCgiExtensions() const {return _cgi_extensions;};
-		std::pair<int, std::string> getReturn() const {return _return;};
+		const std::string & getAlias() const;
+		const std::string & getIndexFile() const;
+		const std::string & getUploadPlace() const;
+		const std::string & getAutoIndex() const;
+		std::map<std::string, bool> &getAllowedMethod();
+		const std::vector<std::string> & getCgiExtensions() const;
+		const std::pair<int, std::string>& getReturn() const;
 	};
 private:
 	std::string _listen;
@@ -74,11 +74,11 @@ public:
 	void setReturn(const std::string, const int, const std::string);
 	void setExtension(const std::string, const std::vector<std::string>);
 	 // for test
-	std::string getListen() const {return _listen;};
-	std::string getServerName() const {return _server_name;};
-	int getMaxBodySize() const {return _max_body_size;};
-	std::map<int, std::string> getDefaultErrorPage() const {return _default_error_pages;};
-	std::map<std::string, Location> getLocationMap() const {return _locations;};
+	const std::string &getListen() const;
+	const std::string &getServerName() const;
+	int getMaxBodySize() const;
+	std::map<int, std::string> &getDefaultErrorPage();
+	std::map<std::string, Location> & getLocationMap() ;
 };
 
 #endif /* SERVERCONFIG_HPP */
