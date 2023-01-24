@@ -387,18 +387,26 @@ void AcceptedSocket::addEvent()
 	//if (_location.getAlias() != "default") {
 		//path.replace(path.find)
 	//}
-	if (_location.getCgiExtensions().size() > 0) {
-		_receiver = new CGI(getSubject(),
-						getCommandList(),
-						command,
-						rl.getTarget(),
-						this);
-	} else {
-		_receiver = new File(getSubject(),
-						getCommandList(),
-						command,
-						rl.getTarget(),
-						this);
+	try
+	{
+		if (_location.getCgiExtensions().size() > 0) {
+			_receiver = new CGI(getSubject(),
+							getCommandList(),
+							command,
+							rl.getTarget(),
+							this);
+		} else {
+			_receiver = new File(getSubject(),
+							getCommandList(),
+							command,
+							rl.getTarget(),
+							this);
+		}
+	}
+	catch(const std::exception& e)
+	{
+		_progress = ERROR;
+		return ;
 	}
 	command->setReceiver(_receiver);
 	getCommandList()->push_back(_receiver->getHTTPMethod());
