@@ -9,8 +9,6 @@
 #include <stdexcept>
 #include <list>
 
-class AcceptedSocket;
-
 class File : public HTTPMethodReceiver, public IObserver
 {
 public:
@@ -24,13 +22,17 @@ public:
 private:
 	int _fd;
 	bool _is_exist;
-	std::string _path;
 	std::string _buff;
 	size_t _nb;
-	HTTPStatus _status;
-	AcceptedSocket * _as;
 public:
 	File();
+	File(
+		ISubject *,
+		std::list<ICommand *> *,
+		HTTPMethod *,
+		const std::string &,
+		AcceptedSocket *
+	);
 	File(
 		ISubject *,
 		std::list<ICommand *> *,
@@ -49,7 +51,7 @@ public:
 	File(
 		ISubject *,
 		std::list<ICommand *> *,
-		ICommand *,
+		HTTPMethod *,
 		const std::string &,
 		int oflag,
 		AcceptedSocket *
@@ -57,7 +59,7 @@ public:
 	File(
 		ISubject *,
 		std::list<ICommand *> *,
-		ICommand *,
+		HTTPMethod *,
 		const std::string &,
 		int oflag,
 		int mode,

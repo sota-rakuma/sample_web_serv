@@ -40,6 +40,15 @@ public:
 		RequestLine & setTarget(
 			const std::string &
 		);
+		void normalizeTarget(
+			std::string &
+		);
+		void removeDotSegment(
+			std::string &
+		);
+		void percentDocode(
+			std::string &
+		);
 		RequestLine & setHTTPVersion(
 			const std::string &
 		);

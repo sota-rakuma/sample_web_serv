@@ -23,11 +23,9 @@ CGI::CGI(
 	bool is_executable,
 	AcceptedSocket *as
 )
-:HTTPMethodReceiver(subject, commands),
+:HTTPMethodReceiver(subject, commands, as, path),
 _buff(""),
-_path(path),
-_is_exutetable(is_executable),
-_as(as)
+_is_exutetable(is_executable)
 {
 }
 
@@ -38,25 +36,21 @@ CGI::CGI(
 	bool is_executable,
 	AcceptedSocket *as
 )
-:HTTPMethodReceiver(subject, commands),
-_buff(""),
-_path(path),
-_is_exutetable(is_executable),
-_as(as)
+:HTTPMethodReceiver(subject, commands, as, path),
+_buff(),
+_is_exutetable(is_executable)
 {
 }
 
 CGI::CGI(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
-	ICommand *method,
+	HTTPMethod *method,
 	const std::string & path,
 	AcceptedSocket * as
 )
-:HTTPMethodReceiver(subject, commands, method),
-_buff(""),
-_path(path),
-_as(as)
+:HTTPMethodReceiver(subject, commands, method, as, path),
+_buff()
 {
 }
 
@@ -64,23 +58,20 @@ _as(as)
 CGI::CGI(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
-	ICommand *method,
+	HTTPMethod*method,
 	const std::string & path,
 	bool is_executable,
 	AcceptedSocket *as
 )
-:HTTPMethodReceiver(subject, commands, method),
+:HTTPMethodReceiver(subject, commands, method, as, path),
 _buff(""),
-_path(path),
-_is_exutetable(is_executable),
-_as(as)
+_is_exutetable(is_executable)
 {
 }
 
 CGI::CGI(const CGI & another)
-:HTTPMethodReceiver(another.getSubject(), another.getCommandList(), another.getHTTPMethod()),
+:HTTPMethodReceiver(another.getSubject(), another.getCommandList(), another.getHTTPMethod(), another.getAcceptedSocket(), another.getPath()),
 _buff(another._buff),
-_path(another._path),
 _is_exutetable(another._is_exutetable)
 {
 }
@@ -104,7 +95,7 @@ void CGI::update(int event)
 	if (event & POLLHUP) {
 		getSubject()->unsubscribe(_p_to_c[OUT], true);
 		getSubject()->unsubscribe(_c_to_p[IN], false);
-		_as->processCGIResponse(_buff);
+		getAcceptedSocket()->processCGIResponse(_buff);
 	} else if (event & POLLOUT) {
 		getCommandList()->push_back(getWriteCommand());
 	} else if (event & POLLIN) {
@@ -128,7 +119,7 @@ int CGI::read()
 		getSubject()->unsubscribe(_c_to_p[IN], false);
 		// ::close(_pipe_fd[0]);
 		// レスポンス作成フェーズ
-		_as->processCGIResponse(_buff);
+		getAcceptedSocket()->processCGIResponse(_buff);
 		return 0;
 	}
 	buff[nb] = '\0';
@@ -252,7 +243,7 @@ void CGI::executeCGI(const std::string & method)
 			if (dup2(_p_to_c[OUT], STDOUT_FILENO) == -1)
 				perror_and_exit("dup2");
 			// setMetaVariables(method);
-			if (execve(_path.c_str(), NULL, environ) == -1) {
+			if (execve(getPath().c_str(), NULL, environ) == -1) {
 				perror("execve");
 			}
 		}
@@ -276,7 +267,7 @@ void CGI::executeCGI(const std::string & method)
 	 			perror_and_exit("dup2");
 
 	 		//setMetaVariables(method);
-	 		execve(_path.c_str(), NULL, environ);
+	 		execve(getPath().c_str(), NULL, environ);
 	 	}
 		close(_c_to_p[OUT]);
 		close(_p_to_c[IN]);
@@ -291,10 +282,6 @@ int CGI::getInFd() const
 int CGI::getOutFd() const
 {
 	return _p_to_c[OUT];
-}
-
-const std::string & CGI::getPath() const {
-	return _path;
 }
 
 bool CGI::getExectableFlag() const

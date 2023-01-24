@@ -11,6 +11,7 @@
 void TargetParserTest();
 void requestLineTest();
 void headerFieldTest();
+void normalizeURITest();
 void ConfigParserTest();
 void CGIResponseParserTest();
 

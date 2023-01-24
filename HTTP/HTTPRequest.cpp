@@ -1,4 +1,5 @@
 #include "HTTPRequest.hpp"
+#include "../parser/TargetParser.hpp"
 #include "../utils/utils.hpp"
 #include <vector>
 
@@ -65,8 +66,109 @@ HTTPRequest::RequestLine::setTarget(
 	const std::string & target
 )
 {
-	_target = target;
+	std::string normalized;
+	normalized = target;
+	normalizeTarget(normalized);
+	_target = normalized;
 	return *this;
+}
+
+void HTTPRequest::RequestLine::normalizeTarget(
+	std::string & normalized
+)
+{
+	if (normalized.size() == 0) {
+		normalized = "/";
+	}
+	for (size_t i = 0; i < normalized.size(); i++)
+	{
+		if (TargetParser::isPercentEncoded(normalized, i) == true)
+		{
+			if (isLowerCase(normalized[i + 1]) == true) {
+				normalized[i + 1] -= ('a' - 'A');
+			}
+			if (isLowerCase(normalized[i + 2]) == true) {
+				normalized[i + 2] -= ('a' - 'A');
+			}
+			continue;
+		}
+		if (isUpperCase(normalized[i]) == true) {
+			normalized[i] += ('a' - 'A');
+		}
+	}
+
+	removeDotSegment(normalized);
+	percentDocode(normalized);
+}
+
+void HTTPRequest::RequestLine::removeDotSegment(
+	std::string & normalized
+)
+{
+	size_t dot_seg = normalized.find("/..");
+	while (dot_seg != std::string::npos)
+	{
+		size_t start;
+		size_t len;
+		if (normalized[dot_seg + 3] != '/' &&
+			normalized[dot_seg + 3] != '\0') {
+			dot_seg = normalized.find("/..", dot_seg + 1);
+			continue;
+		}
+		if (dot_seg > 0) {
+			size_t slash = normalized.rfind('/', dot_seg - 1);
+			if (slash == std::string::npos) {
+				slash = 0;
+			}
+			start = slash;
+			len = dot_seg - slash + 3;
+		} else {
+			start = dot_seg;
+			len = 3;
+		}
+		normalized.erase(start, len);
+		dot_seg = normalized.find("/..");
+	}
+	dot_seg = normalized.find("/.");
+	while (dot_seg != std::string::npos)
+	{
+		if (normalized[dot_seg + 2] != '/' &&
+			normalized[dot_seg + 2] != '\0') {
+			dot_seg = normalized.find("/.", dot_seg + 1);
+			continue;
+		}
+		normalized.erase(dot_seg, 2);
+		dot_seg = normalized.find("/.");
+	}
+}
+
+void HTTPRequest::RequestLine::percentDocode(
+	std::string & normalized
+)
+{
+	if (normalized.size() < 3) {
+		return ;
+	}
+	size_t pct = normalized.find("%");
+	while (pct != std::string::npos)
+	{
+		if (TargetParser::isPercentEncoded(normalized, pct) == true) {
+			char c[2] = {0, '\0'};
+			for (size_t j = 1; j < 3; j++) {
+				int val = 0;
+				if (isUpperCase(normalized[pct + j])) {
+					val = (normalized[pct + j] - 'A') + 10;
+				} else if (isLowerCase(normalized[pct + j])) {
+					val = (normalized[pct + j] - 'a') + 10;
+				} else {
+					val = normalized[pct + j] - '0';
+				}
+				c[0] = c[0] * 16 + val;
+			}
+			normalized.replace(pct, 3, c);
+		}
+		pct = normalized.find("%", pct + 1);
+	}
 }
 
 HTTPRequest::RequestLine &
@@ -117,6 +219,7 @@ HTTPRequest::getHeaderField() const
 	return _hf;
 }
 
+// 全て小文字
 const std::string &
 HTTPRequest::tryGetHeaderValue(
 	const std::string & key
