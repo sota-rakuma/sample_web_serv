@@ -8,6 +8,13 @@
 EventMonitor::EventMonitor()
 :_time(300)
 {
+	if (setenv("GATEWAY_INTERFACE", "CGI/1.1", 1) == -1 ||
+		setenv("SERVER_PROTOCOL", "HTTP/1.1", 1) == -1 ||
+		setenv("SERVER_SOFTWARE", "42WebServ", 1) == -1)
+	{
+		perror("setenv");
+		exit(1);
+	}
 	ListenSocket *l =  new ListenSocket(this, &_commands, "127.0.0.1", "4242", NULL);
 }
 
