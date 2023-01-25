@@ -3,6 +3,7 @@
 
 enum HTTPStatus
 {
+	DEFAULT,
 	// 1xx information
 	CONTINUE = 100,
 	SWITCHING_PROTOCOLS,

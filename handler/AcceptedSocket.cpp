@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <sstream>
 #include <fcntl.h>
+#include <arpa/inet.h>
 
 AcceptedSocket::AcceptedSocket()
 :IOEventHandler()
@@ -55,6 +56,7 @@ _receiver(static_cast<HTTPMethodReceiver *>(NULL))
 
 AcceptedSocket::~AcceptedSocket()
 {
+	delete _receiver;
 	::close(_sockfd);
 }
 
@@ -137,7 +139,7 @@ void AcceptedSocket::processRequest(const std::string & raw)
 	case EXECUTE_METHOD:
 		addEvent();
 	case CREATE_RESPONSE:
-		//createResponse();
+		createResponse();
 	case ERROR:
 	default:
 		break;
@@ -220,7 +222,12 @@ int AcceptedSocket::validateRequest()
 	try
 	{
 		const std::string & host = _req.tryGetHeaderValue("host");
-		_config = _configfinder->getConfig(host);
+		size_t colon = host.find(':');
+		if (colon != std::string::npos) {
+			_config = _configfinder->getConfig(host.substr(0, colon));
+		} else {
+			_config = _configfinder->getConfig(host);
+		}
 	}
 	catch(const std::exception& e)
 	{
@@ -276,7 +283,6 @@ void AcceptedSocket::prepareEvent()
 	_progress = EXECUTE_METHOD;
 }
 
-// これでcontent-dis
 void AcceptedSocket::prepareReceivingBody()
 {
 	try
@@ -373,7 +379,7 @@ void AcceptedSocket::processChunkedBody(
 
 void AcceptedSocket::addEvent()
 {
-	const HTTPRequest::RequestLine & rl =  _req.getRequestLine();
+	const HTTPRequest::RequestLine & rl = _req.getRequestLine();
 	std::string path = rl.getPath();
 	if (_location.getAlias() != "default") {
 		path.replace(0,
@@ -382,9 +388,9 @@ void AcceptedSocket::addEvent()
 	}
 	HTTPMethod *command;
 
-	if (rl.getMethod() == "GET") {
+	if (rl.getMethod() == GET) {
 		command = new Get();
-	} else if (rl.getMethod() == "POST") {
+	} else if (rl.getMethod() == POST) {
 		if (_location.getUploadPlace() != "default") {
 			path.replace(0,
 				_location.getPath().size(),
@@ -395,15 +401,13 @@ void AcceptedSocket::addEvent()
 		command = new Delete();
 	}
 	if (isCGI() == true) {
-		_receiver = new CGI(getSubject(),
-						getCommandList(),
+		_receiver = new CGI(getSubject(), getCommandList(),
+						_location.getCgiExtensions(),
 						command,
-						path,
-						rl.getQuery(),
+						path, rl.getQuery(),
 						this);
 	} else {
-		_receiver = new File(getSubject(),
-						getCommandList(),
+		_receiver = new File(getSubject(), getCommandList(),
 						command,
 						path,
 						this,
@@ -418,6 +422,29 @@ void AcceptedSocket::addEvent()
 bool AcceptedSocket::isCGI() const
 {
 	return _location.getCgiExtensions().size() > 0;
+}
+
+bool AcceptedSocket::prepareCGI(
+	const std::string & path,
+	const std::string & query
+)
+{
+
+	std::stringstream ss;
+	std::string len;
+	ss << _buff.size();
+	ss >> len;
+	if (setenv("CONTENT_LENGTH", len.c_str(), 1) == -1) {
+		_status = INTERNAL_SERVER_ERROR;
+		return false;
+	}
+	if (setenv("SERVER_NAME", _config.getServerName().c_str(), 1) == -1 ||
+		setenv("SERVER_PORT", _config.getListen().c_str(), 1) == -1 ||
+		setenv("REMOTE_ADDR", inet_ntoa(_info.sin_addr), 1) == -1)
+	{
+		_status = INTERNAL_SERVER_ERROR;
+		return false;
+	}
 }
 
 // for test
@@ -458,6 +485,10 @@ void AcceptedSocket::createResponse(const std::string & body)
 	std::cout << "######### TEST ##########" << std::endl;
 	_buff = body;
 	getSubject()->subscribe(_sockfd, POLLOUT, this);
+}
+
+void AcceptedSocket::createResponse()
+{
 }
 
 // for test

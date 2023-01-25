@@ -71,6 +71,10 @@ private:
 	void prepareReceivingBody();
 	void addEvent();
 	bool isCGI() const;
+	bool prepareCGI(
+	const std::string &,
+		const std::string &
+	);
 public:
 	AcceptedSocket();
 	AcceptedSocket(
@@ -90,6 +94,7 @@ public:
 	virtual int write();
 	void processCGIResponse(const std::string &);
 	void createResponse(const std::string &);
+	void createResponse();
 	void processTest();
 };
 

@@ -1,6 +1,10 @@
 #include "../AcceptedSocket.hpp"
 #include "CGI.hpp"
-#include <unistd.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+extern char **environ;
 
 #ifndef IN
 #define IN 0
@@ -10,20 +14,16 @@
 #define OUT 1
 #endif
 
-
-CGI::CGI()
-:_buff("")
-{
-}
-
 CGI::CGI(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
+	const std::vector<std::string> &extentions,
 	const std::string & path,
 	const std::string & query,
 	AcceptedSocket * as
 )
 :HTTPMethodReceiver(subject, commands, as, path),
+_extentions(extentions),
 _query(query),
 _buff()
 {
@@ -32,6 +32,7 @@ _buff()
 CGI::CGI(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
+	const std::vector<std::string> &extentions,
 	HTTPMethod *method,
 	const std::string & path,
 	const std::string & query,
@@ -39,12 +40,14 @@ CGI::CGI(
 )
 :HTTPMethodReceiver(subject, commands, method, as, path),
 _query(query),
+_extentions(extentions),
 _buff()
 {
 }
 
 CGI::CGI(const CGI & another)
 :HTTPMethodReceiver(another.getSubject(), another.getCommandList(), another.getHTTPMethod(), another.getAcceptedSocket(), another.getPath()),
+_extentions(another._extentions),
 _buff(another._buff),
 _query(another._query)
 {
@@ -52,6 +55,11 @@ _query(another._query)
 
 CGI::~CGI()
 {
+	int status;
+	pid_t ret = ::waitpid(_pid, &status, WNOHANG);
+	if (ret == 0) {
+		::kill(_pid, SIGKILL);
+	}
 }
 
 void CGI::update(int event)
@@ -124,20 +132,24 @@ int CGI::write()
 
 int CGI::httpGet()
 {
-	if (isExecutable() == false) {
+	if (setMetaVariables(GET) == false || isExecutable() == false) {
 		return -1;
 	}
-	executeCGI(GET);
+	if (executeCGI(GET) == -1) {
+		return -1;
+	}
 	getSubject()->subscribe(_c_to_p[IN], POLLIN, this);
 	return 0;
 }
 
 int CGI::httpPost()
 {
-	if (isExecutable() == false) {
+	if (setMetaVariables(POST) == false ||isExecutable() == false) {
 		return -1;
 	}
-	executeCGI(POST);
+	if (executeCGI(POST) == -1) {
+		return -1;
+	}
 	_buff = "value=aaaa&value_2=bbbb";
 	getSubject()->subscribe(_p_to_c[OUT], POLLOUT, this);
 	getSubject()->subscribe(_c_to_p[IN], POLLIN, this);
@@ -146,10 +158,12 @@ int CGI::httpPost()
 
 int CGI::httpDelete()
 {
-	if (isExecutable() == false) {
+	if (setMetaVariables(DELETE) == false || isExecutable() == false) {
 		return -1;
 	}
-	executeCGI(DELETE);
+	if (executeCGI(DELETE) == -1){
+		return -1;
+	}
 	getSubject()->subscribe(_c_to_p[IN], POLLIN, this);
 	return 0;
 }
@@ -157,7 +171,7 @@ int CGI::httpDelete()
 bool CGI::isExecutable()
 {
 	if (execStat() == -1) {
-		if (errno ==  ENOENT) {
+		if (errno == ENOENT) {
 			getAcceptedSocket()->setStatus(NOT_FOUND);
 		} else if(errno == EACCES) {
 			getAcceptedSocket()->setStatus(FORBIDDEN);
@@ -174,107 +188,76 @@ bool CGI::isExecutable()
 	return true;
 }
 
-static void    perror_and_exit(std::string str) //
+bool CGI::setMetaVariables(
+	const std::string & method
+)
 {
-    std::perror(str.c_str());
-    std::exit(1);
-}
-
-void CGI::setMetaVariables(const std::string & method)
-{
-	if (method != POST)
-	{
-		const char *QUERY_STRING_VALUE = "abc=ABC&def=DEF"; //
-		// GETの場合はリクエストターゲットから取得、POSTの場合は標準入力から取得
-		if (setenv("QUERY_STRING", QUERY_STRING_VALUE, 1) == -1)
-			perror_and_exit("setenv");
-	}
-	//if (/*　message_bodyが存在 */)
-	//{
-	//	if (setenv("CONTENT_LENGTH", /* message_bodyのlength */, 1) == -1)
-	//		perror_and_exit("setenv");
-		// if (setenv("CONTENT_TYPE", "", 1) == -1) // html/textとか 判別方法どうする？？
-		// 	perror_and_exit("setenv");
-	//}
-	if (setenv("PATH_INFO", "/aaa/bbb", 1) == -1)
-		perror_and_exit("setenv");
-	// if (setenv("AUTH_TYPE", "", 1) == -1) // いらない
-	// 	perror_and_exit("setenv");
-	if (setenv("GATEWAY_INTERFACE", "CGI/1.1", 1) == -1) //
-		perror_and_exit("setenv");
-	if (setenv("REMOTE_ADDR", "", 1) == -1) // クライアントのIPアドレスを設定する
-		perror_and_exit("setenv");
-	if (setenv("SCRIPT_NAME", "", 1) == -1) // CGIスクリプトのpath(URI)を設定する SCRIPT_NAMEの値にはPATH_INFO部分を含めない
-		perror_and_exit("setenv");
-	if (setenv("SERVER_NAME", "", 1) == -1) // サーバーの名前　configファイルのserver_nameディレクティブを使う？
-		perror_and_exit("setenv");
-	if (setenv("SERVER_PORT", "80", 1) == -1) // サーバーのポートを設定
-		perror_and_exit("setenv");
-	if (setenv("SERVER_PROTOCOL", "HTTP/1.1", 1) == -1) //
-		perror_and_exit("setenv");
-	if (setenv("SERVER_SOFTWARE", "Debian", 1) == -1) // CGI プログラムを起動した Web サーバソフトウエアの名前 例:Apacheとか
-		perror_and_exit("setenv");
-
-	if (setenv("REQUEST_METHOD", method.c_str(), 1) == -1)
-		perror_and_exit("setenv");
-}
-
-extern char **environ;
-
-void CGI::executeCGI(const std::string & method)
-{
-	//int pipe_fd[2];
-    pid_t   pid;
-    pid_t   w_pid;
-    int status;
-
-	// if (pipe(_pipe_fd) == -1)
-	// 	perror_and_exit("pipe");
-	if (pipe(_p_to_c) == -1)
-		perror_and_exit("pipe");
-	if (pipe(_c_to_p) == -1)
-		perror_and_exit("pipe");
-	if (method != POST)
-	{
-		pid = fork();
-		if (pid < 0)
-			perror_and_exit("fork");
-		else if (pid == 0)
-		{
-			if (close(_c_to_p[IN]) == -1)
-				perror_and_exit("close");
-			if (dup2(_p_to_c[OUT], STDOUT_FILENO) == -1)
-				perror_and_exit("dup2");
-			// setMetaVariables(method);
-			if (execve(getPath().c_str(), NULL, environ) == -1) {
-				perror("execve");
-			}
+	size_t extention = std::string::npos;
+	for (size_t i = 0; i < _extentions.size(); i++) {
+		extention = _path.find(_extentions[i]);
+		if (extention != std::string::npos) {
+			extention += _extentions[i].size();
+			break;
 		}
-		if (close(_c_to_p[OUT]) == -1)
-			perror_and_exit("close");
 	}
-	 else if (method == POST)
-	 {
-	 	//::write(_pipe_fd[1], "abc\0", 4);
-	 	pid = fork();
-	 	if (pid < 0)
-	 		perror_and_exit("fork");
-	 	else if (pid == 0)
-	 	{
-			close(_c_to_p[IN]);
+	if (extention == std::string::npos) {
+		getAcceptedSocket()->setStatus(FORBIDDEN);
+		return false;
+	}
+	if (setenv("PATH_INFO", _path.substr(extention).c_str(), 1) == -1) {
+		getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
+		return false;
+	}
+	if (setenv("QUERY_STRING", _query.c_str(), 1) == -1) {
+		getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
+		return false;
+	}
+	_path = _path.substr(0, extention);
+	if (setenv("SCRIPT_NAME", _path.c_str(), 1) == -1) {
+		getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
+		return false;
+	}
+	if (setenv("REQUEST_METHOD", method.c_str(), 1) == -1) {
+		getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
+		return false;
+	}
+	return true;
+}
+
+bool CGI::executeCGI(const std::string & method)
+{
+	if (pipe(_c_to_p) < 0) {
+		getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
+		return false;
+	}
+	if (method == POST && pipe(_p_to_c) < 0) {
+		getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
+		return false;
+	}
+
+	_pid = fork();
+	if (_pid < 0) {
+		getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
+		return false;
+	}
+	if (_pid == 0) {
+		close(_c_to_p[IN]);
+		if (dup2(_p_to_c[OUT], STDOUT_FILENO) == -1)
+			exit(1);
+		if (method == POST) {
 			close(_p_to_c[OUT]);
-	 		if (dup2(_p_to_c[IN], STDIN_FILENO) == -1)
-	 			perror_and_exit("dup2");
-
-	 		if (dup2(_c_to_p[OUT], STDOUT_FILENO) == -1)
-	 			perror_and_exit("dup2");
-
-	 		//setMetaVariables(method);
-	 		execve(getPath().c_str(), NULL, environ);
-	 	}
+			if (dup2(_p_to_c[IN], STDIN_FILENO) == -1)
+	 			exit(1);
+		}
+		if (execve(getPath().c_str(), NULL, environ) == -1) {
+			exit(1);
+		}
+	} else {
 		close(_c_to_p[OUT]);
-		close(_p_to_c[IN]);
-	 }
+		if (method == POST) {
+			close(_p_to_c[IN]);
+		}
+	}
 }
 
 int CGI::getInFd() const

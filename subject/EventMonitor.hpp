@@ -1,22 +1,6 @@
 #ifndef EVENTMONITOR_HPP
 #define EVENTMONITOR_HPP
 
-
-/*
-
-confのパース → listen socketの生成 → イベントループ
-
-class Server
-{
-private:
-	EventMonitor *_em;
-public:
-	void run() {
-		em->monitor();
-	};
-}
-
-*/
 #include "ISubject.hpp"
 #include "../handler/ListenSocket.hpp"
 #include <vector>

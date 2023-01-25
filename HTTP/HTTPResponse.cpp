@@ -9,7 +9,7 @@ std::map<HTTPStatus, const std::string &> HTTPResponse::_err_msg(temp, temp + ge
 
 HTTPResponse::StatusLine::StatusLine()
 :_version(),
-_code(),
+_code(DEFAULT),
 _reason()
 {
 }
