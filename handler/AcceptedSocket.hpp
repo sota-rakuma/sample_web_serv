@@ -32,7 +32,7 @@ enum Progress
 	ERROR,
 };
 
-class HTTPMethodReciever;
+class HTTPMethodReceiver;
 
 class AcceptedSocket : public IOEventHandler, public IObserver
 {
