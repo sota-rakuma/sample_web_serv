@@ -50,6 +50,10 @@ public:
 	HTTPResponse & setStatusCode(
 		const std::string &
 	);
+	HTTPResponse & setStatusCode(
+		const std::string &,
+		const std::string &
+	);
 	HTTPResponse & setStatusLine(
 		const std::string &,
 		const std::string &,

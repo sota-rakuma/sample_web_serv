@@ -4,7 +4,7 @@
 #include <iostream>
 #include <sstream>
 
-static std::pair<HTTPStatus, const std::string> temp[] = {
+static std::pair<HTTPStatus, const std::string &> temp[] = {
 	std::make_pair(OK, "OK"),
 	std::make_pair(MOVED_PERMANENTLY, "moved permanently"),
 	std::make_pair(FOUND, "Found"),
@@ -154,6 +154,28 @@ HTTPResponse & HTTPResponse::setStatusCode(
 )
 {
 	_statl.setCode(status);
+	std::stringstream ss;
+	int s;
+	ss << status;
+	ss >> s;
+	if (ss) {
+		return *this;
+	}
+	std::map<HTTPStatus, const std::string &>::const_iterator reason = _err_msg.find(static_cast<HTTPStatus>(s));
+	if (reason == _err_msg.end()) {
+		return ;
+	}
+	_statl.setReason(reason->second);
+	return *this;
+}
+
+HTTPResponse & HTTPResponse::setStatusCode(
+	const std::string & status,
+	const std::string & reason
+)
+{
+	_statl.setCode(status);
+	_statl.setReason(reason);
 	return *this;
 }
 
