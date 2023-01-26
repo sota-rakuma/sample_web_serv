@@ -32,7 +32,7 @@ enum Progress
 	ERROR,
 };
 
-class HTTPMethodReciever;
+class HTTPMethodReceiver;
 
 class AcceptedSocket : public IOEventHandler, public IObserver
 {
@@ -75,6 +75,9 @@ private:
 	const std::string &,
 		const std::string &
 	);
+	void createGeneralHeader();
+	void createErrorResponse();
+	void createRedirectResponse();
 public:
 	AcceptedSocket();
 	AcceptedSocket(

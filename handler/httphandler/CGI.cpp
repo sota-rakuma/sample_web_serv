@@ -93,15 +93,16 @@ int CGI::read()
 	if (nb < 0) {
 		// error レスポンス
 		::close(_p_to_c[OUT]);
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		getSubject()->unsubscribe(_p_to_c[OUT], true);
 		getSubject()->unsubscribe(_c_to_p[IN], false);
 		return -1;
 	} else if (nb == 0) {
 		getSubject()->unsubscribe(_p_to_c[OUT], true);
 		getSubject()->unsubscribe(_c_to_p[IN], false);
-		// ::close(_pipe_fd[0]);
 		// レスポンス作成フェーズ
-		getAcceptedSocket()->processCGIResponse(_buff);
+		entrustCreateResponse(OK);
+		//getAcceptedSocket()->processCGIResponse(_buff);
 		return 0;
 	}
 	buff[nb] = '\0';
@@ -115,6 +116,7 @@ int CGI::write()
 	if (nb == -1) {
 		// error レスポンス
 		::close(_p_to_c[OUT]);
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		getSubject()->unsubscribe(_c_to_p[IN], false);
 		getSubject()->unsubscribe(_p_to_c[OUT], true);
 		return -1;
@@ -139,6 +141,7 @@ int CGI::httpGet()
 		return -1;
 	}
 	getSubject()->subscribe(_c_to_p[IN], POLLIN, this);
+	setHTTPStatus(OK);
 	return 0;
 }
 
@@ -153,6 +156,7 @@ int CGI::httpPost()
 	_buff = "value=aaaa&value_2=bbbb";
 	getSubject()->subscribe(_p_to_c[OUT], POLLOUT, this);
 	getSubject()->subscribe(_c_to_p[IN], POLLIN, this);
+	setHTTPStatus(OK);
 	return 0;
 }
 
@@ -165,6 +169,7 @@ int CGI::httpDelete()
 		return -1;
 	}
 	getSubject()->subscribe(_c_to_p[IN], POLLIN, this);
+	entrustCreateResponse(OK);
 	return 0;
 }
 
@@ -172,17 +177,17 @@ bool CGI::isExecutable()
 {
 	if (execStat() == -1) {
 		if (errno == ENOENT) {
-			getAcceptedSocket()->setStatus(NOT_FOUND);
+			entrustCreateResponse(NOT_FOUND);
 		} else if(errno == EACCES) {
-			getAcceptedSocket()->setStatus(FORBIDDEN);
+			entrustCreateResponse(FORBIDDEN);
 		} else {
-			getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
+			entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		}
 		return false;
 	}
 	if (checkPermission(S_IXOTH) == false ||
 		isDirectory() == true) {
-		getAcceptedSocket()->setStatus(FORBIDDEN);
+		entrustCreateResponse(FORBIDDEN);
 		return false;
 	}
 	return true;
@@ -201,24 +206,24 @@ bool CGI::setMetaVariables(
 		}
 	}
 	if (extention == std::string::npos) {
-		getAcceptedSocket()->setStatus(FORBIDDEN);
+		entrustCreateResponse(FORBIDDEN);
 		return false;
 	}
 	if (setenv("PATH_INFO", _path.substr(extention).c_str(), 1) == -1) {
-		getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		return false;
 	}
 	if (setenv("QUERY_STRING", _query.c_str(), 1) == -1) {
-		getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		return false;
 	}
 	_path = _path.substr(0, extention);
 	if (setenv("SCRIPT_NAME", _path.c_str(), 1) == -1) {
-		getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		return false;
 	}
 	if (setenv("REQUEST_METHOD", method.c_str(), 1) == -1) {
-		getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		return false;
 	}
 	return true;
@@ -226,18 +231,15 @@ bool CGI::setMetaVariables(
 
 bool CGI::executeCGI(const std::string & method)
 {
-	if (pipe(_c_to_p) < 0) {
-		getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
-		return false;
-	}
-	if (method == POST && pipe(_p_to_c) < 0) {
-		getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
+	if (pipe(_c_to_p) < 0 &&
+		(method == POST && pipe(_p_to_c) < 0)) {
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		return false;
 	}
 
 	_pid = fork();
 	if (_pid < 0) {
-		getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		return false;
 	}
 	if (_pid == 0) {

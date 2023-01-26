@@ -85,22 +85,19 @@ void EventMonitor::unsubscribe(
 	bool is_dup
 )
 {
-	try
-	{
-		IObserver *& target = _storage.at(fd);
-		if (is_dup == false) {
-			delete _storage[fd];
-		}
-		_storage.erase(fd);
-		for (size_t i = 0; i < _pollvec.size(); i++) {
-			if (fd == _pollvec[i].fd) {
-				_pollvec.erase(_pollvec.begin() + i);
-				break;
-			}
-		}
+	std::map<int, IObserver *>::iterator it = _storage.find(fd);
+	if (it == _storage.end()) {
+		return ;
 	}
-	catch(const std::exception& e)
-	{
+	if (is_dup == false) {
+		delete it->second;
+	}
+	_storage.erase(fd);
+	for (size_t i = 0; i < _pollvec.size(); i++) {
+		if (fd == _pollvec[i].fd) {
+			_pollvec.erase(_pollvec.begin() + i);
+			break;
+		}
 	}
 }
 
@@ -140,10 +137,7 @@ void EventMonitor::triggerEvent()
 {
 	while (_commands.size() > 0) {
 		(*(_commands.begin()))->execute();
-		const std::string &name = typeid(*_commands.begin()).name();
-		if (name == "Get" || name == "Post" || name == "Delete") {
-			delete *_commands.begin();
-		}
 		_commands.pop_front();
 	}
 }
+;

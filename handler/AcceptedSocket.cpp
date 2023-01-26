@@ -9,6 +9,8 @@
 #include <sstream>
 #include <fcntl.h>
 #include <arpa/inet.h>
+#include <cstdio>
+#include <ctime>
 
 AcceptedSocket::AcceptedSocket()
 :IOEventHandler()
@@ -37,7 +39,6 @@ _receiver(static_cast<HTTPMethodReceiver *>(NULL))
 	getSubject()->subscribe(_sockfd, POLLIN, this);
 }
 
-// socket fd, tmpfd, _receiver, はディープコピーをする必要がある？
 AcceptedSocket::AcceptedSocket(const AcceptedSocket &another)
 :IOEventHandler(another.getSubject(), another.getCommandList()),
 _sockfd(another._sockfd),
@@ -93,16 +94,6 @@ void AcceptedSocket::update(int event)
 	}
 }
 
-/*
-recv → リクエストラインパース
-→ メソッドセット, targetセット(長さ確認)
-
-recv → add buff → headerパース
-→ configセット → targetの情報をリクエストにセット
-
-POSTの場合のみ:
-recv → リクエストのmessage bodyにセット
-*/
 int AcceptedSocket::read()
 {
 	char buff[BUFFSIZE];
@@ -141,6 +132,7 @@ void AcceptedSocket::processRequest(const std::string & raw)
 	case CREATE_RESPONSE:
 		createResponse();
 	case ERROR:
+		createResponse();
 	default:
 		break;
 	}
@@ -163,7 +155,7 @@ void AcceptedSocket::processRequestLine(
 	}
 	_status = BAD_REQUEST;
 	// エラーレスポンス
-	_progress = ERROR;
+	_progress = CREATE_RESPONSE;
 }
 
 void AcceptedSocket::processRequestHeader(
@@ -177,12 +169,12 @@ void AcceptedSocket::processRequestHeader(
 	if (_buff.size() > BUFFSIZE) {
 		_status = REQUEST_HEADER_FIELD_TOO_LARGE;
 		// エラーレスポンス
-		_progress = ERROR;
+		_progress = CREATE_RESPONSE;
 		return;
 	}
 	if (_parser_ctx.execParse(_buff) == -1 || validateRequest() == -1) {
 		// エラーレスポンス
-		_progress = ERROR;
+		_progress = CREATE_RESPONSE;
 		return;
 	}
 	try
@@ -192,20 +184,14 @@ void AcceptedSocket::processRequestHeader(
 	catch(const std::exception& e)
 	{
 		_status = FORBIDDEN;
-		_progress = ERROR;
+		_progress = CREATE_RESPONSE;
 		return;
 	}
 	return prepareEvent();
 	if (_req.getRequestLine().getMethod() == POST) {
 		_buff = "";
-		//if (_req.getHeaderValue("Tranfer-Encoding").find("chunked") != std::string::npos) {
-		//	_progress = RECEIVE_CHUNKED_SIZE;
-		//} else {
-		//	_progress = RECEIVE_REQUEST_BODY;
-		//}
 	} else {
 		_progress = EXECUTE_METHOD;
-		//_receiver = new File() or CGI();
 		if (_req.getRequestLine().getMethod() == GET) {
 			getCommandList()->push_back(new Get(_receiver));
 		}
@@ -270,12 +256,12 @@ void AcceptedSocket::prepareEvent()
 	const std::map<std::string, bool>::const_iterator it = \
 		_location.getAllowedMethod().find(method);
 	if (it == _location.getAllowedMethod().end()) {
-		_status = NOT_IMPREMENTED;
-		_progress = ERROR;
+		_status = NOT_IMPLEMENTED;
+		_progress = CREATE_RESPONSE;
 		return ;
 	} else if (it->second == false) {
 		_status = METHOD_NOT_ALLOWED;
-		_progress = ERROR;
+		_progress = CREATE_RESPONSE;
 		return ;
 	} else if (it->first == POST) {
 		return prepareReceivingBody();
@@ -289,8 +275,8 @@ void AcceptedSocket::prepareReceivingBody()
 	{
 		const std::string & te = _req.tryGetHeaderValue("transfer-encoding");
 		if (te != "chunked") {
-			_status = NOT_IMPREMENTED;
-			_progress = ERROR;
+			_status = NOT_IMPLEMENTED;
+			_progress = CREATE_RESPONSE;
 			return ;
 		}
 		_progress = RECEIVE_CHUNKED_SIZE;
@@ -305,7 +291,7 @@ void AcceptedSocket::prepareReceivingBody()
 		ss >> _body_size;
 		if (ss) {
 			_status = BAD_REQUEST;
-			_progress = ERROR;
+			_progress = CREATE_RESPONSE;
 			return ;
 		}
 	}
@@ -321,7 +307,7 @@ void AcceptedSocket::processRequestBody(
 {
 	if (_config.getMaxBodySize() < _body_size) {
 		_status = PAYLOAD_TOO_LARGE;
-		_progress = ERROR;
+		_progress = CREATE_RESPONSE;
 		return ;
 	}
 	_buff += raw.substr(0, _body_size - _buff.size());
@@ -361,13 +347,13 @@ void AcceptedSocket::processChunkedBody(
 			std::string chunked_body = raw.substr(i, index - i);
 			if (chunked_body.size() != _body_size) {
 				_status = BAD_REQUEST;
-				_progress = ERROR;
+				_progress = CREATE_RESPONSE;
 				return ;
 			}
 			_buff += chunked_body;
 			if (_config.getMaxBodySize() < _buff.size()) {
 				_status = PAYLOAD_TOO_LARGE;
-				_progress = ERROR;
+				_progress = CREATE_RESPONSE;
 				return ;
 			}
 			_progress = RECEIVE_CHUNKED_SIZE;
@@ -429,7 +415,6 @@ bool AcceptedSocket::prepareCGI(
 	const std::string & query
 )
 {
-
 	std::stringstream ss;
 	std::string len;
 	ss << _buff.size();
@@ -472,13 +457,6 @@ void AcceptedSocket::processCGIResponse(
 	createResponse(cgi_res);
 }
 
-/*
-エラーレスポンスの場合
-
-ステータスコードから、デフォルトエラーページを取得できた場合、現在持っている_receiverをdeleteして、そのファイルをreceiverに代入して、とってこれた内容をレスポンスのボディとして、レスポンスを作成する。
-
-そうでない場合、それに対応するエラーレスポンスを埋め込んで、れすポンスを作成する(定型文があると、楽)
-*/
 // for test
 void AcceptedSocket::createResponse(const std::string & body)
 {
@@ -487,8 +465,75 @@ void AcceptedSocket::createResponse(const std::string & body)
 	getSubject()->subscribe(_sockfd, POLLOUT, this);
 }
 
+/*
+・Data
+・Server
+・Location(3xx or 201)
+・Transfer-Encoding(Content-Length)
+・Connection
+・[content-type]
+*/
 void AcceptedSocket::createResponse()
 {
+	std::stringstream ss;
+
+	createGeneralHeader();
+	int status = static_cast<int>(_status);
+	if (400 <= status && status < 600) {
+		createErrorResponse();
+	} else if (300 <= status && status < 400) {
+		createRedirectResponse();
+	} else {
+		if (_status == CREATED) {
+			_res.insertHeaderField(
+				"Location",
+				_req.getRequestLine().getPath());
+		}
+	}
+	_buff = "";
+
+}
+
+static void getGMTTime(
+	std::string & date
+)
+{
+	time_t now;
+	struct tm *ptm;
+	char buf[128];
+	std::stringstream ss;
+	static const std::string day[6] = {"Sun",
+									"Mod",
+									"Tue",
+									"Wed",
+									"Thu"
+									"Fri"
+									"Sat"};
+
+	now = time(NULL);
+	ptm = gmtime(&now);
+	strftime(buf, sizeof(buf), "%Y/%m/%d %H:%M:%S %Z", ptm);
+	ss << day[ptm->tm_wday] << ", "
+	<< ptm->tm_mday << " " << ptm->tm_mon << " " << ptm->tm_year
+	<< " " << ptm->tm_hour << ":" << ptm->tm_min << ":" << ptm->tm_sec << " GMT";
+	ss >> date;
+}
+
+void AcceptedSocket::createGeneralHeader()
+{
+	std::string date;
+	getGMTTime(date);
+	_res.insertHeaderField("Data", date);
+	_res.insertHeaderField("Server", "42Webserv");
+	try
+	{
+		_res.insertHeaderField("Connection",
+					 			_req.tryGetHeaderValue("connection"));
+	}
+	catch(const std::exception& e)
+	{
+		_res.insertHeaderField("Connection", "keep-alive");
+	}
 }
 
 // for test
