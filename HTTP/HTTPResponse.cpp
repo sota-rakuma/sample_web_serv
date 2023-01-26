@@ -202,6 +202,14 @@ HTTPResponse & HTTPResponse::setMessageBody(
 	return *this;
 }
 
+HTTPResponse & HTTPResponse::addMessageBody(
+	const std::string & body
+)
+{
+	_body += body;
+	return *this;
+}
+
 std::ostream &operator<<(
 	std::ostream & os,
 	const HTTPResponse & res

@@ -68,6 +68,9 @@ public:
 	HTTPResponse & setMessageBody(
 		const std::string &
 	);
+	HTTPResponse & addMessageBody(
+		const std::string &
+	);
 };
 
 std::ostream &operator<<(
