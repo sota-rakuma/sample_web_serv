@@ -65,8 +65,14 @@ ServerConfigFinder::getConfig(
 	const std::string & server_name
 ) const
 {
-	size_t index = _keys.at(server_name);
-	return _infos[index];
+	std::map<std::string, size_t>::const_iterator index = _keys.find(server_name);
+	if (index == _keys.end()) {
+		index = _keys.find("default");
+	}
+	if (index == _keys.end()) {
+		throw std::runtime_error("default conf is not existed");
+	}
+	return _infos[index->second];
 }
 
 // void ServerConfigFinder::setFactor(const size_t server_index, const std::string value) {
