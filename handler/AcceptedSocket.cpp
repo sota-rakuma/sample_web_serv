@@ -421,7 +421,6 @@ bool AcceptedSocket::prepareCGI()
 	//_parser_ctx.transitionTo(new CGIResponseParser(&_req));
 }
 
-// for test
 int AcceptedSocket::write()
 {
 	ssize_t nb = ::send(_sockfd, _buff.c_str(), _buff.size(), 0);
@@ -487,7 +486,7 @@ void AcceptedSocket::createResponse()
 	}
 	_progress == SEND_STATUS_LINE;
 	processResponse();
-	getSubject()->subscribe(_sockfd, POLLOUT, this);
+	getSubject()->subscribe(_sockfd, POLLOUT | POLLIN, this);
 }
 
 static void getGMTTime(
@@ -566,7 +565,7 @@ void AcceptedSocket::createErrorResponse()
 	createResponseTemplate();
 	_progress == SEND_STATUS_LINE;
 	processResponse();
-	getSubject()->subscribe(_sockfd, POLLOUT, this);
+	getSubject()->subscribe(_sockfd, POLLOUT | POLLIN, this);
 }
 
 void AcceptedSocket::createResponseTemplate()

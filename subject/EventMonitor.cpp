@@ -74,7 +74,7 @@ void EventMonitor::subscribe(
 
 	for (size_t i = 0; i < _pollvec.size(); i++) {
 		if (_pollvec[i].fd == fd) {
-			_pollvec[i].events |= event;
+			_pollvec[i].events = event;
 			break ;
 		}
 	}
