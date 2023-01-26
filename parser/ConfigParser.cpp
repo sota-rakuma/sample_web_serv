@@ -693,6 +693,11 @@ int ConfigParser::parse(const std::string &file) {
 	return 0;
 }
 
+const std::vector<ServerConfig> & ConfigParser::getScVec() const
+{
+	return _sc_vec;
+}
+
 // int main() {
 //     ConfigParser cp;
 //     if (cp.parse("zzz.conf") != 0) {

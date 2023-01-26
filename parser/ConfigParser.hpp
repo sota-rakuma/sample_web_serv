@@ -60,7 +60,8 @@ class ConfigParser
 		int parseExtension(std::string);
 		void initDirectiveFlag();
 		void initLocationDirectiveFlag();
-		// for test
+		const std::vector<ServerConfig> &
+		getScVec() const;
 		size_t getScVecSize() const {return _sc_vec.size();};
 		std::string getListen(size_t i) const {return _sc_vec[i].getListen();};
 		std::string getServerName(size_t i) const {return _sc_vec[i].getServerName();};
