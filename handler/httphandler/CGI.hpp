@@ -30,25 +30,26 @@ public:
 	CGI(
 		ISubject *,
 		std::list<ICommand *> *,
+		AcceptedSocket *,
 		const std::vector<std::string> &,
-		AcceptedSocket *
+		const std::string &
 	);
 	CGI(
 		ISubject *,
 		std::list<ICommand *> *,
+		AcceptedSocket *,
 		const std::vector<std::string> &,
 		const std::string &,
-		const std::string &,
-		AcceptedSocket *
+		const std::string &
 	);
 	CGI(
 		ISubject *,
 		std::list<ICommand *> *,
+		AcceptedSocket *,
 		const std::vector<std::string> &,
 		HTTPMethod *,
 		const std::string &,
-		const std::string &,
-		AcceptedSocket *
+		const std::string &
 	);
 	CGI(const CGI &);
 	virtual ~CGI();

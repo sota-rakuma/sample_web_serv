@@ -262,8 +262,9 @@ void AcceptedSocket::addEvent()
 		}
 		_receiver = new CGI(getSubject(),
 							getCommandList(),
+							this,
 							_location.getCgiExtensions(),
-							this);
+							_req.getRequestLine().getQuery());
 	} else {
 		_receiver = new File(getSubject(), getCommandList(),
 						this,
@@ -313,6 +314,7 @@ void AcceptedSocket::preparePostEvent()
 			_progress = CREATE_RESPONSE;
 			return ;
 		}
+		_buff.clear();
 		_progress = RECEIVE_CHUNKED_SIZE;
 		return ;
 	}
@@ -326,6 +328,7 @@ void AcceptedSocket::preparePostEvent()
 		if (ss) {
 			_status = BAD_REQUEST;
 			_progress = CREATE_RESPONSE;
+			_buff.clear();
 			return ;
 		}
 	}
@@ -333,6 +336,7 @@ void AcceptedSocket::preparePostEvent()
 		_body_size = 0;
 	}
 	_progress = RECEIVE_REQUEST_BODY;
+	_buff.clear();
 }
 
 void AcceptedSocket::processRequestBody(
@@ -448,38 +452,33 @@ int AcceptedSocket::write()
 	return 0;
 }
 
-// for test
-void AcceptedSocket::processCGIResponse(
-	const std::string & cgi_res
-)
-{
-	createResponse(cgi_res);
-}
-
-// for test
-void AcceptedSocket::createResponse(const std::string & body)
-{
-	std::cout << "######### TEST ##########" << std::endl;
-	_buff = body;
-	getSubject()->subscribe(_sockfd, POLLOUT, this);
-}
-
 void AcceptedSocket::createResponse()
 {
-	createGeneralHeader();
-	int status = static_cast<int>(_status);
-	if (400 <= status && status < 600) {
-		return createErrorResponse();
-	} else if (300 <= status && status < 400) {
-		createRedirectResponse();
-	} else {
-		if (_status == CREATED) {
-			_res.insertHeaderField(
-				"Location",
-				_req.getRequestLine().getPath());
+	int ret;
+	if (isCGI() == true) {
+		ret = _parser_ctx.execParse(_receiver->getContent());
+		if (ret == LOCAL_REDIR_RESPONSE) {
+			return ;
 		}
-		_res.setMessageBody(_receiver->getContent());
+	} else {
+		int status = static_cast<int>(_status);
+		if (400 <= status && status < 600) {
+			_res.insertHeaderField("Connection", "close");
+			return createErrorResponse();
+		} else if (300 <= status && status < 400) {
+			createRedirectResponse();
+		} else {
+			if (_status == CREATED) {
+				_res.insertHeaderField(
+					"Location",
+					_req.getRequestLine().getPath());
+			}
+			_res.setMessageBody(_receiver->getContent());
+		}
 	}
+
+	createGeneralHeader();
+
 	if (_res.getHeaderField().find("Transfer-Encoding") == _res.getHeaderField().end()) {
 		std::stringstream ss;
 		ss << _res.getMessageBody().size();
@@ -529,7 +528,7 @@ void AcceptedSocket::createGeneralHeader()
 	try
 	{
 		_res.insertHeaderField("Connection",
-					 			_req.tryGetHeaderValue("connection"));
+								_req.tryGetHeaderValue("connection"));
 	}
 	catch(const std::exception& e)
 	{

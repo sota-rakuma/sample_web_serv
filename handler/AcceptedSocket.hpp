@@ -80,7 +80,6 @@ private:
 	void processStatusLine();
 	void processResponseHeader();
 	void processResponseBody();
-
 public:
 	AcceptedSocket();
 	AcceptedSocket(
@@ -98,8 +97,6 @@ public:
 	virtual void update(int);
 	virtual int read();
 	virtual int write();
-	void processCGIResponse(const std::string &);
-	void createResponse(const std::string &);
 	void createResponse();
 	void processTest();
 };

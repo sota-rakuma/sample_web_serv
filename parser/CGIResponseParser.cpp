@@ -77,7 +77,9 @@ int CGIResponseParser::parseClientLocation() {
 	}
 	std::pair<std::string, std::string> location_pair = std::make_pair("Location", location_value);
 	_http_res->insertHeaderField(location_pair);
-	_http_res->setStatusLine("HTTP/1.1", "302", "Moved Temporarily");
+	if (_res_type == CLIENT_REDIR_RESPONSE) {
+		_http_res->setStatusLine("HTTP/1.1", "302", "Moved Temporarily");
+	}
 	return 0;
 }
 
@@ -320,8 +322,8 @@ int CGIResponseParser::getResponseType() {
 
 int CGIResponseParser::parse(const std::string &raw) {
 	_raw = raw;
-	_response_type = getResponseType();
-	switch (_response_type) {
+	_res_type = getResponseType();
+	switch (_res_type) {
 		case DOCUMENT_RESPONSE:
 			if (parseDocumentResponse() == -1)
 				return -1;
@@ -343,5 +345,5 @@ int CGIResponseParser::parse(const std::string &raw) {
 			return -1;
 			break;
 	}
-	return 0;
+	return _res_type;
 }

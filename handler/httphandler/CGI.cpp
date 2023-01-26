@@ -16,28 +16,32 @@ extern char **environ;
 #endif
 
 static const std::pair<std::string, std::string> tmp[] = {
+	std::make_pair(".perl", "/usr/bin/perl"),
 	std::make_pair(".pl", "/usr/bin/perl")
 };
+
 const std::map<std::string, std::string> CGI::_commands(tmp, tmp + getSize(tmp));
 
 CGI::CGI(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
+	AcceptedSocket * as,
 	const std::vector<std::string> &extentions,
-	AcceptedSocket * as
+	const std::string & query
 )
 :HTTPMethodReceiver(subject, commands, as),
-_extentions(extentions)
+_extentions(extentions),
+_query(query)
 {
 }
 
 CGI::CGI(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
+	AcceptedSocket * as,
 	const std::vector<std::string> &extentions,
 	const std::string & path,
-	const std::string & query,
-	AcceptedSocket * as
+	const std::string & query
 )
 :HTTPMethodReceiver(subject, commands, as, path),
 _extentions(extentions),
@@ -48,11 +52,11 @@ _query(query)
 CGI::CGI(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
+	AcceptedSocket * as,
 	const std::vector<std::string> &extentions,
 	HTTPMethod *method,
 	const std::string & path,
-	const std::string & query,
-	AcceptedSocket * as
+	const std::string & query
 )
 :HTTPMethodReceiver(subject, commands, method, as, path),
 _query(query),
@@ -96,9 +100,9 @@ void CGI::update(int event)
 		getSubject()->unsubscribe(_c_to_p[IN], false);
 	}
 	if (event & POLLHUP) {
+		entrustCreateResponse(OK);
 		getSubject()->unsubscribe(_p_to_c[OUT], true);
 		getSubject()->unsubscribe(_c_to_p[IN], false);
-		getAcceptedSocket()->processCGIResponse(_buff);
 	} else if (event & POLLOUT) {
 		getCommandList()->push_back(getWriteCommand());
 	} else if (event & POLLIN) {
@@ -119,10 +123,10 @@ int CGI::read()
 		getSubject()->unsubscribe(_c_to_p[IN], false);
 		return -1;
 	} else if (nb == 0) {
+		entrustCreateResponse(OK);
 		getSubject()->unsubscribe(_p_to_c[OUT], true);
 		getSubject()->unsubscribe(_c_to_p[IN], false);
 		// レスポンス作成フェーズ
-		entrustCreateResponse(OK);
 		//getAcceptedSocket()->processCGIResponse(_buff);
 		return 0;
 	}

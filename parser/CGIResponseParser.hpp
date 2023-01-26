@@ -7,20 +7,32 @@
 #include "../utils/utils.hpp"
 #include "../HTTP/HTTPResponse.hpp"
 
-enum ResponseType {
-    DOCUMENT_RESPONSE,
-    LOCAL_REDIR_RESPONSE,
-    CLIENT_REDIR_RESPONSE,
-    CLIENT_REDIRDOC_RESPONSE,
-};
+#ifndef DOCUMENT_RESPONSE
+#define DOCUMENT_RESPONSE 1
+#endif
+
+#ifndef LOCAL_REDIR_RESPONSE
+#define LOCAL_REDIR_RESPONSE 2
+#endif
+
+#ifndef CLIENT_REDIR_RESPONSE
+#define CLIENT_REDIR_RESPONSE 4
+#endif
+
+#ifndef CLIENT_REDIRDOC_RESPONSE
+#define CLIENT_REDIRDOC_RESPONSE 8
+#endif
+
+#ifndef ERROR
+#define ERROR -1
+#endif
 
 class CGIResponseParser : public Parser {
     private:
         std::string _raw;
         size_t  _i;
-        int _response_type;
+        int _res_type;
         HTTPResponse *_http_res;
-        ResponseType _res_type;
     public:
         CGIResponseParser();
         CGIResponseParser(

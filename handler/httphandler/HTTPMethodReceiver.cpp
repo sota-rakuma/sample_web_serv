@@ -101,6 +101,9 @@ void HTTPMethodReceiver::setHTTPMethod(
 	HTTPMethod *method
 )
 {
+	if (method != static_cast<HTTPMethod *>(NULL)) {
+		delete _method;
+	}
 	_method = method;
 }
 
