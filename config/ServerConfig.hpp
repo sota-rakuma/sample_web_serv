@@ -93,8 +93,8 @@ public:
 	const std::string &getListen() const;
 	const std::string &getServerName() const;
 	int getMaxBodySize() const;
-	std::map<int, std::string> &getDefaultErrorPage();
-	const std::vector<Location> &getLocationVec() ;
+	const std::map<int, std::string> &getDefaultErrorPage() const;
+	const std::vector<Location> &getLocationVec() const;
 };
 
 #endif /* SERVERCONFIG_HPP */

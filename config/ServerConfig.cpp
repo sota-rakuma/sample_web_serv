@@ -279,13 +279,13 @@ int ServerConfig::getMaxBodySize() const
 	return _max_body_size;
 };
 
-std::map<int, std::string> &ServerConfig::getDefaultErrorPage()
+const std::map<int, std::string> &ServerConfig::getDefaultErrorPage() const
 {
 	return _default_error_pages;
 };
 
 const std::vector<ServerConfig::Location> &
- ServerConfig::getLocationVec()
+ ServerConfig::getLocationVec() const
 {
 	return _locations;
 };
