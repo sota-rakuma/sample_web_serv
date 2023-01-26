@@ -102,6 +102,7 @@ int File::write()
 		return 1;
 	}
 	getSubject()->unsubscribe(_fd, false);
+	_buff = "";
 	return 0;
 }
 
