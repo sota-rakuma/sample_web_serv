@@ -457,14 +457,6 @@ void AcceptedSocket::createResponse(const std::string & body)
 	getSubject()->subscribe(_sockfd, POLLOUT, this);
 }
 
-/*
-・✅Data
-・✅Server
-・Location(3xx or 201)
-・Transfer-Encoding(Content-Length)
-・✅Connection
-・[content-type]
-*/
 void AcceptedSocket::createResponse()
 {
 	createGeneralHeader();
@@ -485,6 +477,11 @@ void AcceptedSocket::createResponse()
 		std::stringstream ss;
 		ss << _res.getMessageBody().size();
 		_res.insertHeaderField("Content-Length", ss.str());
+	}
+	std::map<std::string, std::string>::const_iterator ct = _req.getHeaderField().find("content-type");
+	if (ct != _req.getHeaderField().end())
+	{
+		_res.insertHeaderField("Content-Type", ct->second);
 	}
 	getSubject()->subscribe(_sockfd, POLLOUT, this);
 }
@@ -554,6 +551,7 @@ void AcceptedSocket::createErrorResponse()
 	if (ep != _config.getDefaultErrorPage().end())
 	{
 		delete _receiver;
+		_res.insertHeaderField("Content-Type", "text/html");
 		_receiver = new File(getSubject(), getCommandList(), this,
 							false, ep->second);
 		_config.eraseDefaultErrorPage(ep->first);
