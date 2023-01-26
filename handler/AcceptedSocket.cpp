@@ -150,7 +150,6 @@ void AcceptedSocket::processRequestLine(
 		return ;
 	}
 	_status = BAD_REQUEST;
-	// エラーレスポンス
 	_progress = CREATE_RESPONSE;
 }
 
@@ -164,12 +163,10 @@ void AcceptedSocket::processRequestHeader(
 	}
 	if (_buff.size() > BUFFSIZE) {
 		_status = REQUEST_HEADER_FIELD_TOO_LARGE;
-		// エラーレスポンス
 		_progress = CREATE_RESPONSE;
 		return;
 	}
 	if (_parser_ctx.execParse(_buff) == -1 || validateRequest() == -1) {
-		// エラーレスポンス
 		_progress = CREATE_RESPONSE;
 		return;
 	}
@@ -437,7 +434,12 @@ int AcceptedSocket::write()
 		_buff = _buff.substr(0, nb);
 		return 1;
 	}
-	getSubject()->unsubscribe(_sockfd, false);
+	if (_progress == END) {
+		getSubject()->unsubscribe(_sockfd, false);
+	} else {
+		_buff.clear();
+		processResponse();
+	}
 	return 0;
 }
 
@@ -483,6 +485,8 @@ void AcceptedSocket::createResponse()
 	{
 		_res.insertHeaderField("Content-Type", ct->second);
 	}
+	_progress == SEND_STATUS_LINE;
+	processResponse();
 	getSubject()->subscribe(_sockfd, POLLOUT, this);
 }
 
@@ -560,6 +564,8 @@ void AcceptedSocket::createErrorResponse()
 		return ;
 	}
 	createResponseTemplate();
+	_progress == SEND_STATUS_LINE;
+	processResponse();
 	getSubject()->subscribe(_sockfd, POLLOUT, this);
 }
 
@@ -572,6 +578,50 @@ void AcceptedSocket::createResponseTemplate()
 	_res.addMessageBody(comment);
 	_res.addMessageBody("</h1></center>\n<hr><center>42WebServ</center>\n</body>\n</html>");
 	_res.insertHeaderField("Content-Type", "text/html");
+}
+
+void AcceptedSocket::processResponse()
+{
+	switch (_progress)
+	{
+	case SEND_STATUS_LINE:
+	case SEND_RESPONSE_HEADER:
+	case SEND_RESPONSE_BODY:
+	default:
+		break;
+	}
+}
+
+void AcceptedSocket::processStatusLine()
+{
+	_buff += _res.getStatusLine().getHTTPVersion();
+	_buff += " ";
+	_buff += _res.getStatusLine().getCode();
+	_buff += _res.getStatusLine().getReason();
+	_buff += "\r\n";
+	_progress = SEND_RESPONSE_HEADER;
+}
+
+void AcceptedSocket::processResponseHeader()
+{
+	for (std::map<std::string, std::string>::const_iterator it = _res.getHeaderField().begin();
+		it != _res.getHeaderField().end();
+		it++)
+	{
+		_buff += it->first;
+		_buff += ": ";
+		_buff += it->second;
+		_buff += "\r\n";
+	}
+	_buff += "\r\n";
+	_progress = SEND_RESPONSE_BODY;
+}
+
+void AcceptedSocket::processResponseBody()
+{
+	_buff = _res.getMessageBody();
+	_buff += "\r\n";
+	_progress = END;
 }
 
 // for test
