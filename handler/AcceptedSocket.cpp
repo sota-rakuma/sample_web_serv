@@ -484,9 +484,8 @@ void AcceptedSocket::createResponse()
 	if (_res.getHeaderField().find("Transfer-Encoding") == _res.getHeaderField().end()) {
 		std::stringstream ss;
 		ss << _res.getMessageBody().size();
-		_res.insertHeaderField("Content-Lenght", ss.str());
+		_res.insertHeaderField("Content-Length", ss.str());
 	}
-
 	getSubject()->subscribe(_sockfd, POLLOUT, this);
 }
 
