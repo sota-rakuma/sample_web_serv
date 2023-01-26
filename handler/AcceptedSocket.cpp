@@ -544,6 +544,7 @@ void AcceptedSocket::createGeneralHeader()
 void AcceptedSocket::createRedirectResponse()
 {
 	_res.setStatusCode(_status);
+	_res.insertHeaderField("Location", _location.getReturn().second);
 	createResponseTemplate();
 }
 
