@@ -91,7 +91,6 @@ int File::write()
 	return 0;
 }
 
-// 失敗したらcreateResponseで一応処理は終われる
 int File::httpGet()
 {
 	if (execStat() == -1) {
@@ -161,6 +160,8 @@ int File::httpPost()
 		return -1;
 	}
 	getSubject()->subscribe(_fd, POLLOUT, this);
+	// POSTした内容をbufferに格納
+	httpGet();
 	return 0;
 }
 
