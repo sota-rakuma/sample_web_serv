@@ -12,22 +12,22 @@ public:
 	{
 	private:
 		std::string _version;
-		HTTPStatus _code;
+		std::string _code;
 		std::string _reason;
 	public:
 		StatusLine();
 		StatusLine(
 			const std::string &,
-			HTTPStatus,
+			const std::string &,
 			const std::string &
 		);
 		StatusLine(const StatusLine &);
 		~StatusLine();
 		const std::string & getHTTPVersion() const;
-		HTTPStatus getCode() const;
+		const std::string & getCode() const;
 		const std::string & getReason() const;
 		StatusLine & setHTTPVersion(const std::string &);
-		StatusLine &setCode(HTTPStatus);
+		StatusLine &setCode(const std::string &);
 		StatusLine & setReason(const std::string &);
 		StatusLine & operator=(const StatusLine &);
 	};
@@ -48,11 +48,11 @@ public:
 	) const;
 	const std::string & getMessageBody() const;
 	HTTPResponse & setStatusCode(
-		HTTPStatus
+		const std::string &
 	);
 	HTTPResponse & setStatusLine(
 		const std::string &,
-		HTTPStatus,
+		const std::string &,
 		const std::string &
 	);
 	HTTPResponse & setHeaderField(
@@ -60,6 +60,10 @@ public:
 	);
 	HTTPResponse & insertHeaderField(
 		const std::pair<std::string, std::string> &
+	);
+	HTTPResponse & insertHeaderField(
+		const std::string &,
+		const std::string &
 	);
 	HTTPResponse & setMessageBody(
 		const std::string &

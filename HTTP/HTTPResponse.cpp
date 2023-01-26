@@ -2,21 +2,43 @@
 #include "../utils/utils.hpp"
 #include "../utils/Template.hpp"
 #include <iostream>
+#include <sstream>
 
-static std::pair<HTTPStatus, const std::string> temp[] = {std::make_pair(OK, "OK")};
+static std::pair<HTTPStatus, const std::string> temp[] = {
+	std::make_pair(OK, "OK"),
+	std::make_pair(MOVED_PERMANENTLY, "moved permanently"),
+	std::make_pair(FOUND, "Found"),
+	std::make_pair(SEE_OTHER, "see other"),
+	std::make_pair(NOT_MODIFIED, "not modified"),
+	std::make_pair(TEMPORARY_REDIRECT, "Temporary Redirect"),
+	std::make_pair(PERMANENT_REDIRECT, "permanent redirect"),
+	std::make_pair(CREATED, "Created"),
+	std::make_pair(BAD_REQUEST, "Bad Request"),
+	std::make_pair(FORBIDDEN, "Forbidden"),
+	std::make_pair(NOT_FOUND, "Not Found"),
+	std::make_pair(METHOD_NOT_ALLOWED, "Method Not Allowed"),
+	std::make_pair(REQUEST_TIMEOUT, "time out"),
+	std::make_pair(PAYLOAD_TOO_LARGE, "payload too large"),
+	std::make_pair(URI_TOO_LONG, "uri too long"),
+	std::make_pair(UNSUPPORTED_MEDIA_TYPE, "unsupported media type"),
+	std::make_pair(REQUEST_HEADER_FIELD_TOO_LARGE, "request header filed too large"),
+	std::make_pair(INTERNAL_SERVER_ERROR, "Internal Server Error"),
+	std::make_pair(NOT_IMPLEMENTED, "not implemented"),
+	std::make_pair(HTTP_VERSION_NOT_SUPPORTED, "HTTP Version Not Supported")
+};
 
 std::map<HTTPStatus, const std::string &> HTTPResponse::_err_msg(temp, temp + getSize(temp));
 
 HTTPResponse::StatusLine::StatusLine()
 :_version(),
-_code(DEFAULT),
+_code("default"),
 _reason()
 {
 }
 
 HTTPResponse::StatusLine::StatusLine(
 	const std::string & version,
-	HTTPStatus code,
+	const std::string & code,
 	const std::string & reason
 )
 :_version(version),
@@ -41,7 +63,7 @@ const std::string & HTTPResponse::StatusLine::getHTTPVersion() const
 	return _version;
 }
 
-HTTPStatus HTTPResponse::StatusLine::getCode() const
+const std::string & HTTPResponse::StatusLine::getCode() const
 {
 	return _code;
 }
@@ -59,7 +81,7 @@ HTTPResponse::StatusLine & HTTPResponse::StatusLine::setHTTPVersion(
 	return *this;
 }
 
-HTTPResponse::StatusLine & HTTPResponse::StatusLine::setCode(HTTPStatus code)
+HTTPResponse::StatusLine & HTTPResponse::StatusLine::setCode(const std::string & code)
 {
 	_code = code;
 	return *this;
@@ -128,7 +150,7 @@ const std::string & HTTPResponse::getMessageBody() const
 }
 
 HTTPResponse & HTTPResponse::setStatusCode(
-	HTTPStatus status
+	const std::string & status
 )
 {
 	_statl.setCode(status);
@@ -137,7 +159,7 @@ HTTPResponse & HTTPResponse::setStatusCode(
 
 HTTPResponse & HTTPResponse::setStatusLine(
 	const std::string & version,
-	HTTPStatus code,
+	const std::string & code,
 	const std::string & reason
 )
 {
@@ -163,6 +185,15 @@ HTTPResponse & HTTPResponse::insertHeaderField(
 	return *this;
 }
 
+HTTPResponse & HTTPResponse::insertHeaderField(
+	const std::string & key,
+	const std::string & val
+)
+{
+	_hf.insert(std::make_pair(key, val));
+	return *this;
+}
+
 HTTPResponse & HTTPResponse::setMessageBody(
 	const std::string & body
 )
@@ -182,15 +213,16 @@ std::ostream &operator<<(
 	os << "STATUS LINE" << std::endl
 	<< "Version: " << statl.getHTTPVersion() << std::endl
 	<< "Code: ";
-
-	if (statl.getCode() < 200) {
-		os << addColorText(statl.getCode(), BLUE);
-	} else if (statl.getCode() < 300) {
-		os << addColorText(statl.getCode(), GREEN);
-	} else if (statl.getCode() < 400) {
-		os << statl.getCode();
-	} else {
+	std::stringstream ss;
+	ss << statl.getCode();
+	size_t stat;
+	ss >> stat;
+	if (ss || (stat <= 400 && stat < 600)) {
 		os << addColorText(statl.getCode(), RED);
+	} else if (stat < 200) {
+		os << addColorText(statl.getCode(), BLUE);
+	} else if (stat < 300) {
+		os << addColorText(statl.getCode(), GREEN);
 	}
 	os << std::endl
 	<< "Reason: " << statl.getReason() << std::endl;
