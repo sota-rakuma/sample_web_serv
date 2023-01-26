@@ -62,6 +62,8 @@ int File::read()
 	char buff[BUFSIZE];
 	ssize_t nb = ::read(_fd, buff, BUFSIZE);
 	if (nb < 0) {
+		getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
+		getAcceptedSocket()->createResponse();
 		getSubject()->unsubscribe(_fd, false);
 		return -1;
 	} else if (nb == 0) {
@@ -78,6 +80,8 @@ int File::write()
 {
 	ssize_t nb = ::write(_fd, _buff.c_str(), _buff.size());
 	if (nb == -1) {
+		getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
+		getAcceptedSocket()->createResponse();
 		getSubject()->unsubscribe(_fd, false);
 		return -1;
 	}
@@ -86,12 +90,11 @@ int File::write()
 		_nb += nb;
 		return 1;
 	}
-	std::cout << "write buffer" << _buff << std::endl;
 	getSubject()->unsubscribe(_fd, false);
-	getAcceptedSocket()->createResponse("created");
 	return 0;
 }
 
+// 失敗したらcreateResponseで一応処理は終われる
 int File::httpGet()
 {
 	if (execStat() == -1) {
@@ -127,6 +130,7 @@ int File::httpGet()
 		return -1;
 	}
 	getSubject()->subscribe(_fd, POLLIN, this);
+	getAcceptedSocket()->setStatus(OK);
 	return 0;
 }
 
@@ -135,6 +139,7 @@ int File::httpPost()
 	if (execStat() == -1) {
 		if (errno ==  ENOENT) {
 			_fd = open(getPath().c_str(), O_RDWR | O_CREAT | O_EXCL | O_CLOEXEC);
+			getAcceptedSocket()->setStatus(CREATED);
 		} else if(errno == EACCES) {
 			getAcceptedSocket()->setStatus(FORBIDDEN);
 			return -1;
@@ -143,7 +148,8 @@ int File::httpPost()
 			return -1;
 		}
 	} else {
-		_fd = open(getPath().c_str(), O_WRONLY | O_APPEND | O_CLOEXEC);
+		_fd = open(getPath().c_str(), O_RDWR | O_APPEND | O_CLOEXEC);
+		getAcceptedSocket()->setStatus(OK);
 	}
 	if (_fd == -1) {
 		getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
@@ -157,7 +163,6 @@ int File::httpPost()
 		getAcceptedSocket()->setStatus(FORBIDDEN);
 		return -1;
 	}
-	//_buff = "value=aaaa&value_2=bbbb";
 	getSubject()->subscribe(_fd, POLLOUT, this);
 	return 0;
 }
@@ -189,6 +194,7 @@ int File::httpDelete()
 		}
 		return -1;
 	}
+	getAcceptedSocket()->setStatus(OK);
 	return 0;
 }
 

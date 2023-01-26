@@ -54,8 +54,6 @@ public:
 	int getInFd() const;
 	int getOutFd() const;
 	const std::string & getPath() const;
-	bool getExectableFlag() const;
-	CGI & setExectableFlag(bool);
 };
 
 #endif /* CGI_HPP */

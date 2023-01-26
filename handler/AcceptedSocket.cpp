@@ -198,14 +198,8 @@ void AcceptedSocket::processRequestHeader(
 	return prepareEvent();
 	if (_req.getRequestLine().getMethod() == POST) {
 		_buff = "";
-		//if (_req.getHeaderValue("Tranfer-Encoding").find("chunked") != std::string::npos) {
-		//	_progress = RECEIVE_CHUNKED_SIZE;
-		//} else {
-		//	_progress = RECEIVE_REQUEST_BODY;
-		//}
 	} else {
 		_progress = EXECUTE_METHOD;
-		//_receiver = new File() or CGI();
 		if (_req.getRequestLine().getMethod() == GET) {
 			getCommandList()->push_back(new Get(_receiver));
 		}
@@ -429,7 +423,6 @@ bool AcceptedSocket::prepareCGI(
 	const std::string & query
 )
 {
-
 	std::stringstream ss;
 	std::string len;
 	ss << _buff.size();
@@ -472,13 +465,6 @@ void AcceptedSocket::processCGIResponse(
 	createResponse(cgi_res);
 }
 
-/*
-エラーレスポンスの場合
-
-ステータスコードから、デフォルトエラーページを取得できた場合、現在持っている_receiverをdeleteして、そのファイルをreceiverに代入して、とってこれた内容をレスポンスのボディとして、レスポンスを作成する。
-
-そうでない場合、それに対応するエラーレスポンスを埋め込んで、れすポンスを作成する(定型文があると、楽)
-*/
 // for test
 void AcceptedSocket::createResponse(const std::string & body)
 {
@@ -487,6 +473,14 @@ void AcceptedSocket::createResponse(const std::string & body)
 	getSubject()->subscribe(_sockfd, POLLOUT, this);
 }
 
+/*
+・Data
+・Server
+・Location(3xx or 201)
+・Transfer-Encoding(Content-Length)
+・Connection
+・[content-type]
+*/
 void AcceptedSocket::createResponse()
 {
 }

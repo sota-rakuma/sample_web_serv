@@ -139,6 +139,7 @@ int CGI::httpGet()
 		return -1;
 	}
 	getSubject()->subscribe(_c_to_p[IN], POLLIN, this);
+	getAcceptedSocket()->setStatus(OK);
 	return 0;
 }
 
@@ -153,6 +154,7 @@ int CGI::httpPost()
 	_buff = "value=aaaa&value_2=bbbb";
 	getSubject()->subscribe(_p_to_c[OUT], POLLOUT, this);
 	getSubject()->subscribe(_c_to_p[IN], POLLIN, this);
+	getAcceptedSocket()->setStatus(OK);
 	return 0;
 }
 
@@ -165,6 +167,7 @@ int CGI::httpDelete()
 		return -1;
 	}
 	getSubject()->subscribe(_c_to_p[IN], POLLIN, this);
+	getAcceptedSocket()->setStatus(OK);
 	return 0;
 }
 
