@@ -9,14 +9,16 @@ std::map<HTTPStatus, const std::string &> HTTPResponse::_err_msg(temp, temp + ge
 
 HTTPResponse::StatusLine::StatusLine()
 :_version(),
-_code(),
+_code("0"),
+// _code(DEFAULT),
 _reason()
 {
 }
 
 HTTPResponse::StatusLine::StatusLine(
 	const std::string & version,
-	HTTPStatus code,
+	const std::string & code,
+	// HTTPStatus code,
 	const std::string & reason
 )
 :_version(version),
@@ -41,7 +43,8 @@ const std::string & HTTPResponse::StatusLine::getHTTPVersion() const
 	return _version;
 }
 
-HTTPStatus HTTPResponse::StatusLine::getCode() const
+// HTTPStatus HTTPResponse::StatusLine::getCode() const
+std::string HTTPResponse::StatusLine::getCode() const
 {
 	return _code;
 }
@@ -128,7 +131,8 @@ const std::string & HTTPResponse::getMessageBody() const
 }
 
 HTTPResponse & HTTPResponse::setStatusCode(
-	HTTPStatus status
+	std::string status
+	// HTTPStatus status
 )
 {
 	_statl.setCode(status);
@@ -137,7 +141,8 @@ HTTPResponse & HTTPResponse::setStatusCode(
 
 HTTPResponse & HTTPResponse::setStatusLine(
 	const std::string & version,
-	HTTPStatus code,
+	const std::string & code,
+	// HTTPStatus code,
 	const std::string & reason
 )
 {

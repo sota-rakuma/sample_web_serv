@@ -1,8 +1,11 @@
 #ifndef CGIRESPONSEPARSER_HPP
 #define CGIRESPONSEPARSER_HPP
 
-#include "Parser.hpp"
 #include <iostream>
+#include "TargetParser.hpp"
+#include "Parser.hpp"
+#include "../utils/utils.hpp"
+#include "../HTTP/HTTPResponse.hpp"
 
 enum ResponseType {
     DOCUMENT_RESPONSE = 0,
@@ -16,23 +19,24 @@ class CGIResponseParser : public Parser {
         std::string _raw;
         size_t  _i;
         int _response_type;
-        std::string _content_type;
+        HTTPResponse *_http_res;
+        ResponseType _res_type;
     public:
         CGIResponseParser();
         virtual ~CGIResponseParser();
         virtual int parse(const std::string &);
-        int getResponseType() const;
+        int getResponseType();
         int parseDocumentResponse();
         int parseLocalRedirResponse();
         int parseClientRedirResponse();
         int parseClientRedirDocResponse();
         int parseContentType();
-        int parseMediaType();
         int parseStatus();
         int parseOtherField();
-        int parseResponseBody();
         int parseClientLocation();
-        int parseExtensionField();
+        // int parseExtensionField();
+        int parseResponseBody();
+        int treatNL(std::string &, size_t &, size_t &);
 };
 
 #endif /* CGIRESPONSEPARSER_HPP */
