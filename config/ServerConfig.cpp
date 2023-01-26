@@ -87,6 +87,11 @@ void ServerConfig::setDefaultErrorPages(
 		_default_error_pages.insert(std::make_pair(status_codes[i], dep));
 }
 
+void ServerConfig::eraseDefaultErrorPage(int status)
+{
+	_default_error_pages.erase(status);
+}
+
 void ServerConfig::setAllowedMethod(
 	size_t index,
 	const std::map<std::string, bool> &method_map

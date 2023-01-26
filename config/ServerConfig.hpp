@@ -69,6 +69,9 @@ public:
 		const std::vector<int> &,
 		const std::string &
 	);
+	void eraseDefaultErrorPage(
+		int
+	);
 	void setAllowedMethod(
 		size_t,
 		const std::map<std::string, bool> &
