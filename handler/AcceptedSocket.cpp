@@ -543,8 +543,17 @@ void AcceptedSocket::createGeneralHeader()
 */
 void AcceptedSocket::createRedirectResponse()
 {
-	const std::string & comment = _res.getStatusLine().getCode() + " " + _res.getStatusLine().getReason();
 	_res.setStatusCode(_status);
+	createResponseTemplate();
+}
+
+void AcceptedSocket::createErrorResponse()
+{
+}
+
+void AcceptedSocket::createResponseTemplate()
+{
+	const std::string & comment = _res.getStatusLine().getCode() + " " + _res.getStatusLine().getReason();
 	_res.addMessageBody("<html>\n<head><title>");
 	_res.addMessageBody(comment);
 	_res.addMessageBody("</title></head>\n<body>\n<center><h1>");

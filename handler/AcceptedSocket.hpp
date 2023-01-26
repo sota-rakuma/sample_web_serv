@@ -74,6 +74,7 @@ private:
 	void createGeneralHeader();
 	void createErrorResponse();
 	void createRedirectResponse();
+	void createResponseTemplate();
 public:
 	AcceptedSocket();
 	AcceptedSocket(
