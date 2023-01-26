@@ -470,7 +470,7 @@ void AcceptedSocket::createResponse()
 	createGeneralHeader();
 	int status = static_cast<int>(_status);
 	if (400 <= status && status < 600) {
-		createErrorResponse();
+		return createErrorResponse();
 	} else if (300 <= status && status < 400) {
 		createRedirectResponse();
 	} else {
@@ -550,6 +550,20 @@ void AcceptedSocket::createRedirectResponse()
 
 void AcceptedSocket::createErrorResponse()
 {
+	_res.setStatusCode(_status);
+	std::map<int, std::string>::const_iterator ep = _config.getDefaultErrorPage().find(static_cast<int>(_status));
+	if (ep != _config.getDefaultErrorPage().end())
+	{
+		delete _receiver;
+		_receiver = new File(getSubject(), getCommandList(), this,
+							false, ep->second);
+		_config.eraseDefaultErrorPage(ep->first);
+		_receiver->setHTTPMethod(new Get(_receiver));
+		addCommand(_receiver->getHTTPMethod());
+		return ;
+	}
+	createResponseTemplate();
+	getSubject()->subscribe(_sockfd, POLLOUT, this);
 }
 
 void AcceptedSocket::createResponseTemplate()
