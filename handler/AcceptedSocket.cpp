@@ -421,6 +421,7 @@ bool AcceptedSocket::prepareCGI()
 		_status = INTERNAL_SERVER_ERROR;
 		return false;
 	}
+	//_parser_ctx.transitionTo(new CGIResponseParser(&_req));
 }
 
 // for test
@@ -466,8 +467,6 @@ void AcceptedSocket::createResponse(const std::string & body)
 */
 void AcceptedSocket::createResponse()
 {
-	std::stringstream ss;
-
 	createGeneralHeader();
 	int status = static_cast<int>(_status);
 	if (400 <= status && status < 600) {
@@ -482,6 +481,12 @@ void AcceptedSocket::createResponse()
 		}
 		_res.setMessageBody(_receiver->getContent());
 	}
+	if (_res.getHeaderField().find("Transfer-Encoding") == _res.getHeaderField().end()) {
+		std::stringstream ss;
+		ss << _res.getMessageBody().size();
+		_res.insertHeaderField("Content-Lenght", ss.str());
+	}
+
 	getSubject()->subscribe(_sockfd, POLLOUT, this);
 }
 
@@ -525,6 +530,27 @@ void AcceptedSocket::createGeneralHeader()
 	{
 		_res.insertHeaderField("Connection", "keep-alive");
 	}
+}
+
+/*
+<html>
+<head><title>301 Moved Permanently</title></head>
+<body>
+<center><h1>301 Moved Permanently</h1></center>
+<hr><center>nginx/1.23.3</center>
+</body>
+</html>
+*/
+void AcceptedSocket::createRedirectResponse()
+{
+	const std::string & comment = _res.getStatusLine().getCode() + " " + _res.getStatusLine().getReason();
+	_res.setStatusCode(_status);
+	_res.addMessageBody("<html>\n<head><title>");
+	_res.addMessageBody(comment);
+	_res.addMessageBody("</title></head>\n<body>\n<center><h1>");
+	_res.addMessageBody(comment);
+	_res.addMessageBody("</h1></center>\n<hr><center>42WebServ</center>\n</body>\n</html>");
+	_res.insertHeaderField("Content-Type", "text/html");
 }
 
 // for test

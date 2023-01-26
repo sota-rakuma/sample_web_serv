@@ -48,6 +48,9 @@ public:
 	) const;
 	const std::string & getMessageBody() const;
 	HTTPResponse & setStatusCode(
+		HTTPStatus
+	);
+	HTTPResponse & setStatusCode(
 		const std::string &
 	);
 	HTTPResponse & setStatusCode(

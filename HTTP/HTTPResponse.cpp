@@ -150,6 +150,21 @@ const std::string & HTTPResponse::getMessageBody() const
 }
 
 HTTPResponse & HTTPResponse::setStatusCode(
+	HTTPStatus status
+)
+{
+	std::map<HTTPStatus, const std::string &>::const_iterator reason = _err_msg.find(status);
+	std::stringstream ss;
+	ss << status;
+	_statl.setCode(ss.str());
+	ss.clear();
+	if (reason == _err_msg.end()) {
+		return ;
+	}
+	_statl.setReason(reason->second);
+}
+
+HTTPResponse & HTTPResponse::setStatusCode(
 	const std::string & status
 )
 {
