@@ -19,8 +19,14 @@ private:
 	struct stat _state;
 protected:
 	std::string _path;
+	std::string _buff;
 public:
 	HTTPMethodReceiver();
+	HTTPMethodReceiver(
+		ISubject *,
+		std::list<ICommand *> *,
+		AcceptedSocket *
+	);
 	HTTPMethodReceiver(
 		ISubject *,
 		std::list<ICommand *> *,
@@ -34,6 +40,14 @@ public:
 		AcceptedSocket *,
 		const std::string &
 	);
+	HTTPMethodReceiver(
+		ISubject *,
+		std::list<ICommand *> *,
+		HTTPMethod *,
+		AcceptedSocket *,
+		const std::string &,
+		const std::string &
+	);
 	HTTPMethodReceiver(const HTTPMethodReceiver &);
 	virtual ~HTTPMethodReceiver();
 	HTTPMethod *getHTTPMethod() const;
@@ -42,6 +56,13 @@ public:
 	void setHTTPMethod(HTTPMethod *);
 	void setAcceptedSocket(AcceptedSocket *);
 	void setPath(const std::string &);
+	void setContent(
+		const std::string &
+	);
+	void addContent(
+		const std::string &
+	);
+	const std::string & getContent() const;
 	virtual int httpGet() = 0;
 	virtual int httpPost() = 0;
 	virtual int httpDelete() = 0;

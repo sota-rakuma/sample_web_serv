@@ -13,8 +13,22 @@ HTTPMethodReceiver::HTTPMethodReceiver(const HTTPMethodReceiver & another)
 :IOEventHandler(another.getSubject(), another.getCommandList()),
 _method(another._method),
 _as(another._as),
+_state(another._state),
 _path(another._path),
-_state(another._state)
+_buff(another._buff)
+{
+}
+
+HTTPMethodReceiver::HTTPMethodReceiver(
+	ISubject * sub,
+	std::list<ICommand *> *commands,
+	AcceptedSocket * as
+)
+:IOEventHandler(sub, commands),
+_method(static_cast<HTTPMethod *>(NULL)),
+_as(as),
+_path(),
+_buff()
 {
 }
 
@@ -27,7 +41,8 @@ HTTPMethodReceiver::HTTPMethodReceiver(
 :IOEventHandler(subject, commands),
 _method(static_cast<HTTPMethod *>(NULL)),
 _as(as),
-_path(path)
+_path(path),
+_buff()
 {
 }
 
@@ -41,7 +56,24 @@ HTTPMethodReceiver::HTTPMethodReceiver(
 :IOEventHandler(subject, commands),
 _method(method),
 _as(as),
-_path(path)
+_path(path),
+_buff()
+{
+}
+
+HTTPMethodReceiver::HTTPMethodReceiver(
+	ISubject *subject,
+	std::list<ICommand *> *commands,
+	HTTPMethod *method,
+	AcceptedSocket *as,
+	const std::string &path,
+	const std::string &buff
+)
+:IOEventHandler(subject, commands),
+_method(method),
+_as(as),
+_path(path),
+_buff(buff)
 {
 }
 
@@ -82,6 +114,25 @@ void HTTPMethodReceiver::setAcceptedSocket(
 void HTTPMethodReceiver::setPath(const std::string & path)
 {
 	_path = path;
+}
+
+void HTTPMethodReceiver::setContent(
+	const std::string & content
+)
+{
+	_buff = content;
+}
+
+void HTTPMethodReceiver::addContent(
+	const std::string & content
+)
+{
+	_buff += content;
+}
+
+const std::string & HTTPMethodReceiver::getContent() const
+{
+	return _buff;
 }
 
 int HTTPMethodReceiver::execStat()
