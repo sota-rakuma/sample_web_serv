@@ -127,11 +127,7 @@ void AcceptedSocket::processRequest(const std::string & raw)
 		processChunkedBody(raw);
 	case RECEIVE_REQUEST_BODY:
 		processRequestBody(raw);
-	case EXECUTE_METHOD:
-		addEvent();
 	case CREATE_RESPONSE:
-		createResponse();
-	case ERROR:
 		createResponse();
 	default:
 		break;
@@ -188,14 +184,6 @@ void AcceptedSocket::processRequestHeader(
 		return;
 	}
 	return prepareEvent();
-	if (_req.getRequestLine().getMethod() == POST) {
-		_buff = "";
-	} else {
-		_progress = EXECUTE_METHOD;
-		if (_req.getRequestLine().getMethod() == GET) {
-			getCommandList()->push_back(new Get(_receiver));
-		}
-	}
 }
 
 int AcceptedSocket::validateRequest()
@@ -263,14 +251,62 @@ void AcceptedSocket::prepareEvent()
 		_status = METHOD_NOT_ALLOWED;
 		_progress = CREATE_RESPONSE;
 		return ;
-	} else if (it->first == POST) {
-		return prepareReceivingBody();
 	}
-	_progress = EXECUTE_METHOD;
+	return addEvent();
 }
 
-void AcceptedSocket::prepareReceivingBody()
+void AcceptedSocket::addEvent()
 {
+	if (isCGI() == true) {
+		if (prepareCGI() == false) {
+			_progress = CREATE_RESPONSE;
+			return ;
+		}
+		_receiver = new CGI(getSubject(),
+							getCommandList(),
+							_location.getCgiExtensions(),
+							this);
+	} else {
+		_receiver = new File(getSubject(), getCommandList(),
+						this,
+						_location.getAutoIndex() == "on",
+						_location.getIndexFile());
+	}
+	const HTTPRequest::RequestLine & rl = _req.getRequestLine();
+	if (rl.getMethod() == POST) {
+		_receiver->setHTTPMethod(new Post(_receiver));
+		preparePostEvent();
+	} else {
+		std::string path = rl.getPath();
+		if (_location.getAlias() != "default") {
+			path.replace(0,
+			_location.getPath().size(),
+			_location.getAlias());
+		}
+		_receiver->setPath(path);
+		if (rl.getMethod() == GET) {
+			_receiver->setHTTPMethod(new Get(_receiver));
+		} else {
+			_receiver->setHTTPMethod(new Delete(_receiver));
+		}
+	}
+	addCommand(_receiver->getHTTPMethod());
+}
+
+void AcceptedSocket::preparePostEvent()
+{
+	std::string path = _req.getRequestLine().getPath();
+	if (_location.getUploadPlace() != "default")
+	{
+		path.replace(0,
+				_location.getPath().size(),
+				_location.getUploadPlace());
+	} else if (_location.getAlias() != "default") {
+		path.replace(0,
+				_location.getPath().size(),
+				_location.getAlias());
+	}
+	_receiver->setPath(path);
 	try
 	{
 		const std::string & te = _req.tryGetHeaderValue("transfer-encoding");
@@ -310,7 +346,7 @@ void AcceptedSocket::processRequestBody(
 		_progress = CREATE_RESPONSE;
 		return ;
 	}
-	_buff += raw.substr(0, _body_size - _buff.size());
+	_receiver->addContent(raw.substr(0, _body_size - _buff.size()));
 	if (_body_size == _buff.size()) {
 		_progress == EXECUTE_METHOD;
 		return ;
@@ -340,7 +376,7 @@ void AcceptedSocket::processChunkedBody(
 			_progress = RECEIVE_CHUNKED_BODY;
 		} else if (_progress == RECEIVE_CHUNKED_BODY) {
 			if (index == std::string::npos) {
-				_buff += raw.substr(i, raw.size() - i);
+				_receiver->addContent(raw.substr(i, raw.size() - i));
 				_body_size -= raw.size() - i;
 				return ;
 			}
@@ -350,8 +386,8 @@ void AcceptedSocket::processChunkedBody(
 				_progress = CREATE_RESPONSE;
 				return ;
 			}
-			_buff += chunked_body;
-			if (_config.getMaxBodySize() < _buff.size()) {
+			_receiver->addContent(chunked_body);
+			if (_config.getMaxBodySize() < _receiver->getContent().size()) {
 				_status = PAYLOAD_TOO_LARGE;
 				_progress = CREATE_RESPONSE;
 				return ;
@@ -363,57 +399,12 @@ void AcceptedSocket::processChunkedBody(
 	}
 }
 
-void AcceptedSocket::addEvent()
-{
-	const HTTPRequest::RequestLine & rl = _req.getRequestLine();
-	std::string path = rl.getPath();
-	if (_location.getAlias() != "default") {
-		path.replace(0,
-			_location.getPath().size(),
-			_location.getAlias());
-	}
-	HTTPMethod *command;
-
-	if (rl.getMethod() == GET) {
-		command = new Get();
-	} else if (rl.getMethod() == POST) {
-		if (_location.getUploadPlace() != "default") {
-			path.replace(0,
-				_location.getPath().size(),
-				_location.getUploadPlace());
-		}
-		command = new Post();
-	} else {
-		command = new Delete();
-	}
-	if (isCGI() == true) {
-		_receiver = new CGI(getSubject(), getCommandList(),
-						_location.getCgiExtensions(),
-						command,
-						path, rl.getQuery(),
-						this);
-	} else {
-		_receiver = new File(getSubject(), getCommandList(),
-						command,
-						path,
-						this,
-						_location.getAutoIndex() == "on",
-						_location.getIndexFile()
-						);
-	}
-	command->setReceiver(_receiver);
-	getCommandList()->push_back(_receiver->getHTTPMethod());
-}
-
 bool AcceptedSocket::isCGI() const
 {
 	return _location.getCgiExtensions().size() > 0;
 }
 
-bool AcceptedSocket::prepareCGI(
-	const std::string & path,
-	const std::string & query
-)
+bool AcceptedSocket::prepareCGI()
 {
 	std::stringstream ss;
 	std::string len;
@@ -466,11 +457,11 @@ void AcceptedSocket::createResponse(const std::string & body)
 }
 
 /*
-・Data
-・Server
+・✅Data
+・✅Server
 ・Location(3xx or 201)
 ・Transfer-Encoding(Content-Length)
-・Connection
+・✅Connection
 ・[content-type]
 */
 void AcceptedSocket::createResponse()

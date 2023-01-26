@@ -16,12 +16,17 @@ private:
 	int _p_to_c[2];
 	int _c_to_p[2];
 	pid_t _pid;
-	std::string _buff;
 	size_t _nb;
 	std::string _query;
 private:
 	bool isExecutable();
 public:
+	CGI(
+		ISubject *,
+		std::list<ICommand *> *,
+		const std::vector<std::string> &,
+		AcceptedSocket *
+	);
 	CGI(
 		ISubject *,
 		std::list<ICommand *> *,
@@ -53,7 +58,9 @@ public:
 	);
 	int getInFd() const;
 	int getOutFd() const;
-	const std::string & getPath() const;
+	void setQuery(
+		const std::string &
+	);
 };
 
 #endif /* CGI_HPP */

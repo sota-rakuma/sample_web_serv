@@ -29,7 +29,6 @@ enum Progress
 	SEND_STATUS_LINE,
 	SEND_RESPONSE_HEADER,
 	SEND_RESPONSE_BODY,
-	ERROR,
 };
 
 class HTTPMethodReceiver;
@@ -68,13 +67,10 @@ private:
 	int validateRequest();
 	int processObsFold();
 	void prepareEvent();
-	void prepareReceivingBody();
+	void preparePostEvent();
 	void addEvent();
 	bool isCGI() const;
-	bool prepareCGI(
-	const std::string &,
-		const std::string &
-	);
+	bool prepareCGI();
 	void createGeneralHeader();
 	void createErrorResponse();
 	void createRedirectResponse();

@@ -18,14 +18,24 @@ CGI::CGI(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
 	const std::vector<std::string> &extentions,
+	AcceptedSocket * as
+)
+:HTTPMethodReceiver(subject, commands, as),
+_extentions(extentions)
+{
+}
+
+CGI::CGI(
+	ISubject * subject,
+	std::list<ICommand *> * commands,
+	const std::vector<std::string> &extentions,
 	const std::string & path,
 	const std::string & query,
 	AcceptedSocket * as
 )
 :HTTPMethodReceiver(subject, commands, as, path),
 _extentions(extentions),
-_query(query),
-_buff()
+_query(query)
 {
 }
 
@@ -40,15 +50,20 @@ CGI::CGI(
 )
 :HTTPMethodReceiver(subject, commands, method, as, path),
 _query(query),
-_extentions(extentions),
-_buff()
+_extentions(extentions)
 {
 }
 
 CGI::CGI(const CGI & another)
-:HTTPMethodReceiver(another.getSubject(), another.getCommandList(), another.getHTTPMethod(), another.getAcceptedSocket(), another.getPath()),
+:HTTPMethodReceiver(
+	another.getSubject(),
+	another.getCommandList(),
+	another.getHTTPMethod(),
+	another.getAcceptedSocket(),
+	another.getPath(),
+	another.getContent()
+),
 _extentions(another._extentions),
-_buff(another._buff),
 _query(another._query)
 {
 }
@@ -270,4 +285,11 @@ int CGI::getInFd() const
 int CGI::getOutFd() const
 {
 	return _p_to_c[OUT];
+}
+
+void CGI::setQuery(
+	const std::string & query
+)
+{
+	_query = query;
 }
