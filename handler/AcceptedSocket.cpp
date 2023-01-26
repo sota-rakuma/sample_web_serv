@@ -480,9 +480,9 @@ void AcceptedSocket::createResponse()
 				"Location",
 				_req.getRequestLine().getPath());
 		}
+		_res.setMessageBody(_receiver->getContent());
 	}
-	_buff = "";
-
+	getSubject()->subscribe(_sockfd, POLLOUT, this);
 }
 
 static void getGMTTime(
