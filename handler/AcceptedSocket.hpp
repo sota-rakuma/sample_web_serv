@@ -75,6 +75,9 @@ private:
 	const std::string &,
 		const std::string &
 	);
+	void createGeneralHeader();
+	void createErrorResponse();
+	void createRedirectResponse();
 public:
 	AcceptedSocket();
 	AcceptedSocket(
