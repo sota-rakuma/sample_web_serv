@@ -1,4 +1,5 @@
 #include "../AcceptedSocket.hpp"
+#include "../../utils/Template.hpp"
 #include "CGI.hpp"
 #include <signal.h>
 #include <sys/types.h>
@@ -14,6 +15,22 @@ extern char **environ;
 #define OUT 1
 #endif
 
+static const std::pair<std::string, std::string> tmp[] = {
+	std::make_pair(".pl", "/usr/bin/perl")
+};
+const std::map<std::string, std::string> CGI::_commands(tmp, tmp + getSize(tmp));
+
+CGI::CGI(
+	ISubject * subject,
+	std::list<ICommand *> * commands,
+	const std::vector<std::string> &extentions,
+	AcceptedSocket * as
+)
+:HTTPMethodReceiver(subject, commands, as),
+_extentions(extentions)
+{
+}
+
 CGI::CGI(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
@@ -24,8 +41,7 @@ CGI::CGI(
 )
 :HTTPMethodReceiver(subject, commands, as, path),
 _extentions(extentions),
-_query(query),
-_buff()
+_query(query)
 {
 }
 
@@ -40,15 +56,20 @@ CGI::CGI(
 )
 :HTTPMethodReceiver(subject, commands, method, as, path),
 _query(query),
-_extentions(extentions),
-_buff()
+_extentions(extentions)
 {
 }
 
 CGI::CGI(const CGI & another)
-:HTTPMethodReceiver(another.getSubject(), another.getCommandList(), another.getHTTPMethod(), another.getAcceptedSocket(), another.getPath()),
+:HTTPMethodReceiver(
+	another.getSubject(),
+	another.getCommandList(),
+	another.getHTTPMethod(),
+	another.getAcceptedSocket(),
+	another.getPath(),
+	another.getContent()
+),
 _extentions(another._extentions),
-_buff(another._buff),
 _query(another._query)
 {
 }
@@ -153,7 +174,7 @@ int CGI::httpPost()
 	if (executeCGI(POST) == -1) {
 		return -1;
 	}
-	_buff = "value=aaaa&value_2=bbbb";
+	//_buff = "value=aaaa&value_2=bbbb";
 	getSubject()->subscribe(_p_to_c[OUT], POLLOUT, this);
 	getSubject()->subscribe(_c_to_p[IN], POLLIN, this);
 	setHTTPStatus(OK);
@@ -201,6 +222,7 @@ bool CGI::setMetaVariables(
 	for (size_t i = 0; i < _extentions.size(); i++) {
 		extention = _path.find(_extentions[i]);
 		if (extention != std::string::npos) {
+			_command = _extentions[i];
 			extention += _extentions[i].size();
 			break;
 		}
@@ -251,7 +273,8 @@ bool CGI::executeCGI(const std::string & method)
 			if (dup2(_p_to_c[IN], STDIN_FILENO) == -1)
 	 			exit(1);
 		}
-		if (execve(getPath().c_str(), NULL, environ) == -1) {
+		char * const arg[1] = {const_cast<char *>(getPath().c_str())};
+		if (execve(_command.c_str(), arg, environ) == -1) {
 			exit(1);
 		}
 	} else {
@@ -262,6 +285,11 @@ bool CGI::executeCGI(const std::string & method)
 	}
 }
 
+const std::string &CGI::identifyFile()
+{
+	size_t dot = _path.rfind('.');
+}
+
 int CGI::getInFd() const
 {
 	return _c_to_p[IN];
@@ -270,4 +298,11 @@ int CGI::getInFd() const
 int CGI::getOutFd() const
 {
 	return _p_to_c[OUT];
+}
+
+void CGI::setQuery(
+	const std::string & query
+)
+{
+	_query = query;
 }

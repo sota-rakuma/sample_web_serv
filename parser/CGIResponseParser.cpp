@@ -9,27 +9,22 @@ CGIResponseParser::~CGIResponseParser() {
 }
 
 int CGIResponseParser::treatNL(std::string &str, size_t &pos, size_t &i) {
-	// pos = i;
-	// while (1) {
-		// pos = _raw.find_first_of("\r\n", pos);
-		pos = _raw.find_first_of("\r\n", i);
-		if (pos == std::string::npos) {
-			std::cout << "treatNL failed" << std::endl;
-			return -1;
-		} else if (_raw[pos] == '\r') {
-			if (_raw[pos + 1] == '\n') {
-				str = _raw.substr(i, pos - i);
-				i = pos + 2;
-			} else {
-				str = _raw.substr(i, pos - i);
-				i = pos + 1;
-			}
-		} else if (_raw[pos] == '\n') {
+	pos = _raw.find_first_of("\r\n", i);
+	if (pos == std::string::npos) {
+		std::cout << "treatNL failed" << std::endl;
+		return -1;
+	} else if (_raw[pos] == '\r') {
+		if (_raw[pos + 1] == '\n') {
+			str = _raw.substr(i, pos - i);
+			i = pos + 2;
+		} else {
 			str = _raw.substr(i, pos - i);
 			i = pos + 1;
 		}
-		// pos++;
-	// }
+	} else if (_raw[pos] == '\n') {
+		str = _raw.substr(i, pos - i);
+		i = pos + 1;
+	}
 	return 0;
 }
 
@@ -55,11 +50,6 @@ int CGIResponseParser::parseResponseBody() {
 	return 0;
 }
 
-// int CGIResponseParser::parseExtensionField() {
-
-// 	return 0;
-// }
-
 int CGIResponseParser::parseClientLocation() {
 	std::string find_word = "Location:";
 	size_t pos = _raw.find(find_word, _i);
@@ -72,6 +62,11 @@ int CGIResponseParser::parseClientLocation() {
 	if (treatNL(location_value, pos, _i) == -1) {
 		std::cout << "treatNL in parseClientLocation failed" << std::endl;
 		return -1;
+	}
+	pos = location_value.find_first_not_of(" ", 0);
+	if (pos == std::string::npos) {
+	} else {
+		location_value = location_value.substr(pos);
 	}
 	std::pair<std::string, std::string> location_pair = std::make_pair("Location", location_value);
 	_http_res->insertHeaderField(location_pair);
@@ -111,13 +106,10 @@ int CGIResponseParser::parseOtherField() {
 			}
 			i++;
 		}
-		len = field_value.length();
 		pos = field_value.find_first_not_of(" ", 0);
-		if (pos == std::string::npos) {
-			std::cout << "field_value invalid in parseOtherField" << std::endl;
-			return -1;
-		}
-		field_value = field_value.substr(pos);
+		if (pos != std::string::npos)
+			field_value = field_value.substr(pos);
+		len = field_value.length();
 		i = 0;
 		while (i < len) {
 			if (isPrintable(field_value[i]) == false) {
@@ -153,14 +145,15 @@ int CGIResponseParser::parseStatus() {
 	size_t i = 0;
 	size_t len = status_values.length();
 	while (i < 3) {
-		if (isDigit(status_values[pos + i] == false)) {
+		if (isDigit(status_values[pos + i]) == false) {
 			std::cout << "status_code in parseStatus invalid" << std::endl;
 			return -1; 
 		}
 		i++;
 	}
-	while (isDigit(status_values[pos + i] == true))
+	while (isDigit(status_values[pos + i]) == true) {
 		i++;
+	}
 	std::string status_code = status_values.substr(pos, i);
 	pos = status_values.find_first_not_of(" ", pos + i);
 	if (pos == std::string::npos) {
@@ -179,15 +172,17 @@ int CGIResponseParser::parseContentType() {
 		std::cout << "find() in parseContentType failed" << std::endl;
 		return -1;
 	}
+	_i = pos + find_word.length();
 	std::string media_type;
 	if (treatNL(media_type, pos, _i) == -1) {
 		std::cout << "treatNL in parseContentType failed" << std::endl;
 		return -1;
 	}
+	pos = media_type.find_first_not_of(" ", 0);
+	if (pos != std::string::npos)
+		media_type = media_type.substr(pos);
 	std::pair<std::string, std::string> content_type_pair = std::make_pair("Content-Type", media_type);
 	_http_res->insertHeaderField(content_type_pair);
-	// if (media_type.find_first_not_of(" ", 0) == std::string::npos)
-	// 	_content_type_value_not_exist_flag = true;
 	return 0;
 }
 
@@ -222,9 +217,7 @@ int CGIResponseParser::parseClientRedirResponse() {
 		std::cout << "parseClientLocation in parseClientRedirResponse failed" << std::endl;
 		return -1;
 	}
-	// if (parseExtensionField() == -1) {
 	if (parseOtherField() == -1) {
-		// std::cout << "parseExtensionField in parseClientRedirResponse failed" << std::endl;
 		std::cout << "parseOtherField in parseClientRedirResponse failed" << std::endl;
 		return -1;
 	}
@@ -249,6 +242,9 @@ int CGIResponseParser::parseLocalRedirResponse() {
 		std::cout << "NL invalid in LocalRedirResponse" << std::endl;
 		return -1;
 	}
+	pos = location_value.find_first_not_of(" ", 0);
+	if (pos != std::string::npos)
+		location_value = location_value.substr(pos);
 	std::pair<std::string, std::string> location_pair = std::make_pair("Location", location_value);
 	_http_res->insertHeaderField(location_pair);
 	_http_res->setStatusLine("HTTP/1.1", "302", "Moved Temporarily");

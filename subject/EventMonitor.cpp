@@ -15,21 +15,21 @@ EventMonitor::EventMonitor()
 		perror("setenv");
 		exit(1);
 	}
-	ListenSocket *l =  new ListenSocket(this, &_commands, "127.0.0.1", "4242", NULL);
+	//ListenSocket *l =  new ListenSocket(this, &_commands, "127.0.0.1", "4242", NULL);
 }
 
 // for test
 EventMonitor::EventMonitor(int time)
 :_time(time)
 {
-	ListenSocket *l =  new ListenSocket(this, &_commands, "127.0.0.1", "4242", NULL);
+	//ListenSocket *l =  new ListenSocket(this, &_commands, "127.0.0.1", "4242", NULL);
 }
 
 EventMonitor::EventMonitor(const EventMonitor &another)
 :_time(another._time),
 _pollvec(another._pollvec),
-_storage(another._storage),
-_commands(another._commands)
+_storage(another._storage)
+//_commands(another._commands)
 {
 }
 
@@ -74,7 +74,7 @@ void EventMonitor::subscribe(
 
 	for (size_t i = 0; i < _pollvec.size(); i++) {
 		if (_pollvec[i].fd == fd) {
-			_pollvec[i].events |= event;
+			_pollvec[i].events = event;
 			break ;
 		}
 	}
@@ -101,24 +101,22 @@ void EventMonitor::unsubscribe(
 	}
 }
 
-void EventMonitor::monitor()
+int EventMonitor::monitor()
 {
-	while (true) {
-		int ready;
+	int ready;
 
-		ready = poll(_pollvec.data(), _pollvec.size(), _time);
-		if (ready <= 0) {
-			if (ready == 0 || errno != EINTR) {
-				// タイムアウトはここで実装できる
-				usleep(500);
-				continue;
-			}
-			perror("poll");
-			break;
+	ready = poll(_pollvec.data(), _pollvec.size(), _time);
+	if (ready <= 0) {
+		if (ready == 0 || errno != EINTR) {
+			// タイムアウトはここで実装できる
+			usleep(500);
+			return 0;
 		}
-		publishEvent(ready);
-		triggerEvent();
+		perror("poll");
+		return -1;
 	}
+	publishEvent(ready);
+	return 0;
 }
 
 void EventMonitor::publishEvent(int ready)
@@ -132,12 +130,3 @@ void EventMonitor::publishEvent(int ready)
 		ready -= 1;
 	}
 }
-
-void EventMonitor::triggerEvent()
-{
-	while (_commands.size() > 0) {
-		(*(_commands.begin()))->execute();
-		_commands.pop_front();
-	}
-}
-;

@@ -8,7 +8,7 @@
 #include "../HTTP/HTTPResponse.hpp"
 
 enum ResponseType {
-    DOCUMENT_RESPONSE = 0,
+    DOCUMENT_RESPONSE,
     LOCAL_REDIR_RESPONSE,
     CLIENT_REDIR_RESPONSE,
     CLIENT_REDIRDOC_RESPONSE,
@@ -34,9 +34,9 @@ class CGIResponseParser : public Parser {
         int parseStatus();
         int parseOtherField();
         int parseClientLocation();
-        // int parseExtensionField();
         int parseResponseBody();
         int treatNL(std::string &, size_t &, size_t &);
+        HTTPResponse *getHTTPResponse() const {return _http_res;};
 };
 
 #endif /* CGIRESPONSEPARSER_HPP */

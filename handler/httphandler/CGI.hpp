@@ -12,16 +12,28 @@
 class CGI : public HTTPMethodReceiver, public IObserver
 {
 private:
+	static const std::map<std::string, std::string> _commands;
 	const std::vector<std::string> & _extentions;
 	int _p_to_c[2];
 	int _c_to_p[2];
 	pid_t _pid;
-	std::string _buff;
 	size_t _nb;
 	std::string _query;
+	std::string _command;
 private:
 	bool isExecutable();
+	bool executeCGI(const std::string &);
+	bool setMetaVariables(
+		const std::string &
+	);
+	const std::string & identifyFile();
 public:
+	CGI(
+		ISubject *,
+		std::list<ICommand *> *,
+		const std::vector<std::string> &,
+		AcceptedSocket *
+	);
 	CGI(
 		ISubject *,
 		std::list<ICommand *> *,
@@ -47,13 +59,11 @@ public:
 	virtual int httpGet();
 	virtual int httpPost();
 	virtual int httpDelete();
-	bool executeCGI(const std::string &);
-	bool setMetaVariables(
-		const std::string &
-	);
 	int getInFd() const;
 	int getOutFd() const;
-	const std::string & getPath() const;
+	void setQuery(
+		const std::string &
+	);
 };
 
 #endif /* CGI_HPP */

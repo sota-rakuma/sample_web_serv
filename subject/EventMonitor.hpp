@@ -24,8 +24,7 @@ public:
 	virtual void notify(int, int);
 	virtual void subscribe(int, int, IObserver *);
 	virtual void unsubscribe(int, bool);
-	void monitor();
-	void triggerEvent();
+	int monitor();
 };
 
 #endif /* EVENTMONITOR_HPP */

@@ -21,7 +21,6 @@ public:
 	};
 private:
 	int _fd;
-	std::string _buff;
 	size_t _nb;
 	bool _autoindex;
 	std::string _index_file;
@@ -29,6 +28,13 @@ private:
 	int processAutoindex();
 public:
 	File();
+	File(
+		ISubject *,
+		std::list<ICommand *> *,
+		AcceptedSocket *,
+		bool,
+		const std::string &
+	);
 	File(
 		ISubject *,
 		std::list<ICommand *> *,

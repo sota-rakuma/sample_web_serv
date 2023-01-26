@@ -25,6 +25,20 @@ File::File()
 File::File(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
+	AcceptedSocket *as,
+	bool autoindex,
+	const std::string & index_file
+)
+:HTTPMethodReceiver(subject, commands, as),
+_nb(0),
+_autoindex(autoindex),
+_index_file(index_file)
+{
+}
+
+File::File(
+	ISubject * subject,
+	std::list<ICommand *> * commands,
 	HTTPMethod *method,
 	const std::string & path,
 	AcceptedSocket *as,
@@ -88,6 +102,7 @@ int File::write()
 		return 1;
 	}
 	getSubject()->unsubscribe(_fd, false);
+	_buff = "";
 	return 0;
 }
 
