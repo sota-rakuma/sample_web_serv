@@ -153,6 +153,9 @@ HTTPResponse & HTTPResponse::setStatusCode(
 	HTTPStatus status
 )
 {
+	if (_statl.getCode() != "default") {
+		return ;
+	}
 	std::map<HTTPStatus, const std::string &>::const_iterator reason = _err_msg.find(status);
 	std::stringstream ss;
 	ss << status;
@@ -168,6 +171,9 @@ HTTPResponse & HTTPResponse::setStatusCode(
 	const std::string & status
 )
 {
+	if (_statl.getCode() != "default") {
+		return ;
+	}
 	_statl.setCode(status);
 	std::stringstream ss;
 	int s;
@@ -189,6 +195,9 @@ HTTPResponse & HTTPResponse::setStatusCode(
 	const std::string & reason
 )
 {
+	if (_statl.getCode() != "default") {
+		return ;
+	}
 	_statl.setCode(status);
 	_statl.setReason(reason);
 	return *this;
