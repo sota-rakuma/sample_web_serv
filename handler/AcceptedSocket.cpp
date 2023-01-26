@@ -434,7 +434,11 @@ int AcceptedSocket::write()
 		return 1;
 	}
 	if (_progress == END) {
-		getSubject()->unsubscribe(_sockfd, false);
+		if (_res.getHeaderValue("Connection") == "keep-alive") {
+			getSubject()->subscribe(_sockfd, POLLIN, this);
+		} else {
+			getSubject()->unsubscribe(_sockfd, false);
+		}
 	} else {
 		_buff.clear();
 		processResponse();
