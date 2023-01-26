@@ -136,7 +136,7 @@ int File::httpPost()
 	if (execStat() == -1) {
 		if (errno ==  ENOENT) {
 			_fd = open(getPath().c_str(), O_RDWR | O_CREAT | O_EXCL | O_CLOEXEC);
-			getAcceptedSocket()->setStatus(CREATED);
+			setHTTPStatus(CREATED);
 		} else if(errno == EACCES) {
 			entrustCreateResponse(FORBIDDEN);
 			return -1;
@@ -146,7 +146,7 @@ int File::httpPost()
 		}
 	} else {
 		_fd = open(getPath().c_str(), O_RDWR | O_APPEND | O_CLOEXEC);
-		getAcceptedSocket()->setStatus(OK);
+		setHTTPStatus(OK);
 	}
 	if (_fd == -1) {
 		entrustCreateResponse(INTERNAL_SERVER_ERROR);
