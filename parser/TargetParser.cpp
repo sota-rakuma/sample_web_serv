@@ -285,7 +285,6 @@ bool TargetParser::parsePath(
 	return true;
 }
 
-// 外で代入
 bool TargetParser::parseQueryFragment(
 	const std::string & raw
 )

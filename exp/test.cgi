@@ -1,7 +1,8 @@
 #!/usr/bin/perl
 
-print "Location: http://abc/zzz#aaa\n";
-print "Status: 209 gggg\n";
-print "Content-Type: abc/ddd\n";
-print "\r\n";
+print "Content-type: abc\n";
+print "Status:  09812343lkjads 6digit\n";
+print "abcd: llll\n";
+print "Server:    \n";
+print "\n";
 print "Hello\n";

@@ -1,6 +1,10 @@
 #include "../AcceptedSocket.hpp"
 #include "CGI.hpp"
-#include <unistd.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+extern char **environ;
 
 #ifndef IN
 #define IN 0
@@ -10,74 +14,52 @@
 #define OUT 1
 #endif
 
-
-CGI::CGI()
-:_buff("")
-{
-}
-
 CGI::CGI(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
+	const std::vector<std::string> &extentions,
 	const std::string & path,
-	bool is_executable,
-	AcceptedSocket *as
-)
-:HTTPMethodReceiver(subject, commands, as, path),
-_buff(""),
-_is_exutetable(is_executable)
-{
-}
-
-CGI::CGI(
-	ISubject * subject,
-	std::list<ICommand *> * commands,
-	const std::string & path,
-	bool is_executable,
-	AcceptedSocket *as
-)
-:HTTPMethodReceiver(subject, commands, as, path),
-_buff(),
-_is_exutetable(is_executable)
-{
-}
-
-CGI::CGI(
-	ISubject * subject,
-	std::list<ICommand *> * commands,
-	HTTPMethod *method,
-	const std::string & path,
+	const std::string & query,
 	AcceptedSocket * as
 )
-:HTTPMethodReceiver(subject, commands, method, as, path),
+:HTTPMethodReceiver(subject, commands, as, path),
+_extentions(extentions),
+_query(query),
 _buff()
 {
 }
 
-
 CGI::CGI(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
-	HTTPMethod*method,
+	const std::vector<std::string> &extentions,
+	HTTPMethod *method,
 	const std::string & path,
-	bool is_executable,
-	AcceptedSocket *as
+	const std::string & query,
+	AcceptedSocket * as
 )
 :HTTPMethodReceiver(subject, commands, method, as, path),
-_buff(""),
-_is_exutetable(is_executable)
+_query(query),
+_extentions(extentions),
+_buff()
 {
 }
 
 CGI::CGI(const CGI & another)
 :HTTPMethodReceiver(another.getSubject(), another.getCommandList(), another.getHTTPMethod(), another.getAcceptedSocket(), another.getPath()),
+_extentions(another._extentions),
 _buff(another._buff),
-_is_exutetable(another._is_exutetable)
+_query(another._query)
 {
 }
 
 CGI::~CGI()
 {
+	int status;
+	pid_t ret = ::waitpid(_pid, &status, WNOHANG);
+	if (ret == 0) {
+		::kill(_pid, SIGKILL);
+	}
 }
 
 void CGI::update(int event)
@@ -111,15 +93,16 @@ int CGI::read()
 	if (nb < 0) {
 		// error レスポンス
 		::close(_p_to_c[OUT]);
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		getSubject()->unsubscribe(_p_to_c[OUT], true);
 		getSubject()->unsubscribe(_c_to_p[IN], false);
 		return -1;
 	} else if (nb == 0) {
 		getSubject()->unsubscribe(_p_to_c[OUT], true);
 		getSubject()->unsubscribe(_c_to_p[IN], false);
-		// ::close(_pipe_fd[0]);
 		// レスポンス作成フェーズ
-		getAcceptedSocket()->processCGIResponse(_buff);
+		entrustCreateResponse(OK);
+		//getAcceptedSocket()->processCGIResponse(_buff);
 		return 0;
 	}
 	buff[nb] = '\0';
@@ -133,6 +116,7 @@ int CGI::write()
 	if (nb == -1) {
 		// error レスポンス
 		::close(_p_to_c[OUT]);
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		getSubject()->unsubscribe(_c_to_p[IN], false);
 		getSubject()->unsubscribe(_p_to_c[OUT], true);
 		return -1;
@@ -150,128 +134,132 @@ int CGI::write()
 
 int CGI::httpGet()
 {
-	executeCGI(GET);
+	if (setMetaVariables(GET) == false || isExecutable() == false) {
+		return -1;
+	}
+	if (executeCGI(GET) == -1) {
+		return -1;
+	}
 	getSubject()->subscribe(_c_to_p[IN], POLLIN, this);
+	setHTTPStatus(OK);
 	return 0;
 }
 
 int CGI::httpPost()
 {
-	executeCGI(POST);
+	if (setMetaVariables(POST) == false ||isExecutable() == false) {
+		return -1;
+	}
+	if (executeCGI(POST) == -1) {
+		return -1;
+	}
 	_buff = "value=aaaa&value_2=bbbb";
 	getSubject()->subscribe(_p_to_c[OUT], POLLOUT, this);
 	getSubject()->subscribe(_c_to_p[IN], POLLIN, this);
+	setHTTPStatus(OK);
 	return 0;
 }
 
 int CGI::httpDelete()
 {
-	executeCGI(DELETE);
+	if (setMetaVariables(DELETE) == false || isExecutable() == false) {
+		return -1;
+	}
+	if (executeCGI(DELETE) == -1){
+		return -1;
+	}
 	getSubject()->subscribe(_c_to_p[IN], POLLIN, this);
+	entrustCreateResponse(OK);
 	return 0;
 }
 
-static void    perror_and_exit(std::string str) //
+bool CGI::isExecutable()
 {
-    std::perror(str.c_str());
-    std::exit(1);
-}
-
-void CGI::setMetaVariables(const std::string & method)
-{
-	if (method != POST)
-	{
-		const char *QUERY_STRING_VALUE = "abc=ABC&def=DEF"; //
-		// GETの場合はリクエストターゲットから取得、POSTの場合は標準入力から取得
-		if (setenv("QUERY_STRING", QUERY_STRING_VALUE, 1) == -1)
-			perror_and_exit("setenv");
-	}
-	//if (/*　message_bodyが存在 */)
-	//{
-	//	if (setenv("CONTENT_LENGTH", /* message_bodyのlength */, 1) == -1)
-	//		perror_and_exit("setenv");
-		// if (setenv("CONTENT_TYPE", "", 1) == -1) // html/textとか 判別方法どうする？？
-		// 	perror_and_exit("setenv");
-	//}
-	if (setenv("PATH_INFO", "/aaa/bbb", 1) == -1)
-		perror_and_exit("setenv");
-	// if (setenv("AUTH_TYPE", "", 1) == -1) // いらない
-	// 	perror_and_exit("setenv");
-	if (setenv("GATEWAY_INTERFACE", "CGI/1.1", 1) == -1) //
-		perror_and_exit("setenv");
-	if (setenv("REMOTE_ADDR", "", 1) == -1) // クライアントのIPアドレスを設定する
-		perror_and_exit("setenv");
-	if (setenv("SCRIPT_NAME", "", 1) == -1) // CGIスクリプトのpath(URI)を設定する SCRIPT_NAMEの値にはPATH_INFO部分を含めない
-		perror_and_exit("setenv");
-	if (setenv("SERVER_NAME", "", 1) == -1) // サーバーの名前　configファイルのserver_nameディレクティブを使う？
-		perror_and_exit("setenv");
-	if (setenv("SERVER_PORT", "80", 1) == -1) // サーバーのポートを設定
-		perror_and_exit("setenv");
-	if (setenv("SERVER_PROTOCOL", "HTTP/1.1", 1) == -1) //
-		perror_and_exit("setenv");
-	if (setenv("SERVER_SOFTWARE", "Debian", 1) == -1) // CGI プログラムを起動した Web サーバソフトウエアの名前 例:Apacheとか
-		perror_and_exit("setenv");
-
-	if (setenv("REQUEST_METHOD", method.c_str(), 1) == -1)
-		perror_and_exit("setenv");
-}
-
-extern char **environ;
-
-void CGI::executeCGI(const std::string & method)
-{
-	//int pipe_fd[2];
-    pid_t   pid;
-    pid_t   w_pid;
-    int status;
-
-	// if (pipe(_pipe_fd) == -1)
-	// 	perror_and_exit("pipe");
-	if (pipe(_p_to_c) == -1)
-		perror_and_exit("pipe");
-	if (pipe(_c_to_p) == -1)
-		perror_and_exit("pipe");
-	if (method != POST)
-	{
-		pid = fork();
-		if (pid < 0)
-			perror_and_exit("fork");
-		else if (pid == 0)
-		{
-			if (close(_c_to_p[IN]) == -1)
-				perror_and_exit("close");
-			if (dup2(_p_to_c[OUT], STDOUT_FILENO) == -1)
-				perror_and_exit("dup2");
-			// setMetaVariables(method);
-			if (execve(getPath().c_str(), NULL, environ) == -1) {
-				perror("execve");
-			}
+	if (execStat() == -1) {
+		if (errno == ENOENT) {
+			entrustCreateResponse(NOT_FOUND);
+		} else if(errno == EACCES) {
+			entrustCreateResponse(FORBIDDEN);
+		} else {
+			entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		}
-		if (close(_c_to_p[OUT]) == -1)
-			perror_and_exit("close");
+		return false;
 	}
-	 else if (method == POST)
-	 {
-	 	//::write(_pipe_fd[1], "abc\0", 4);
-	 	pid = fork();
-	 	if (pid < 0)
-	 		perror_and_exit("fork");
-	 	else if (pid == 0)
-	 	{
-			close(_c_to_p[IN]);
+	if (checkPermission(S_IXOTH) == false ||
+		isDirectory() == true) {
+		entrustCreateResponse(FORBIDDEN);
+		return false;
+	}
+	return true;
+}
+
+bool CGI::setMetaVariables(
+	const std::string & method
+)
+{
+	size_t extention = std::string::npos;
+	for (size_t i = 0; i < _extentions.size(); i++) {
+		extention = _path.find(_extentions[i]);
+		if (extention != std::string::npos) {
+			extention += _extentions[i].size();
+			break;
+		}
+	}
+	if (extention == std::string::npos) {
+		entrustCreateResponse(FORBIDDEN);
+		return false;
+	}
+	if (setenv("PATH_INFO", _path.substr(extention).c_str(), 1) == -1) {
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
+		return false;
+	}
+	if (setenv("QUERY_STRING", _query.c_str(), 1) == -1) {
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
+		return false;
+	}
+	_path = _path.substr(0, extention);
+	if (setenv("SCRIPT_NAME", _path.c_str(), 1) == -1) {
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
+		return false;
+	}
+	if (setenv("REQUEST_METHOD", method.c_str(), 1) == -1) {
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
+		return false;
+	}
+	return true;
+}
+
+bool CGI::executeCGI(const std::string & method)
+{
+	if (pipe(_c_to_p) < 0 &&
+		(method == POST && pipe(_p_to_c) < 0)) {
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
+		return false;
+	}
+
+	_pid = fork();
+	if (_pid < 0) {
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
+		return false;
+	}
+	if (_pid == 0) {
+		close(_c_to_p[IN]);
+		if (dup2(_p_to_c[OUT], STDOUT_FILENO) == -1)
+			exit(1);
+		if (method == POST) {
 			close(_p_to_c[OUT]);
-	 		if (dup2(_p_to_c[IN], STDIN_FILENO) == -1)
-	 			perror_and_exit("dup2");
-
-	 		if (dup2(_c_to_p[OUT], STDOUT_FILENO) == -1)
-	 			perror_and_exit("dup2");
-
-	 		//setMetaVariables(method);
-	 		execve(getPath().c_str(), NULL, environ);
-	 	}
+			if (dup2(_p_to_c[IN], STDIN_FILENO) == -1)
+	 			exit(1);
+		}
+		if (execve(getPath().c_str(), NULL, environ) == -1) {
+			exit(1);
+		}
+	} else {
 		close(_c_to_p[OUT]);
-		close(_p_to_c[IN]);
-	 }
+		if (method == POST) {
+			close(_p_to_c[IN]);
+		}
+	}
 }
 
 int CGI::getInFd() const
@@ -282,15 +270,4 @@ int CGI::getInFd() const
 int CGI::getOutFd() const
 {
 	return _p_to_c[OUT];
-}
-
-bool CGI::getExectableFlag() const
-{
-	return _is_exutetable;
-}
-
-CGI &CGI::setExectableFlag(bool f)
-{
-	_is_exutetable = f;
-	return *this;
 }

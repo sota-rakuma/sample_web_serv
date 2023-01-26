@@ -344,3 +344,21 @@ int CGI::httpGet()
 - DELETE
 	1. 特に何もしない
 
+
+```c++
+void EventMonitor::triggerEvent()
+{
+	while (_commands.size() > 0) {
+		if ((*(_commands.begin()))->execute() == -1) {
+			notify(mapp[*(_command.begin())], ERROR);
+		}
+		_commands.pop_front();
+	}
+}
+
+class Server {
+	class EventMonitor _evm;
+	std::list<Commnad *> _commandlist;
+};
+
+```

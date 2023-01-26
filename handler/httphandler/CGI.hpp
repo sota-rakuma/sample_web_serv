@@ -7,43 +7,36 @@
 #include "../../HTTP/HTTPStatusCode.hpp"
 #include <string>
 #include <stdexcept>
+#include <unistd.h>
 
 class CGI : public HTTPMethodReceiver, public IObserver
 {
 private:
+	const std::vector<std::string> & _extentions;
 	int _p_to_c[2];
 	int _c_to_p[2];
+	pid_t _pid;
 	std::string _buff;
 	size_t _nb;
-	bool _is_exutetable;
+	std::string _query;
+private:
+	bool isExecutable();
 public:
-	CGI();
 	CGI(
 		ISubject *,
 		std::list<ICommand *> *,
+		const std::vector<std::string> &,
+		const std::string &,
 		const std::string &,
 		AcceptedSocket *
 	);
 	CGI(
 		ISubject *,
 		std::list<ICommand *> *,
-		const std::string &,
-		bool,
-		AcceptedSocket *
-	);
-	CGI(
-		ISubject *,
-		std::list<ICommand *> *,
+		const std::vector<std::string> &,
 		HTTPMethod *,
 		const std::string &,
-		AcceptedSocket *
-	);
-	CGI(
-		ISubject *,
-		std::list<ICommand *> *,
-		HTTPMethod *,
 		const std::string &,
-		bool,
 		AcceptedSocket *
 	);
 	CGI(const CGI &);
@@ -54,13 +47,13 @@ public:
 	virtual int httpGet();
 	virtual int httpPost();
 	virtual int httpDelete();
-	void executeCGI(const std::string &);
-	void setMetaVariables(const std::string &);
+	bool executeCGI(const std::string &);
+	bool setMetaVariables(
+		const std::string &
+	);
 	int getInFd() const;
 	int getOutFd() const;
 	const std::string & getPath() const;
-	bool getExectableFlag() const;
-	CGI & setExectableFlag(bool);
 };
 
 #endif /* CGI_HPP */

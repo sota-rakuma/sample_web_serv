@@ -29,16 +29,6 @@ _method(static_cast<HTTPMethod *>(NULL)),
 _as(as),
 _path(path)
 {
-	if (stat(path.c_str(), &_state) == -1) {
-		if (errno ==  ENOENT) {
-			as->setStatus(NOT_FOUND);
-		} else if(errno == EACCES) {
-			as->setStatus(FORBIDDEN);
-		} else {
-			as->setStatus(INTERNAL_SERVER_ERROR);
-		}
-		throw std::runtime_error("stat error");
-	}
 }
 
 HTTPMethodReceiver::HTTPMethodReceiver(
@@ -53,16 +43,6 @@ _method(method),
 _as(as),
 _path(path)
 {
-	if (stat(path.c_str(), &_state) == -1) {
-		if (errno == ENOENT) {
-			as->setStatus(NOT_FOUND);
-		} else if (errno == EACCES) {
-			as->setStatus(FORBIDDEN);
-		}else {
-			as->setStatus(INTERNAL_SERVER_ERROR);
-		}
-		throw std::runtime_error("stat error");
-	}
 }
 
 HTTPMethodReceiver::~HTTPMethodReceiver()
@@ -104,6 +84,11 @@ void HTTPMethodReceiver::setPath(const std::string & path)
 	_path = path;
 }
 
+int HTTPMethodReceiver::execStat()
+{
+	return stat(_path.c_str(), &_state);
+}
+
 bool HTTPMethodReceiver::isDirectory() const
 {
 	return (_state.st_mode & S_IFMT) & S_IFDIR;
@@ -117,4 +102,19 @@ bool HTTPMethodReceiver::isRegularFile() const
 bool HTTPMethodReceiver::checkPermission(mode_t perm) const
 {
 	return _state.st_mode & perm;
+}
+
+void HTTPMethodReceiver::setHTTPStatus(
+	HTTPStatus status
+)
+{
+	_as->setStatus(status);
+}
+
+void HTTPMethodReceiver::entrustCreateResponse(
+	HTTPStatus status
+)
+{
+	_as->setStatus(status);
+	_as->createResponse();
 }

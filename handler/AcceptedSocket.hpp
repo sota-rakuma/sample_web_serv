@@ -32,7 +32,7 @@ enum Progress
 	ERROR,
 };
 
-class HTTPMethodReciever;
+class HTTPMethodReceiver;
 
 class AcceptedSocket : public IOEventHandler, public IObserver
 {
@@ -68,8 +68,16 @@ private:
 	int validateRequest();
 	int processObsFold();
 	void prepareEvent();
-	void preparePostEvent();
+	void prepareReceivingBody();
 	void addEvent();
+	bool isCGI() const;
+	bool prepareCGI(
+	const std::string &,
+		const std::string &
+	);
+	void createGeneralHeader();
+	void createErrorResponse();
+	void createRedirectResponse();
 public:
 	AcceptedSocket();
 	AcceptedSocket(
@@ -89,6 +97,7 @@ public:
 	virtual int write();
 	void processCGIResponse(const std::string &);
 	void createResponse(const std::string &);
+	void createResponse();
 	void processTest();
 };
 

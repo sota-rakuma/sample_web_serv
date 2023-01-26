@@ -9,14 +9,14 @@ void normalizeURITest()
 	HTTPRequest r2;
 	r1.setRequestLine("", test[0], "");
 	r2.setRequestLine("", test[1], "");
-	if (r1.getRequestLine().getTarget() == r2.getRequestLine().getTarget())
+	if (r1.getRequestLine().getPath() == r2.getRequestLine().getPath())
 	{
 		std::cout << addColorText("OK", GREEN) << std::endl;
 	} else {
 		std::cout << addColorText("KO", RED) << std::endl;
 	}
-	std::cout << "r1: " << r1.getRequestLine().getTarget() << std::endl;
-	std::cout << "r2: " << r2.getRequestLine().getTarget() << std::endl;
+	std::cout << "r1: " << r1.getRequestLine().getPath() << std::endl;
+	std::cout << "r2: " << r2.getRequestLine().getPath() << std::endl;
 	test.push_back("/..");
 	test.push_back("/sdaf/fds/..");
 	test.push_back("/sdaf/fds/........../");
@@ -25,7 +25,7 @@ void normalizeURITest()
 	for (size_t i = 2; i < test.size(); i++)
 	{
 		r1.setRequestLine("", test[i], "");
-		std::cout << r1.getRequestLine().getTarget() << std::endl;
+		std::cout << r1.getRequestLine().getPath() << std::endl;
 	}
 
 }

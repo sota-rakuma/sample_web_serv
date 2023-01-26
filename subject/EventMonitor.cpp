@@ -8,6 +8,13 @@
 EventMonitor::EventMonitor()
 :_time(300)
 {
+	if (setenv("GATEWAY_INTERFACE", "CGI/1.1", 1) == -1 ||
+		setenv("SERVER_PROTOCOL", "HTTP/1.1", 1) == -1 ||
+		setenv("SERVER_SOFTWARE", "42WebServ", 1) == -1)
+	{
+		perror("setenv");
+		exit(1);
+	}
 	ListenSocket *l =  new ListenSocket(this, &_commands, "127.0.0.1", "4242", NULL);
 }
 
@@ -78,22 +85,19 @@ void EventMonitor::unsubscribe(
 	bool is_dup
 )
 {
-	try
-	{
-		IObserver *& target = _storage.at(fd);
-		if (is_dup == false) {
-			delete _storage[fd];
-		}
-		_storage.erase(fd);
-		for (size_t i = 0; i < _pollvec.size(); i++) {
-			if (fd == _pollvec[i].fd) {
-				_pollvec.erase(_pollvec.begin() + i);
-				break;
-			}
-		}
+	std::map<int, IObserver *>::iterator it = _storage.find(fd);
+	if (it == _storage.end()) {
+		return ;
 	}
-	catch(const std::exception& e)
-	{
+	if (is_dup == false) {
+		delete it->second;
+	}
+	_storage.erase(fd);
+	for (size_t i = 0; i < _pollvec.size(); i++) {
+		if (fd == _pollvec[i].fd) {
+			_pollvec.erase(_pollvec.begin() + i);
+			break;
+		}
 	}
 }
 
@@ -133,10 +137,7 @@ void EventMonitor::triggerEvent()
 {
 	while (_commands.size() > 0) {
 		(*(_commands.begin()))->execute();
-		const std::string &name = typeid(*_commands.begin()).name();
-		if (name == "Get" || name == "Post" || name == "Delete") {
-			delete *_commands.begin();
-		}
 		_commands.pop_front();
 	}
 }
+;

@@ -12,26 +12,22 @@ public:
 	{
 	private:
 		std::string _version;
-		// HTTPStatus _code;
-		std::string _code; // CGIレスポンスパーサー内でパースした値をそのまま代入する??
-		std::string _reason; // Status: 9999abcd\n  ←の時、_code = 9999、　_reason = abcd
+		std::string _code;
+		std::string _reason;
 	public:
 		StatusLine();
 		StatusLine(
 			const std::string &,
 			const std::string &,
-			// HTTPStatus,
 			const std::string &
 		);
 		StatusLine(const StatusLine &);
 		~StatusLine();
 		const std::string & getHTTPVersion() const;
-		std::string getCode() const;
-		// HTTPStatus getCode() const;
+		const std::string & getCode() const;
 		const std::string & getReason() const;
 		StatusLine & setHTTPVersion(const std::string &);
-		StatusLine &setCode(std::string);
-		// StatusLine &setCode(HTTPStatus);
+		StatusLine &setCode(const std::string &);
 		StatusLine & setReason(const std::string &);
 		StatusLine & operator=(const StatusLine &);
 	};
@@ -52,12 +48,10 @@ public:
 	) const;
 	const std::string & getMessageBody() const;
 	HTTPResponse & setStatusCode(
-		std::string
-		// HTTPStatus
+		const std::string &
 	);
 	HTTPResponse & setStatusLine(
 		const std::string &,
-		// HTTPStatus,
 		const std::string &,
 		const std::string &
 	);
@@ -66,6 +60,10 @@ public:
 	);
 	HTTPResponse & insertHeaderField(
 		const std::pair<std::string, std::string> &
+	);
+	HTTPResponse & insertHeaderField(
+		const std::string &,
+		const std::string &
 	);
 	HTTPResponse & setMessageBody(
 		const std::string &
