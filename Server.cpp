@@ -22,7 +22,6 @@ void Server::run()
 		}
 		triggerEvent();
 	}
-
 }
 
 void Server::init()
@@ -35,6 +34,7 @@ void Server::init()
 		const std::string & lis = configs[i].getListen();
 		_confs[lis].insert(std::make_pair(configs[i].getServerName(), configs[i]));
 	}
+	setUpListenSocket();
 }
 
 void Server::setUpListenSocket()
