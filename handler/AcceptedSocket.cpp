@@ -22,7 +22,7 @@ AcceptedSocket::AcceptedSocket(
 	std::list<ICommand *> *commands,
 	int sockfd,
 	const sockaddr_in &info,
-	ServerConfigFinder *configfinder
+	std::map<std::string, ServerConfig> * confs
 )
 :IOEventHandler(subject, commands),
 _sockfd(sockfd),
@@ -30,7 +30,7 @@ _body_size(0),
 _buff(""),
 _nb(0),
 _info(info),
-_configfinder(configfinder),
+_confs(confs),
 _config(),
 _progress(RECEIVE_REQUEST_LINE),
 _receiver(static_cast<HTTPMethodReceiver *>(NULL))
@@ -45,7 +45,7 @@ _sockfd(another._sockfd),
 _body_size(0),
 _buff(""),
 _nb(0),
-_configfinder(another._configfinder),
+_confs(another._confs),
 _config(another._config),
 _parser_ctx(another._parser_ctx),
 _info(another._info),
@@ -195,9 +195,9 @@ int AcceptedSocket::validateRequest()
 		const std::string & host = _req.tryGetHeaderValue("host");
 		size_t colon = host.find(':');
 		if (colon != std::string::npos) {
-			_config = _configfinder->getConfig(host.substr(0, colon));
+			_config = _confs->find(host.substr(0, colon))->second;
 		} else {
-			_config = _configfinder->getConfig(host);
+			_config = _confs->find(host)->second;
 		}
 	}
 	catch(const std::exception& e)

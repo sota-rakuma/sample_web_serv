@@ -5,11 +5,12 @@
 #include "../subject/ISubject.hpp"
 #include "AcceptedSocket.hpp"
 #include "../command/Read.hpp"
-#include "../config/ServerConfigFinder.hpp"
+#include "../config/ServerConfig.hpp"
 #include <string>
 #include <netdb.h>
 #include <sys/types.h>
 #include <stdexcept>
+#include <map>
 
 class ListenSocket : public IOEventHandler, public IObserver
 {
@@ -27,17 +28,27 @@ private:
 	int _sockfd;
 	std::string _host;
 	std::string _port;
-	ServerConfigFinder *_configs;
+	std::map<std::string, ServerConfig> *_confs;
 public:
 	ListenSocket();
 	ListenSocket(
 		ISubject *,
 		std::list<ICommand *> *,
 		const std::string &,
+		const std::string &
+	);
+	ListenSocket(
+		ISubject *,
+		std::list<ICommand *> *,
 		const std::string &,
-		ServerConfigFinder *
+		const std::string &,
+		std::map<std::string, ServerConfig> *
 	);
 	virtual ~ListenSocket();
+	void setConfs(
+		std::map<std::string, ServerConfig> *
+	);
+	void listen();
 	virtual void update(int);
 	virtual int read();
 	virtual int write();

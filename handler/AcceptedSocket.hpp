@@ -4,11 +4,11 @@
 #include "IOEventHandler.hpp"
 #include "../parser/Context.hpp"
 #include "../parser/HTTPRequestParser.hpp"
+#include "../config/ServerConfig.hpp"
 #include "../HTTP/HTTPRequest.hpp"
 #include "../HTTP/HTTPResponse.hpp"
 #include "../command/Read.hpp"
 #include "../command/Write.hpp"
-#include "../config/ServerConfigFinder.hpp"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -42,7 +42,7 @@ private:
 	std::string _buff;
 	size_t _nb;
 	sockaddr_in _info;
-	ServerConfigFinder *_configfinder;
+	std::map<std::string, ServerConfig> * _confs;
 	ServerConfig _config;
 	ServerConfig::Location _location;
 	HTTPStatus _status;
@@ -88,7 +88,7 @@ public:
 		std::list<ICommand *> *,
 		int,
 		const sockaddr_in &,
-		ServerConfigFinder *
+		std::map<std::string, ServerConfig> *
 	);
 	AcceptedSocket(const AcceptedSocket &);
 	virtual ~AcceptedSocket();
