@@ -1,3 +1,5 @@
+#include "../command/Read.hpp"
+#include "../command/Write.hpp"
 #include "IOEventHandler.hpp"
 
 IOEventHandler::IOEventHandler()

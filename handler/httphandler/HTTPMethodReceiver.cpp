@@ -1,6 +1,6 @@
 #include "../AcceptedSocket.hpp"
+#include "../../command/HTTPMethod.hpp"
 #include "HTTPMethodReceiver.hpp"
-#include "../../HTTP/HTTPStatusCode.hpp"
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdexcept>

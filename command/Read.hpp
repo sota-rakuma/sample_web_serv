@@ -2,7 +2,8 @@
 #define READ_HPP
 
 #include "ICommand.hpp"
-#include "../handler/IOEventHandler.hpp"
+
+class IOEventHandler;
 
 class Read : public ICommand
 {

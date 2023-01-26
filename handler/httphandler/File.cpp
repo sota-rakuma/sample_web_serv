@@ -127,7 +127,8 @@ int File::httpGet()
 			_path.push_back('/');
 		}
 		if (_autoindex == true) {
-			return processAutoindex();
+			std::cout << "autoindex だよー" << std::endl;
+			//return processAutoindex();
 		} else if (_index_file != "default") {
 			_path += _index_file;
 		} else {

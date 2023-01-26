@@ -6,7 +6,7 @@
 #include <unistd.h>
 
 #ifndef LISTEN_BACKLOG
-#define LIESTEN_BACKLOG 50
+#define LISTEN_BACKLOG 50
 #endif
 
 ListenSocket::ListenSockError::ListenSockError()
@@ -67,7 +67,7 @@ _port(port)
 		}
 		perror("bind");
 		_sockfd = -1;
-		close(_sockfd);
+		::close(_sockfd);
 	}
 	freeaddrinfo(res);
 	if (_sockfd == -1) {
@@ -115,13 +115,13 @@ _confs(confs)
 		}
 		perror("bind");
 		_sockfd = -1;
-		close(_sockfd);
+		::close(_sockfd);
 	}
 	freeaddrinfo(res);
 	if (_sockfd == -1) {
 		throw ListenSockError();
 	}
-	if (::listen(_sockfd, LIESTEN_BACKLOG) == -1) {
+	if (::listen(_sockfd, LISTEN_BACKLOG) == -1) {
 		throw ListenSockError("listen");
 	}
 	getSubject()->subscribe(_sockfd, POLLIN, this);
@@ -151,10 +151,15 @@ void ListenSocket::setConfs(
 
 void ListenSocket::listen()
 {
-	if (::listen(_sockfd, LIESTEN_BACKLOG) == -1) {
+	if (::listen(_sockfd, LISTEN_BACKLOG) == -1) {
 		throw ListenSockError("listen");
 	}
 	getSubject()->subscribe(_sockfd, POLLIN, this);
+}
+
+void ListenSocket::close() const
+{
+	::close(_sockfd);
 }
 
 int ListenSocket::read()

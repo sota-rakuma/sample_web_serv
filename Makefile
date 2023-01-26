@@ -3,7 +3,8 @@ CXXFLAGS:=-MMD -MP -std=c++98
 #-fsanitize=address
 # -Wall -Werror -Wextra
 NAME:=server
-SRCS:=$(wildcard *.cpp */*.cpp */*/*.cpp)
+SRCS_WITH_TEST:=$(wildcard *.cpp */*.cpp */*/*.cpp)
+SRCS=$(filter-out $(wildcard test/*.cpp), $(SRCS_WITH_TEST))
 OBJ_DIR:=obj
 DEP_DIR:=dep
 OBJS:= $(addprefix $(OBJ_DIR)/, $(notdir $(SRCS:.cpp=.o)))

@@ -4,7 +4,7 @@
 #include <iostream>
 #include <sstream>
 
-static std::pair<HTTPStatus, const std::string &> temp[] = {
+static std::pair<HTTPStatus, std::string> temp[] = {
 	std::make_pair(OK, "OK"),
 	std::make_pair(MOVED_PERMANENTLY, "moved permanently"),
 	std::make_pair(FOUND, "Found"),
@@ -154,7 +154,7 @@ HTTPResponse & HTTPResponse::setStatusCode(
 )
 {
 	if (_statl.getCode() != "default") {
-		return ;
+		return *this;
 	}
 	std::map<HTTPStatus, const std::string &>::const_iterator reason = _err_msg.find(status);
 	std::stringstream ss;
@@ -162,9 +162,10 @@ HTTPResponse & HTTPResponse::setStatusCode(
 	_statl.setCode(ss.str());
 	ss.clear();
 	if (reason == _err_msg.end()) {
-		return ;
+		return *this;
 	}
 	_statl.setReason(reason->second);
+	return *this;
 }
 
 HTTPResponse & HTTPResponse::setStatusCode(
@@ -172,7 +173,7 @@ HTTPResponse & HTTPResponse::setStatusCode(
 )
 {
 	if (_statl.getCode() != "default") {
-		return ;
+		return *this;
 	}
 	_statl.setCode(status);
 	std::stringstream ss;
@@ -184,7 +185,7 @@ HTTPResponse & HTTPResponse::setStatusCode(
 	}
 	std::map<HTTPStatus, const std::string &>::const_iterator reason = _err_msg.find(static_cast<HTTPStatus>(s));
 	if (reason == _err_msg.end()) {
-		return ;
+		return *this;
 	}
 	_statl.setReason(reason->second);
 	return *this;
@@ -196,7 +197,7 @@ HTTPResponse & HTTPResponse::setStatusCode(
 )
 {
 	if (_statl.getCode() != "default") {
-		return ;
+		return *this;
 	}
 	_statl.setCode(status);
 	_statl.setReason(reason);

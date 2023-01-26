@@ -1,4 +1,5 @@
 #include "Read.hpp"
+#include "../handler/IOEventHandler.hpp"
 
 Read::Read()
 :_receiver(static_cast<IOEventHandler *>(NULL))

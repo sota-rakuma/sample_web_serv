@@ -66,8 +66,8 @@ class ConfigParser
 		std::string getServerName(size_t i) const {return _sc_vec[i].getServerName();};
 		int getMaxBodySize(size_t i) const {return _sc_vec[i].getMaxBodySize();};
 
-		const std::map<int, std::string> & const
-		getDefaultErrorPage(size_t i) {return _sc_vec[i].getDefaultErrorPage();};
+		const std::map<int, std::string> &
+		getDefaultErrorPage(size_t i) const {return _sc_vec[i].getDefaultErrorPage();};
 
 		const std::vector<ServerConfig::Location> &getLocationVec(size_t i) {return _sc_vec[i].getLocationVec();};
 		const ServerConfig::Location & getLocation

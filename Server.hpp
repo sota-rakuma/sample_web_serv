@@ -26,6 +26,8 @@ public:
 	void run();
 	const std::string & getConfigPath() const;
 	void setConfigPath(const std::string &);
+	const std::list<ListenSocket> &
+	getListenSocks() const;
 	void triggerEvent();
 	~Server();
 };

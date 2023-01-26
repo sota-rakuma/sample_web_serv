@@ -5,6 +5,7 @@
 #include "../command/Get.hpp"
 #include "../command/Post.hpp"
 #include "../command/Delete.hpp"
+#include "../parser/CGIResponseParser.hpp"
 #include <unistd.h>
 #include <sstream>
 #include <fcntl.h>
@@ -345,7 +346,7 @@ void AcceptedSocket::processRequestBody(
 	}
 	_receiver->addContent(raw.substr(0, _body_size - _buff.size()));
 	if (_body_size == _buff.size()) {
-		_progress == EXECUTE_METHOD;
+		_progress = EXECUTE_METHOD;
 		return ;
 	}
 }
@@ -418,7 +419,8 @@ bool AcceptedSocket::prepareCGI()
 		_status = INTERNAL_SERVER_ERROR;
 		return false;
 	}
-	//_parser_ctx.transitionTo(new CGIResponseParser(&_req));
+	_parser_ctx.transitionTo(new CGIResponseParser(&_res));
+	return true;
 }
 
 int AcceptedSocket::write()
@@ -488,7 +490,7 @@ void AcceptedSocket::createResponse()
 	{
 		_res.insertHeaderField("Content-Type", ct->second);
 	}
-	_progress == SEND_STATUS_LINE;
+	_progress = SEND_STATUS_LINE;
 	processResponse();
 	getSubject()->subscribe(_sockfd, POLLOUT | POLLIN, this);
 }
@@ -567,7 +569,7 @@ void AcceptedSocket::createErrorResponse()
 		return ;
 	}
 	createResponseTemplate();
-	_progress == SEND_STATUS_LINE;
+	_progress = SEND_STATUS_LINE;
 	processResponse();
 	getSubject()->subscribe(_sockfd, POLLOUT | POLLIN, this);
 }

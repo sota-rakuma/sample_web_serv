@@ -2,7 +2,8 @@
 #define HTTPMETHOD_HPP
 
 #include "ICommand.hpp"
-#include "../handler/httphandler/HTTPMethodReceiver.hpp"
+
+class HTTPMethodReceiver;
 
 class HTTPMethod : public ICommand
 {

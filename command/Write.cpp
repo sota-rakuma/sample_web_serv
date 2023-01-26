@@ -1,4 +1,5 @@
 #include "Write.hpp"
+#include "../handler/IOEventHandler.hpp"
 
 Write::Write()
 :_receiver(static_cast<IOEventHandler *>(NULL))

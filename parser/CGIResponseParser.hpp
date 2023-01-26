@@ -23,6 +23,9 @@ class CGIResponseParser : public Parser {
         ResponseType _res_type;
     public:
         CGIResponseParser();
+        CGIResponseParser(
+            HTTPResponse *
+        );
         virtual ~CGIResponseParser();
         virtual int parse(const std::string &);
         int getResponseType();

@@ -53,7 +53,6 @@ public:
 	virtual int httpPost();
 	virtual int httpDelete();
 	int getFd() const;
-	const std::string & getPath() const;
 };
 
 #endif /* FILE_HPP */

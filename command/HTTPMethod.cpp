@@ -1,3 +1,4 @@
+#include "../handler/httphandler/HTTPMethodReceiver.hpp"
 #include "HTTPMethod.hpp"
 
 HTTPMethod::HTTPMethod()

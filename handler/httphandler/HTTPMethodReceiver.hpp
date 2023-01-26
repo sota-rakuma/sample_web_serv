@@ -2,13 +2,15 @@
 #define HTTPMETHODRECIEVER_HPP
 
 #include "../IOEventHandler.hpp"
-#include "../../command/HTTPMethod.hpp"
+#include "../../HTTP/HTTPStatusCode.hpp"
 #include <sys/stat.h>
+#include <string>
 
 #ifndef BUFSIZE
 #define BUFSIZE 1024
 #endif
 
+class HTTPMethod;
 class AcceptedSocket;
 
 class HTTPMethodReceiver : public IOEventHandler

@@ -158,7 +158,7 @@ int CGI::httpGet()
 	if (setMetaVariables(GET) == false || isExecutable() == false) {
 		return -1;
 	}
-	if (executeCGI(GET) == -1) {
+	if (executeCGI(GET) == false) {
 		return -1;
 	}
 	getSubject()->subscribe(_c_to_p[IN], POLLIN, this);
@@ -171,7 +171,7 @@ int CGI::httpPost()
 	if (setMetaVariables(POST) == false ||isExecutable() == false) {
 		return -1;
 	}
-	if (executeCGI(POST) == -1) {
+	if (executeCGI(POST) == false) {
 		return -1;
 	}
 	//_buff = "value=aaaa&value_2=bbbb";
@@ -186,7 +186,7 @@ int CGI::httpDelete()
 	if (setMetaVariables(DELETE) == false || isExecutable() == false) {
 		return -1;
 	}
-	if (executeCGI(DELETE) == -1){
+	if (executeCGI(DELETE) == false) {
 		return -1;
 	}
 	getSubject()->subscribe(_c_to_p[IN], POLLIN, this);
@@ -283,11 +283,7 @@ bool CGI::executeCGI(const std::string & method)
 			close(_p_to_c[IN]);
 		}
 	}
-}
-
-const std::string &CGI::identifyFile()
-{
-	size_t dot = _path.rfind('.');
+	return true;
 }
 
 int CGI::getInFd() const

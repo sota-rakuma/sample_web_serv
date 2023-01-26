@@ -26,7 +26,6 @@ private:
 	bool setMetaVariables(
 		const std::string &
 	);
-	const std::string & identifyFile();
 public:
 	CGI(
 		ISubject *,

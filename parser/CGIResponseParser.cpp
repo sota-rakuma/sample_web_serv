@@ -4,8 +4,15 @@ CGIResponseParser::CGIResponseParser() : _i(0) {
 	_http_res = new HTTPResponse();
 }
 
+CGIResponseParser::CGIResponseParser(
+	HTTPResponse *res
+)
+:_http_res(res)
+{
+}
+
 CGIResponseParser::~CGIResponseParser() {
-	delete _http_res;
+	//delete _http_res;
 }
 
 int CGIResponseParser::treatNL(std::string &str, size_t &pos, size_t &i) {
@@ -82,7 +89,7 @@ int CGIResponseParser::parseOtherField() {
 	std::string field_value;
 	size_t i = 0;
 	size_t len;
-	
+
 	while (_raw[_i] != '\n' && _raw[_i] != '\r') {
 		if (treatNL(other_field, pos, _i) == -1) {
 			std::cout << "treatNL in parseOtherField failed" << std::endl;
@@ -147,7 +154,7 @@ int CGIResponseParser::parseStatus() {
 	while (i < 3) {
 		if (isDigit(status_values[pos + i]) == false) {
 			std::cout << "status_code in parseStatus invalid" << std::endl;
-			return -1; 
+			return -1;
 		}
 		i++;
 	}
@@ -305,7 +312,7 @@ int CGIResponseParser::getResponseType() {
 			if (pos == i_tmp)
 				return CLIENT_REDIRDOC_RESPONSE;
 			else
-				return CLIENT_REDIR_RESPONSE;		
+				return CLIENT_REDIR_RESPONSE;
 		}
 	}
 	return -1;
@@ -334,7 +341,7 @@ int CGIResponseParser::parse(const std::string &raw) {
 		default:
 			std::cout << "response_type invalid" << std::endl;
 			return -1;
-			break; 
+			break;
 	}
 	return 0;
 }

@@ -14,8 +14,6 @@
 
 class ListenSocket : public IOEventHandler, public IObserver
 {
-private:
-	ListenSocket(const ListenSocket &);
 public:
 	class ListenSockError : public std::runtime_error
 	{
@@ -44,11 +42,13 @@ public:
 		const std::string &,
 		std::map<std::string, ServerConfig> *
 	);
+	ListenSocket(const ListenSocket &);
 	virtual ~ListenSocket();
 	void setConfs(
 		std::map<std::string, ServerConfig> *
 	);
 	void listen();
+	void close() const;
 	virtual void update(int);
 	virtual int read();
 	virtual int write();

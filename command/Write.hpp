@@ -2,7 +2,8 @@
 #define WRITE_HPP
 
 #include "ICommand.hpp"
-#include "../handler/IOEventHandler.hpp"
+
+class IOEventHandler;
 
 class Write : public ICommand
 {

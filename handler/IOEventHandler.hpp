@@ -2,10 +2,11 @@
 #define IOEVENTHANDLER_HPP
 
 #include "../subject/ISubject.hpp"
-#include "../command/Read.hpp"
-#include "../command/Write.hpp"
 #include <poll.h>
 #include <list>
+
+class Read;
+class Write;
 
 class IOEventHandler
 {

@@ -64,3 +64,8 @@ void Server::setConfigPath(const std::string & conf)
 {
 	_config_file = conf;
 }
+
+const std::list<ListenSocket> &
+Server::getListenSocks() const{
+	return _ls;
+}
