@@ -30,7 +30,7 @@ static std::pair<HTTPStatus, const std::string &> temp[] = {
 std::map<HTTPStatus, const std::string &> HTTPResponse::_err_msg(temp, temp + getSize(temp));
 
 HTTPResponse::StatusLine::StatusLine()
-:_version(),
+:_version("HTTP/1.1"),
 _code("default"),
 _reason()
 {

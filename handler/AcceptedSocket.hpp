@@ -29,6 +29,7 @@ enum Progress
 	SEND_STATUS_LINE,
 	SEND_RESPONSE_HEADER,
 	SEND_RESPONSE_BODY,
+	END,
 };
 
 class HTTPMethodReceiver;
@@ -75,6 +76,11 @@ private:
 	void createErrorResponse();
 	void createRedirectResponse();
 	void createResponseTemplate();
+	void processResponse();
+	void processStatusLine();
+	void processResponseHeader();
+	void processResponseBody();
+
 public:
 	AcceptedSocket();
 	AcceptedSocket(
