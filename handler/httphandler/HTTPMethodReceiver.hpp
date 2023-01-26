@@ -49,6 +49,7 @@ public:
 	bool isDirectory() const;
 	bool isRegularFile() const;
 	bool checkPermission(mode_t) const;
+	void entrustCreateResponse(HTTPStatus);
 };
 
 #endif /* HTTPMETHODRECIEVER_HPP */

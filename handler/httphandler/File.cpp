@@ -46,7 +46,6 @@ File::~File()
 void File::update(int event)
 {
 	if (event & (POLLHUP | POLLERR | POLLNVAL)) {
-		getAcceptedSocket()->createResponse("error");
 		getSubject()->unsubscribe(_fd, false);
 		return ;
 	}
@@ -62,12 +61,11 @@ int File::read()
 	char buff[BUFSIZE];
 	ssize_t nb = ::read(_fd, buff, BUFSIZE);
 	if (nb < 0) {
-		getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
-		getAcceptedSocket()->createResponse();
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		getSubject()->unsubscribe(_fd, false);
 		return -1;
 	} else if (nb == 0) {
-		getAcceptedSocket()->createResponse(_buff);
+		//getAcceptedSocket()->createResponse(_buff);
 		getSubject()->unsubscribe(_fd, false);
 		return 0;
 	}
@@ -80,8 +78,7 @@ int File::write()
 {
 	ssize_t nb = ::write(_fd, _buff.c_str(), _buff.size());
 	if (nb == -1) {
-		getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
-		getAcceptedSocket()->createResponse();
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		getSubject()->unsubscribe(_fd, false);
 		return -1;
 	}
@@ -99,16 +96,16 @@ int File::httpGet()
 {
 	if (execStat() == -1) {
 		if (errno ==  ENOENT) {
-			getAcceptedSocket()->setStatus(NOT_FOUND);
+			entrustCreateResponse(NOT_FOUND);
 		} else if(errno == EACCES) {
-			getAcceptedSocket()->setStatus(FORBIDDEN);
+			entrustCreateResponse(FORBIDDEN);
 		} else {
-			getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
+			entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		}
 		return -1;
 	}
 	if (checkPermission(S_IROTH) == false) {
-		getAcceptedSocket()->setStatus(FORBIDDEN);
+		entrustCreateResponse(FORBIDDEN);
 		return -1;
 	}
 	if (isDirectory() == true) {
@@ -120,17 +117,17 @@ int File::httpGet()
 		} else if (_index_file != "default") {
 			_path += _index_file;
 		} else {
-			getAcceptedSocket()->setStatus(NOT_FOUND);
+			entrustCreateResponse(NOT_FOUND);
 			return -1;
 		}
 	}
 	_fd = open(getPath().c_str(), O_RDONLY | O_CLOEXEC);
 	if (_fd == -1) {
-		getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		return -1;
 	}
 	getSubject()->subscribe(_fd, POLLIN, this);
-	getAcceptedSocket()->setStatus(OK);
+	entrustCreateResponse(OK);
 	return 0;
 }
 
@@ -141,10 +138,10 @@ int File::httpPost()
 			_fd = open(getPath().c_str(), O_RDWR | O_CREAT | O_EXCL | O_CLOEXEC);
 			getAcceptedSocket()->setStatus(CREATED);
 		} else if(errno == EACCES) {
-			getAcceptedSocket()->setStatus(FORBIDDEN);
+			entrustCreateResponse(FORBIDDEN);
 			return -1;
 		} else {
-			getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
+			entrustCreateResponse(INTERNAL_SERVER_ERROR);
 			return -1;
 		}
 	} else {
@@ -152,15 +149,15 @@ int File::httpPost()
 		getAcceptedSocket()->setStatus(OK);
 	}
 	if (_fd == -1) {
-		getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		return -1;
 	}
 	if (isRegularFile() == false) {
-		getAcceptedSocket()->setStatus(FORBIDDEN);
+		entrustCreateResponse(FORBIDDEN);
 		return -1;
 	}
 	if (checkPermission(S_IWOTH) == false) {
-		getAcceptedSocket()->setStatus(FORBIDDEN);
+		entrustCreateResponse(FORBIDDEN);
 		return -1;
 	}
 	getSubject()->subscribe(_fd, POLLOUT, this);
@@ -173,28 +170,29 @@ int File::httpDelete()
 	_path = _path.substr(_path.rfind('/'));
 	if (execStat() == -1) {
 		if (errno ==  ENOENT) {
-			getAcceptedSocket()->setStatus(NOT_FOUND);
+			entrustCreateResponse(NOT_FOUND);
 		} else if(errno == EACCES) {
-			getAcceptedSocket()->setStatus(FORBIDDEN);
+			entrustCreateResponse(FORBIDDEN);
 		} else {
-			getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
+			entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		}
 		return -1;
 	}
 	if (checkPermission(S_IXOTH) == false) {
-		getAcceptedSocket()->setStatus(FORBIDDEN);
+		entrustCreateResponse(FORBIDDEN);
+		return -1;
 	}
 	if (unlink(target.c_str()) == -1) {
 		if (errno == EACCES) {
-			getAcceptedSocket()->setStatus(UNAUTHORIZED);
+			entrustCreateResponse(UNAUTHORIZED);
 		} else if (errno == EBUSY) {
-			getAcceptedSocket()->setStatus(CONFLICT);
+			entrustCreateResponse(CONFLICT);
 		} else {
-			getAcceptedSocket()->setStatus(INTERNAL_SERVER_ERROR);
+			entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		}
 		return -1;
 	}
-	getAcceptedSocket()->setStatus(OK);
+	entrustCreateResponse(OK);
 	return 0;
 }
 

@@ -103,3 +103,11 @@ bool HTTPMethodReceiver::checkPermission(mode_t perm) const
 {
 	return _state.st_mode & perm;
 }
+
+void HTTPMethodReceiver::entrustCreateResponse(
+	HTTPStatus status
+)
+{
+	_as->setStatus(status);
+	_as->createResponse();
+}
