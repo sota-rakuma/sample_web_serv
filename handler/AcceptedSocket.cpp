@@ -421,6 +421,7 @@ bool AcceptedSocket::prepareCGI()
 		_status = INTERNAL_SERVER_ERROR;
 		return false;
 	}
+	//_parser_ctx.transitionTo(new CGIResponseParser(&_req));
 }
 
 // for test
@@ -456,22 +457,12 @@ void AcceptedSocket::createResponse(const std::string & body)
 	getSubject()->subscribe(_sockfd, POLLOUT, this);
 }
 
-/*
-・✅Data
-・✅Server
-・Location(3xx or 201)
-・Transfer-Encoding(Content-Length)
-・✅Connection
-・[content-type]
-*/
 void AcceptedSocket::createResponse()
 {
-	std::stringstream ss;
-
 	createGeneralHeader();
 	int status = static_cast<int>(_status);
 	if (400 <= status && status < 600) {
-		createErrorResponse();
+		return createErrorResponse();
 	} else if (300 <= status && status < 400) {
 		createRedirectResponse();
 	} else {
@@ -481,6 +472,16 @@ void AcceptedSocket::createResponse()
 				_req.getRequestLine().getPath());
 		}
 		_res.setMessageBody(_receiver->getContent());
+	}
+	if (_res.getHeaderField().find("Transfer-Encoding") == _res.getHeaderField().end()) {
+		std::stringstream ss;
+		ss << _res.getMessageBody().size();
+		_res.insertHeaderField("Content-Length", ss.str());
+	}
+	std::map<std::string, std::string>::const_iterator ct = _req.getHeaderField().find("content-type");
+	if (ct != _req.getHeaderField().end())
+	{
+		_res.insertHeaderField("Content-Type", ct->second);
 	}
 	getSubject()->subscribe(_sockfd, POLLOUT, this);
 }
@@ -525,6 +526,52 @@ void AcceptedSocket::createGeneralHeader()
 	{
 		_res.insertHeaderField("Connection", "keep-alive");
 	}
+}
+
+/*
+<html>
+<head><title>301 Moved Permanently</title></head>
+<body>
+<center><h1>301 Moved Permanently</h1></center>
+<hr><center>nginx/1.23.3</center>
+</body>
+</html>
+*/
+void AcceptedSocket::createRedirectResponse()
+{
+	_res.setStatusCode(_status);
+	_res.insertHeaderField("Location", _location.getReturn().second);
+	createResponseTemplate();
+}
+
+void AcceptedSocket::createErrorResponse()
+{
+	_res.setStatusCode(_status);
+	std::map<int, std::string>::const_iterator ep = _config.getDefaultErrorPage().find(static_cast<int>(_status));
+	if (ep != _config.getDefaultErrorPage().end())
+	{
+		delete _receiver;
+		_res.insertHeaderField("Content-Type", "text/html");
+		_receiver = new File(getSubject(), getCommandList(), this,
+							false, ep->second);
+		_config.eraseDefaultErrorPage(ep->first);
+		_receiver->setHTTPMethod(new Get(_receiver));
+		addCommand(_receiver->getHTTPMethod());
+		return ;
+	}
+	createResponseTemplate();
+	getSubject()->subscribe(_sockfd, POLLOUT, this);
+}
+
+void AcceptedSocket::createResponseTemplate()
+{
+	const std::string & comment = _res.getStatusLine().getCode() + " " + _res.getStatusLine().getReason();
+	_res.addMessageBody("<html>\n<head><title>");
+	_res.addMessageBody(comment);
+	_res.addMessageBody("</title></head>\n<body>\n<center><h1>");
+	_res.addMessageBody(comment);
+	_res.addMessageBody("</h1></center>\n<hr><center>42WebServ</center>\n</body>\n</html>");
+	_res.insertHeaderField("Content-Type", "text/html");
 }
 
 // for test

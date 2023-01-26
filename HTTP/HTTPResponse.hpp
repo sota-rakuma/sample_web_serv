@@ -48,6 +48,13 @@ public:
 	) const;
 	const std::string & getMessageBody() const;
 	HTTPResponse & setStatusCode(
+		HTTPStatus
+	);
+	HTTPResponse & setStatusCode(
+		const std::string &
+	);
+	HTTPResponse & setStatusCode(
+		const std::string &,
 		const std::string &
 	);
 	HTTPResponse & setStatusLine(
@@ -66,6 +73,9 @@ public:
 		const std::string &
 	);
 	HTTPResponse & setMessageBody(
+		const std::string &
+	);
+	HTTPResponse & addMessageBody(
 		const std::string &
 	);
 };
