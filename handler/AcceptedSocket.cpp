@@ -61,7 +61,6 @@ _is_cgi(another._is_cgi)
 
 AcceptedSocket::~AcceptedSocket()
 {
-	delete _receiver;
 	::close(_sockfd);
 }
 
@@ -216,7 +215,6 @@ size_t AcceptedSocket::processRequestHeader(
 	if (prepareEvent() == false) {
 		return 0;
 	}
-	_buff = raw.substr(crlf);
 	return crlf;
 }
 
@@ -373,6 +371,7 @@ bool AcceptedSocket::preparePostEvent()
 		_body_size = 0;
 	}
 	_progress = RECEIVE_REQUEST_BODY;
+	_buff.clear();
 	return true;
 }
 
@@ -381,12 +380,15 @@ size_t AcceptedSocket::processRequestBody(
 	size_t index
 )
 {
+	if (raw.size() <= index) {
+		return 0;
+	}
 	if (_config.getMaxBodySize() < _body_size) {
 		_status = PAYLOAD_TOO_LARGE;
 		_progress = CREATE_RESPONSE;
 		return 0;
 	}
-	_receiver->addContent(raw.substr(0, _body_size - _buff.size()));
+	_receiver->addContent(raw.substr(index, _body_size - _buff.size()));
 	if (_body_size == _buff.size()) {
 		addCommand(_receiver->getHTTPMethod());
 		_progress = EXECUTE_METHOD;
@@ -400,7 +402,7 @@ size_t AcceptedSocket::processChunkedBody(
 	size_t index
 )
 {
-	for (size_t i = 0; i < raw.size();)
+	for (size_t i = index; i < raw.size();)
 	{
 		size_t crlf = raw.find("\r\n", i);
 		size_t tmp;
@@ -518,6 +520,7 @@ void AcceptedSocket::createResponse()
 					"Location",
 					_req.getRequestLine().getPath());
 			}
+			_res.setStatusCode(_status);
 			_res.setMessageBody(_receiver->getContent());
 		}
 	}

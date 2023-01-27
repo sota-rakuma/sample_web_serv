@@ -79,7 +79,7 @@ int File::read()
 		getSubject()->unsubscribe(_fd, false);
 		return -1;
 	} else if (nb == 0) {
-		//getAcceptedSocket()->createResponse(_buff);
+		getAcceptedSocket()->createResponse();
 		getSubject()->unsubscribe(_fd, false);
 		return 0;
 	}
@@ -109,17 +109,19 @@ int File::write()
 int File::httpGet()
 {
 	if (execStat() == -1) {
-		if (errno ==  ENOENT) {
+		if (errno == ENOENT) {
 			entrustCreateResponse(NOT_FOUND);
 		} else if(errno == EACCES) {
 			entrustCreateResponse(FORBIDDEN);
 		} else {
 			entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		}
+		std::cout << "exec stat エラー" << std::endl;
 		return -1;
 	}
 	if (checkPermission(S_IROTH) == false) {
 		entrustCreateResponse(FORBIDDEN);
+		std::cout << "permission error" << std::endl;
 		return -1;
 	}
 	if (isDirectory() == true) {
@@ -133,25 +135,28 @@ int File::httpGet()
 			_path += _index_file;
 		} else {
 			entrustCreateResponse(NOT_FOUND);
+			std::cout << "directory desu" << std::endl;
 			return -1;
 		}
 	}
 	_fd = open(getPath().c_str(), O_RDONLY | O_CLOEXEC);
 	if (_fd == -1) {
+		std::cout << "fd == -1" << std::endl;
 		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		return -1;
 	}
+	setHTTPStatus(OK);
 	getSubject()->subscribe(_fd, POLLIN, this);
-	entrustCreateResponse(OK);
 	return 0;
 }
 
 int File::httpPost()
 {
+	bool is_created = false;
 	if (execStat() == -1) {
 		if (errno ==  ENOENT) {
 			_fd = open(getPath().c_str(), O_RDWR | O_CREAT | O_EXCL | O_CLOEXEC);
-			setHTTPStatus(CREATED);
+			is_created = true;
 		} else if(errno == EACCES) {
 			entrustCreateResponse(FORBIDDEN);
 			return -1;
@@ -177,6 +182,9 @@ int File::httpPost()
 	}
 	getSubject()->subscribe(_fd, POLLOUT, this);
 	// POSTした内容をbufferに格納
+	if (is_created == true) {
+		setHTTPStatus(CREATED);
+	}
 	httpGet();
 	return 0;
 }
