@@ -192,9 +192,10 @@ int File::httpPost()
 int File::httpDelete()
 {
 	std::string target = _path;
-	_path = _path.substr(_path.rfind('/'));
+	_path = _path.substr(0, _path.rfind('/'));
 	if (execStat() == -1) {
-		if (errno ==  ENOENT) {
+		if (errno == ENOENT) {
+			//std::cout << "_path: " << _path <<std::endl;
 			entrustCreateResponse(NOT_FOUND);
 		} else if(errno == EACCES) {
 			entrustCreateResponse(FORBIDDEN);
