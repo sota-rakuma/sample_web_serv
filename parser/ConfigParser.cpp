@@ -1,4 +1,5 @@
 #include "ConfigParser.hpp"
+#include "../utils/utils.hpp"
 
 // ConfigParser::ConfigParser() : _i(0), _server_index(0) {
 ConfigParser::ConfigParser() : _i(0), _server_i(0){
@@ -391,7 +392,7 @@ int ConfigParser::parseLocation() {
 			return 1;
 		}
 		while (i < len) {
-			if (std::isalpha(path[i])) {
+			if (isPrintable(path[i])) {
 			} else if (path[i] == '/') {
 				i++;
 				break;

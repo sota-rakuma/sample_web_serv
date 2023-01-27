@@ -1,4 +1,5 @@
 #include "ListenSocket.hpp"
+#include "../utils/utils.hpp"
 #include <sys/socket.h>
 #include <cstring>
 #include <errno.h>
@@ -184,4 +185,48 @@ int ListenSocket::write()
 void ListenSocket::update(int event)
 {
 	addCommand(getReadCommand());
+}
+
+int ListenSocket::getSocketFd() const
+{
+	return _sockfd;
+}
+
+const std::string & ListenSocket::getHost() const
+{
+	return _host;
+}
+
+const std::string & ListenSocket::getPort() const
+{
+	return _port;
+}
+
+std::map<std::string, ServerConfig> * ListenSocket::getConfs() const
+{
+	return _confs;
+}
+
+std::ostream & operator<<(
+	std::ostream & os,
+	const ListenSocket & rhs
+)
+{
+	os << addColorText("ListenSocket", MAGENTA) << std::endl;
+	os << "socket fd: " << rhs.getSocketFd() << std::endl
+	<< "Host: " << rhs.getHost() << std::endl
+	<< "Port: " << rhs.getPort() << std::endl
+	<< "Confs" << std::endl;
+	if (rhs.getConfs() == NULL) {
+		os << "Confs is NULL" << std::endl;
+		return os;
+	}
+	for (std::map<std::string, ServerConfig>::const_iterator it = rhs.getConfs()->begin();
+		it != rhs.getConfs()->end();
+		it++)
+	{
+		os << "Server Name: " << it->first << std::endl
+		<< it->second << std::endl;
+	}
+	return os;
 }

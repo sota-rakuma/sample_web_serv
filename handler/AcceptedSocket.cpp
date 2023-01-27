@@ -441,6 +441,7 @@ int AcceptedSocket::write()
 	}
 	if (_progress == END) {
 		if (_res.getHeaderValue("Connection") == "keep-alive") {
+			_progress = RECEIVE_REQUEST_LINE;
 			getSubject()->subscribe(_sockfd, POLLIN, this);
 		} else {
 			getSubject()->unsubscribe(_sockfd, false);

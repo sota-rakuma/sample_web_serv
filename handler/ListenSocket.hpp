@@ -6,6 +6,7 @@
 #include "AcceptedSocket.hpp"
 #include "../command/Read.hpp"
 #include "../config/ServerConfig.hpp"
+#include <iostream>
 #include <string>
 #include <netdb.h>
 #include <sys/types.h>
@@ -52,6 +53,13 @@ public:
 	virtual void update(int);
 	virtual int read();
 	virtual int write();
+	int getSocketFd() const;
+	const std::string & getHost() const;
+	const std::string & getPort() const;
+	std::map<std::string, ServerConfig>*
+	getConfs() const;
 };
+
+std::ostream & operator<<(std::ostream &, const ListenSocket &);
 
 #endif /* LISTENSOCKET_HPP */

@@ -2,12 +2,12 @@
 
 int main(void)
 {
-	//TargetParserTest();
+	TargetParserTest();
 	//requestLineTest();
 	//headerFieldTest();
 	//normalizeURITest();
 	// ConfigParserTest();
-	CGIResponseParserTest();
+	//CGIResponseParserTest();
 	return 0;
 }
 

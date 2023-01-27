@@ -308,6 +308,9 @@ bool TargetParser::isPchar(
 	size_t index
 )
 {
+	if (raw.size() <= index) {
+		return false;
+	}
 	if (isPercentEncoded(raw, index) == true) {
 		return true;
 	}

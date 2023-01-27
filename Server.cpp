@@ -15,6 +15,12 @@ Server::~Server()
 void Server::run()
 {
 	init();
+	for (std::list<ListenSocket>::iterator it = _ls.begin();
+		it != _ls.end();
+		it++)
+	{
+		std::cout << *it << std::endl;
+	}
 	while (true)
 	{
 		if (_evm.monitor() == -1) {

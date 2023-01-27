@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <iostream>
 
 class ServerConfig
 {
@@ -99,5 +100,9 @@ public:
 	const std::map<int, std::string> &getDefaultErrorPage() const;
 	const std::vector<Location> &getLocationVec() const;
 };
+
+std::ostream & operator<<(std::ostream &, const ServerConfig &);
+std::ostream & operator<<(std::ostream &,
+const ServerConfig::Location &);
 
 #endif /* SERVERCONFIG_HPP */

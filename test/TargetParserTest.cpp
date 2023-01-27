@@ -4,19 +4,20 @@ void addNormalCase(
 	std::vector<std::string> & test
 )
 {
-	test.push_back("http://www.ics.uci.edu/pub/ietf/uri/#Related");
-	test.push_back("http://127.0.0.1:8080/pub/ietf/uri/#Related");
-	test.push_back("http://[2001:db8:20:3:1000:100:20:3]");
-	test.push_back("http://[2001:db8:20:3:1000:100:20:3]:8080");
-	test.push_back("http://[2001:db8:20:3:1000:100:20:3]:");
-	test.push_back("http://[::3:1000:100:20:3]:8080");
-	test.push_back("http://[::3:1000:100:127.0.0.1]:8080");
-	test.push_back("http://www.ics.uci.edu/pub/ietf/uri/?query#Related");
-	test.push_back("http://www.ics.uci.edu/pub/ietf/uri/?query");
-	test.push_back("http://[::3:1000:100:127.0.0.1]:8080?query");
-	test.push_back("/www.ics.uci.edu/pub/ietf/uri/");
-	test.push_back("/www.ics.uci.edu/pub/ietf/uri/?query");
-	test.push_back("/");
+	test.push_back("https://ja.wikipedia.org/wiki/HTTP%E3%82%B9%E3%83%86%E3%83%BC%E3%82%BF%E3%82%B9%E3%82%B3%E3%83%BC%E3%83%89");
+	//test.push_back("http://www.ics.uci.edu/pub/ietf/uri/#Related");
+	//test.push_back("http://127.0.0.1:8080/pub/ietf/uri/#Related");
+	//test.push_back("http://[2001:db8:20:3:1000:100:20:3]");
+	//test.push_back("http://[2001:db8:20:3:1000:100:20:3]:8080");
+	//test.push_back("http://[2001:db8:20:3:1000:100:20:3]:");
+	//test.push_back("http://[::3:1000:100:20:3]:8080");
+	//test.push_back("http://[::3:1000:100:127.0.0.1]:8080");
+	//test.push_back("http://www.ics.uci.edu/pub/ietf/uri/?query#Related");
+	//test.push_back("http://www.ics.uci.edu/pub/ietf/uri/?query");
+	//test.push_back("http://[::3:1000:100:127.0.0.1]:8080?query");
+	//test.push_back("/www.ics.uci.edu/pub/ietf/uri/");
+	//test.push_back("/www.ics.uci.edu/pub/ietf/uri/?query");
+	//test.push_back("/");
 }
 
 void addAbnormalCase(

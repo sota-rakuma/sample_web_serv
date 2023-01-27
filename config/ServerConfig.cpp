@@ -1,5 +1,6 @@
 #include "ServerConfig.hpp"
 #include <stdexcept>
+#include "../utils/utils.hpp"
 
 ServerConfig::ServerConfig()
 :_listen(""), _server_name("default"), _max_body_size(8192)
@@ -294,3 +295,54 @@ const std::vector<ServerConfig::Location> &
 {
 	return _locations;
 };
+
+
+std::ostream & operator<<(std::ostream & os, const ServerConfig &rhs)
+{
+	os << addColorText("ServerConfig", BLUE) << std::endl
+	<< "listen: " << rhs.getListen() << std::endl
+	<< "server_name: " << rhs.getServerName() << std::endl
+	<< "max body size: " << rhs.getMaxBodySize() << std::endl
+	<< "## Defautl Error Pages ##" << std::endl;
+
+	for (std::map<int, std::string>::const_iterator it = rhs.getDefaultErrorPage().begin();
+		it != rhs.getDefaultErrorPage().end();
+		it++)
+	{
+		os << "Status: " << it->first << ", "
+		<< "Error Page: " << it->second << std::endl;
+	}
+	os << "######################" << std::endl;
+	for (size_t i = 0; i < rhs.getLocationVec().size(); i++) {
+		os << rhs.getLocationVec()[i] << std::endl;
+	}
+	os << addColorText("########################", BLUE) << std::endl;
+	return os;
+}
+
+std::ostream & operator<<(
+	std::ostream & os ,
+	const ServerConfig::Location & rhs)
+{
+	os << addColorText("Location", YELLOW) << std::endl;
+	os << "path: " << rhs.getPath() << std::endl
+	<< "alias: " << rhs.getAlias() << std::endl
+	<< "index file: " << rhs.getIndexFile() << std::endl
+	<< "upload place: " << rhs.getUploadPlace() << std::endl
+	<< "return : <status: " << rhs.getReturn().first
+	<< ", " << rhs.getReturn().second << ">" << std::endl
+	<< "Allowe Method" << std::endl;
+	for (std::map<std::string, bool>::const_iterator it = rhs.getAllowedMethod().begin();
+		it != rhs.getAllowedMethod().end();
+		it++)
+	{
+		os << it->first << ": " << it->second << std::endl;
+	}
+
+	os << "CGI Extentions";
+	for (size_t i = 0; i < rhs.getCgiExtensions().size(); i++)
+	{
+		os << "Extention: " << rhs.getCgiExtensions()[i] << std::endl;
+	}
+	return os;
+}
