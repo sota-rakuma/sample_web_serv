@@ -49,14 +49,18 @@ class ConfigParser
 		int parseMaxBodySize();
 		int parseErrorPage();
 		int parseLocation();
-		int parseArrangedLocationDirectives(const std::string &);
-		int parseAllowedMethod(std::string);
-		int parseIndex(std::string);
-		int parseAlias(std::string);
-		int parseAutoIndex(std::string);
-		int parseReturn(std::string);
-		int parseUploadPlace(std::string);
-		int parseExtension(std::string);
+		int parseArrangedLocationDirectives(
+			size_t
+		);
+		int parseAllowedMethod(
+			size_t
+		);
+		int parseIndex(size_t);
+		int parseAlias(size_t);
+		int parseAutoIndex(size_t);
+		int parseReturn(size_t);
+		int parseUploadPlace(size_t);
+		int parseExtension(size_t);
 		void initDirectiveFlag();
 		void initLocationDirectiveFlag();
 		const std::vector<ServerConfig> &

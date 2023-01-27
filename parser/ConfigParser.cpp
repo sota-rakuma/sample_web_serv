@@ -20,7 +20,9 @@ ConfigParser::ConfigParser() : _i(0), _server_i(0){
 ConfigParser::~ConfigParser() {
 }
 
-int ConfigParser::parseExtension(std::string path) {
+int ConfigParser::parseExtension(
+	size_t index
+) {
 	_location_extension_flag = true;
 	std::string find_word = ";\n";
 	size_t pos = _raw.find(find_word, _i);
@@ -65,12 +67,11 @@ int ConfigParser::parseExtension(std::string path) {
 		i = vec_pos + separator.length();
 	}
 	_i = pos + find_word.length();
-	size_t index = _sc_vec[_server_i].getLocationVec().size() - 1;
 	_sc_vec[_server_i].setExtension(index, vec);
 	return 0;
 }
 
-int ConfigParser::parseUploadPlace(std::string path) {
+int ConfigParser::parseUploadPlace(size_t index) {
 	_location_upload_place_flag = true;
 	std::string find_word = ";\n";
 	size_t pos = _raw.find(find_word, _i);
@@ -98,12 +99,11 @@ int ConfigParser::parseUploadPlace(std::string path) {
 		}
 	}
 	_i = pos + find_word.length();
-	size_t index = _sc_vec[_server_i].getLocationVec().size() - 1;
 	_sc_vec[_server_i].setUploadPlace(index, upload_place);
 	return 0;
 }
 
-int ConfigParser::parseReturn(std::string path) {
+int ConfigParser::parseReturn(size_t index) {
 	_location_return_flag = true;
 	std::string find_word = ";\n";
 	size_t pos = _raw.find(find_word, _i);
@@ -133,20 +133,12 @@ int ConfigParser::parseReturn(std::string path) {
 		std::cout << "return_uri invalid" << std::endl;
 		return 1;
 	}
-	// i = 0;
-	// while (i < len) {
-	//     if (std::isalpha(return_uri[i++]) == 0) {
-	//         std::cout << "return_uri invalid" << std::endl;
-	//         return 1;
-	//     }
-	// }
 	_i = pos + find_word.length();
-	size_t index = _sc_vec[_server_i].getLocationVec().size() - 1;
 	_sc_vec[_server_i].setReturn(index, status_code, return_uri);
 	return 0;
 }
 
-int ConfigParser::parseAutoIndex(std::string path) {
+int ConfigParser::parseAutoIndex(size_t index) {
 	_location_autoindex_flag = true;
 	std::string find_word = ";\n";
 	size_t pos = _raw.find(find_word, _i);
@@ -160,12 +152,11 @@ int ConfigParser::parseAutoIndex(std::string path) {
 		return 1;
 	}
 	_i = pos + find_word.length();
-	size_t index = _sc_vec[_server_i].getLocationVec().size() - 1;
 	_sc_vec[_server_i].setAutoIndex(index, auto_index);
 	return 0;
 }
 
-int ConfigParser::parseAlias(std::string path) {
+int ConfigParser::parseAlias(size_t index) {
 	_location_alias_flag = true;
 	std::string find_word = ";\n";
 	size_t pos = _raw.find(find_word, _i);
@@ -194,12 +185,11 @@ int ConfigParser::parseAlias(std::string path) {
 		}
 	}
 	_i = pos + find_word.length();
-	size_t index = _sc_vec[_server_i].getLocationVec().size() - 1;
 	_sc_vec[_server_i].setAlias(index, alias_path);
 	return 0;
 }
 
-int ConfigParser::parseIndex(std::string path) {
+int ConfigParser::parseIndex(size_t index) {
 	_location_index_flag = true;
 	std::string find_word = ";\n";
 	size_t pos = _raw.find(find_word, _i);
@@ -218,12 +208,11 @@ int ConfigParser::parseIndex(std::string path) {
 		i++;
 	}
 	_i = pos + find_word.length();
-	size_t index = _sc_vec[_server_i].getLocationVec().size() - 1;
 	_sc_vec[_server_i].setIndex(index, index_file);
 	return 0;
 }
 
-int ConfigParser::parseAllowedMethod(std::string path) {
+int ConfigParser::parseAllowedMethod(size_t index) {
 	_location_allowed_method_flag = true;
 	const std::string & find_word = ";\n";
 	size_t pos = _raw.find(find_word, _i);
@@ -235,7 +224,6 @@ int ConfigParser::parseAllowedMethod(std::string path) {
 	size_t len = allowed_method.length();
 	size_t i = 0;
 	size_t j;
-	size_t index = _sc_vec[_server_i].getLocationVec().size() - 1;
 	while (i < len) {
 		j = 0;
 		while (j < _allowed_methods.size()) {
@@ -278,7 +266,7 @@ void ConfigParser::initLocationDirectiveFlag() {
 
 int ConfigParser::parseArrangedLocationDirectives
 (
-	const std::string & path
+	size_t index
 ) {
 	size_t i = 0;
 	std::string find_word = "\t\t";
@@ -303,7 +291,7 @@ int ConfigParser::parseArrangedLocationDirectives
 					std::cout << "duplicate allowed_method directive" << std::endl;
 					return 1;
 				}
-				if (parseAllowedMethod(path) != 0) {
+				if (parseAllowedMethod(index) != 0) {
 					std::cout << "parseAllowedMethod() failed" << std::endl;
 					return 1;
 				}
@@ -312,7 +300,7 @@ int ConfigParser::parseArrangedLocationDirectives
 					std::cout << "duplicate index directive" << std::endl;
 					return 1;
 				}
-				if (parseIndex(path) != 0) {
+				if (parseIndex(index) != 0) {
 					std::cout << "parseIndex() failed" << std::endl;
 					return 1;
 				}
@@ -321,7 +309,7 @@ int ConfigParser::parseArrangedLocationDirectives
 					std::cout << "duplicate alias directive" << std::endl;
 					return 1;
 				}
-				if (parseAlias(path) != 0) {
+				if (parseAlias(index) != 0) {
 					std::cout << "parseAlias() failed" << std::endl;
 					return 1;
 				}
@@ -330,7 +318,7 @@ int ConfigParser::parseArrangedLocationDirectives
 					std::cout << "duplicate autoindex directive" << std::endl;
 					return 1;
 				}
-				if (parseAutoIndex(path) != 0) {
+				if (parseAutoIndex(index) != 0) {
 					std::cout << "parseAutoIndex() failed" << std::endl;
 					return 1;
 				}
@@ -339,7 +327,7 @@ int ConfigParser::parseArrangedLocationDirectives
 					std::cout << "duplicate return directive" << std::endl;
 					return 1;
 				}
-				if (parseReturn(path) != 0) {
+				if (parseReturn(index) != 0) {
 					std::cout << "parseReturn() failed" << std::endl;
 					return 1;
 				}
@@ -348,7 +336,7 @@ int ConfigParser::parseArrangedLocationDirectives
 					std::cout << "duplicate upload_place directive" << std::endl;
 					return 1;
 				}
-				if (parseUploadPlace(path) != 0) {
+				if (parseUploadPlace(index) != 0) {
 					std::cout << "parseUploadPlace() failed" << std::endl;
 					return 1;
 				}
@@ -357,7 +345,7 @@ int ConfigParser::parseArrangedLocationDirectives
 					std::cout << "duplicate extension directive" << std::endl;
 					return 1;
 				}
-				if (parseExtension(path) != 0) {
+				if (parseExtension(index) != 0) {
 					std::cout << "parseExtension() failed" << std::endl;
 					return 1;
 				}
@@ -385,6 +373,7 @@ int ConfigParser::parseLocation() {
 	// pathの文字数に制限をつける場合
 	// if (len >= ??) {
 	// }
+
 	size_t i = 0;
 	while (i < len) {
 		if (path[i++] != '/') {
@@ -403,12 +392,17 @@ int ConfigParser::parseLocation() {
 			i++;
 		}
 	}
+
 	_sc_vec[_server_i].addLocation();
 	size_t index = _sc_vec[_server_i].getLocationVec().size() - 1;
+
+	std::cout << "410: "
+	<< _sc_vec[_server_i].getLocationVec().size() << std::endl;
+
 	_sc_vec[_server_i].setPath(index, path);
 	_i = pos + find_word.length();
 
-	if (parseArrangedLocationDirectives(path) != 0) {
+	if (parseArrangedLocationDirectives(index) != 0) {
 		std::cout << "parseArrangedLocations() failed" << std::endl;
 		return 1;
 	}

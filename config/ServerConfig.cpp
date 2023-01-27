@@ -337,9 +337,7 @@ std::ostream & operator<<(
 		it++)
 	{
 		os << it->first << ": " << it->second << std::endl;
-	}
-
-	os << "CGI Extentions";
+	};
 	for (size_t i = 0; i < rhs.getCgiExtensions().size(); i++)
 	{
 		os << "Extention: " << rhs.getCgiExtensions()[i] << std::endl;

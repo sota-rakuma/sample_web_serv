@@ -21,6 +21,7 @@ void Server::run()
 	{
 		std::cout << *it << std::endl;
 	}
+	std::exit(0);
 	while (true)
 	{
 		if (_evm.monitor() == -1) {
