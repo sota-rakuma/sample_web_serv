@@ -15,7 +15,7 @@ private:
 	ConfigParser _p;
 	std::string _config_file;
 	std::map<std::string, std::map<std::string, ServerConfig> > _confs;
-	std::list<ListenSocket> _ls;
+	std::list<ListenSocket *> _ls;
 	std::list<ICommand *> _commands;
 private:
 	void init();
@@ -26,7 +26,7 @@ public:
 	void run();
 	const std::string & getConfigPath() const;
 	void setConfigPath(const std::string &);
-	const std::list<ListenSocket> &
+	std::list<ListenSocket *>
 	getListenSocks() const;
 	void triggerEvent();
 	~Server();

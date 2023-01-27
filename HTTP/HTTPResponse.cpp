@@ -259,40 +259,41 @@ HTTPResponse & HTTPResponse::addMessageBody(
 
 std::ostream &operator<<(
 	std::ostream & os,
+	const HTTPResponse::StatusLine & rhs
+)
+{
+	os << rhs.getHTTPVersion() << " "
+	<< rhs.getCode() << " "
+	<< rhs.getReason() << "\r\n";
+	return os;
+}
+
+std::ostream &operator<<(
+	std::ostream & os,
+	const std::map<std::string, std::string> & rhs
+)
+{
+	for (std::map<std::string, std::string>::const_iterator it = rhs.begin();
+		it != rhs.end();
+		it++)
+	{
+		os << it->first << ": " << it->second << "\r\n";
+	}
+	os << "\r\n";
+	return os;
+}
+
+std::ostream &operator<<(
+	std::ostream & os,
 	const HTTPResponse & res
 )
 {
-	os << addColorText("RESPONSE", CYAN) << std::endl;
-
 	const HTTPResponse::StatusLine & statl = res.getStatusLine();
-	os << "STATUS LINE" << std::endl
-	<< "Version: " << statl.getHTTPVersion() << std::endl
-	<< "Code: ";
-	std::stringstream ss;
-	ss << statl.getCode();
-	size_t stat;
-	ss >> stat;
-	if (ss || (stat <= 400 && stat < 600)) {
-		os << addColorText(statl.getCode(), RED);
-	} else if (stat < 200) {
-		os << addColorText(statl.getCode(), BLUE);
-	} else if (stat < 300) {
-		os << addColorText(statl.getCode(), GREEN);
-	}
-	os << std::endl
-	<< "Reason: " << statl.getReason() << std::endl;
+	os << statl;
 
 	const std::map<std::string, std::string> & hf = res.getHeaderField();
-	for (std::map<std::string, std::string>::const_iterator it = hf.begin();
-		it != hf.end();
-		it++)
-	{
-		os << "" << it->first << ": " << it->second << std::endl;
-	}
-	os << std::endl;
+	os << hf;
 
-	os << "Message" << std::endl
-	<< res.getMessageBody();
-
+	os << res.getMessageBody();
 	return os;
 }

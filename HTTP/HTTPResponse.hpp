@@ -82,6 +82,16 @@ public:
 
 std::ostream &operator<<(
 	std::ostream &,
+	const HTTPResponse::StatusLine &
+);
+
+std::ostream &operator<<(
+	std::ostream &,
+	const std::map<std::string, std::string> &
+);
+
+std::ostream &operator<<(
+	std::ostream &,
 	const HTTPResponse &
 );
 

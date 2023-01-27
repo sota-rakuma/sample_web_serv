@@ -11,8 +11,8 @@ public:
 	Context();
 	Context(Parser *);
 	~Context();
+	void setParser(Parser *);
 	void transitionTo(Parser *);
-
 	int execParse(
 		const std::string &
 	);

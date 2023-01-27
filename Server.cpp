@@ -15,13 +15,6 @@ Server::~Server()
 void Server::run()
 {
 	init();
-	for (std::list<ListenSocket>::iterator it = _ls.begin();
-		it != _ls.end();
-		it++)
-	{
-		std::cout << *it << std::endl;
-	}
-	std::exit(0);
 	while (true)
 	{
 		if (_evm.monitor() == -1) {
@@ -50,7 +43,7 @@ void Server::setUpListenSocket()
 		it != _confs.end();
 		it++)
 	{
-		_ls.push_back(ListenSocket(&_evm, &_commands, "127.0.0.1", it->first, &it->second));
+		_ls.push_back(new ListenSocket(&_evm, &_commands, "127.0.0.1", it->first, &it->second));
 	}
 }
 
@@ -72,7 +65,7 @@ void Server::setConfigPath(const std::string & conf)
 	_config_file = conf;
 }
 
-const std::list<ListenSocket> &
-Server::getListenSocks() const{
+std::list<ListenSocket *>
+Server::getListenSocks() const {
 	return _ls;
 }

@@ -6,6 +6,7 @@ IOEventHandler::IOEventHandler()
 :_subject(static_cast<ISubject *>(NULL))
 {
 }
+
 IOEventHandler::IOEventHandler(
 	ISubject *subject,
 	std::list<ICommand *> *commands

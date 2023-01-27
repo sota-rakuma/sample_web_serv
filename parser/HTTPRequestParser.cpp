@@ -57,16 +57,14 @@ HTTPRequestParser & HTTPRequestParser::setRequest(
 int HTTPRequestParser::parse(const std::string & raw)
 {
 	if (_state == REQUEST_LINE) {
-		size_t start = 0;
 		for (size_t i = 0; i + 2 < raw.size(); i+=2)
 		{
 			if (raw[i] != '\x0d' || raw[i + 1] != '\x0a') {
-				start = i + 2;
 				break;
 			}
 		}
 
-		return parseRequestLine(raw.substr(start));
+		return parseRequestLine(raw);
 	}
 	return parseHeaderField(raw);
 }
@@ -98,6 +96,7 @@ int HTTPRequestParser::parseRequestLine(
 	} else {
 		_req->setRequestLine(method, _tp.getPath(), version);
 	}
+	_state = HEADER_FIELD;
 	return 0;
 }
 
@@ -190,10 +189,9 @@ int HTTPRequestParser::parseHeaderField(
 {
 	size_t first = 0;
 	size_t last = raw.find("\r\n");
-	size_t eoh = raw.find("\r\n\r\n");
 	std::string name;
 
-	while (last != eoh)
+	while (first != last)
 	{
 		size_t colon = raw.find(':', first);
 		std::string val;

@@ -81,7 +81,7 @@ ListenSocket::ListenSocket(
 	std::list<ICommand *> *commands,
 	const std::string & ip,
 	const std::string & port,
-			std::map<std::string, ServerConfig> *confs
+	std::map<std::string, ServerConfig> *confs
 )
 :IOEventHandler(subject, commands),
 _host(ip),
@@ -141,6 +141,7 @@ _confs(another._confs)
 
 ListenSocket::~ListenSocket()
 {
+	::close(_sockfd);
 }
 
 void ListenSocket::setConfs(
@@ -156,11 +157,6 @@ void ListenSocket::listen()
 		throw ListenSockError("listen");
 	}
 	getSubject()->subscribe(_sockfd, POLLIN, this);
-}
-
-void ListenSocket::close() const
-{
-	::close(_sockfd);
 }
 
 int ListenSocket::read()

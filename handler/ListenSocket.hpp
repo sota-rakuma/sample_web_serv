@@ -49,7 +49,6 @@ public:
 		std::map<std::string, ServerConfig> *
 	);
 	void listen();
-	void close() const;
 	virtual void update(int);
 	virtual int read();
 	virtual int write();

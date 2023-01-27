@@ -15,6 +15,11 @@ Context::~Context(){
 	delete _p;
 }
 
+void Context::setParser(Parser *p)
+{
+	_p = p;
+}
+
 void Context::transitionTo(Parser *p)
 {
 	if (_p != static_cast<Parser *>(NULL)) {

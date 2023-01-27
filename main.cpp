@@ -15,12 +15,7 @@ int main(int argc, char *argv[])
 	}
 	catch(const std::exception& e)
 	{
-		for (std::list<ListenSocket>::const_iterator it = sv.getListenSocks().begin();
-		it != sv.getListenSocks().end();
-		it++)
-		{
-			it->close();
-		}
+		std::cerr << e.what() << std::endl;
 	}
 	return 0;
 }

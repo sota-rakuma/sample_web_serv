@@ -51,25 +51,29 @@ private:
 	HTTPResponse _res;
 	Context _parser_ctx;
 	HTTPMethodReceiver *_receiver;
+	bool _is_cgi;
 private:
 	void processRequest(const std::string &);
-	void processRequestLine(
+	size_t processRequestLine(
 		const std::string &
 	);
-	void processRequestHeader(
-		const std::string &
+	size_t processRequestHeader(
+		const std::string &,
+		size_t
 	);
-	void processRequestBody(
-		const std::string &
+	size_t processRequestBody(
+		const std::string &,
+		size_t
 	);
-	void processChunkedBody(
-		const std::string &
+	size_t processChunkedBody(
+		const std::string &,
+		size_t
 	);
 	int validateRequest();
 	int processObsFold();
-	void prepareEvent();
-	void preparePostEvent();
-	void addEvent();
+	bool prepareEvent();
+	bool preparePostEvent();
+	bool setHTTPMethod();
 	bool isCGI() const;
 	bool prepareCGI();
 	void createGeneralHeader();
@@ -77,9 +81,6 @@ private:
 	void createRedirectResponse();
 	void createResponseTemplate();
 	void processResponse();
-	void processStatusLine();
-	void processResponseHeader();
-	void processResponseBody();
 public:
 	AcceptedSocket();
 	AcceptedSocket(
