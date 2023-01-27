@@ -29,8 +29,14 @@ _cgi_extensions()
 }
 
 ServerConfig::Location::Location(const ServerConfig::Location & another)
-:_alias(another._alias), _index_file(another._index_file), _upload_place(another._upload_place), _autoindex(another._autoindex),
-_allowed_method(another._allowed_method), _return(another._return), _cgi_extensions(another._cgi_extensions)
+:_path(another._path),
+_alias(another._alias),
+_index_file(another._index_file),
+_upload_place(another._upload_place),
+_autoindex(another._autoindex),
+_allowed_method(another._allowed_method),
+_return(another._return),
+_cgi_extensions(another._cgi_extensions)
 {
 }
 

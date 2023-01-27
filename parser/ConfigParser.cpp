@@ -395,10 +395,6 @@ int ConfigParser::parseLocation() {
 
 	_sc_vec[_server_i].addLocation();
 	size_t index = _sc_vec[_server_i].getLocationVec().size() - 1;
-
-	std::cout << "410: "
-	<< _sc_vec[_server_i].getLocationVec().size() << std::endl;
-
 	_sc_vec[_server_i].setPath(index, path);
 	_i = pos + find_word.length();
 
