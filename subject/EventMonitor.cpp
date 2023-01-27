@@ -15,14 +15,12 @@ EventMonitor::EventMonitor()
 		perror("setenv");
 		exit(1);
 	}
-	//ListenSocket *l =  new ListenSocket(this, &_commands, "127.0.0.1", "4242", NULL);
 }
 
 // for test
 EventMonitor::EventMonitor(int time)
 :_time(time)
 {
-	//ListenSocket *l =  new ListenSocket(this, &_commands, "127.0.0.1", "4242", NULL);
 }
 
 EventMonitor::EventMonitor(const EventMonitor &another)
@@ -35,23 +33,20 @@ _storage(another._storage)
 
 EventMonitor::~EventMonitor()
 {
-	for (std::map<int, IObserver *>::iterator it = _storage.begin();
-		it != _storage.end();
-		it++)
-	{
-		std::map<int, IObserver *>::iterator in_it = it;
-		for (;
-			in_it != _storage.end();
-			in_it++)
+	while (_storage.size() > 0) {
+		std::map<int, IObserver *>::iterator first = _storage.begin();
+		std::map<int, IObserver *>::iterator in_it = first;
+		in_it++;
+		for (; in_it != _storage.end(); in_it++)
 		{
-			if (in_it->second == it->second) {
+			if (in_it->second == first->second) {
 				break;
 			}
 		}
 		if (in_it == _storage.end()) {
-			delete it->second;
+			delete first->second;
 		}
-		_storage.erase(it);
+		_storage.erase(first);
 	}
 }
 

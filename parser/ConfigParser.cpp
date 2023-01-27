@@ -88,7 +88,7 @@ int ConfigParser::parseUploadPlace(size_t index) {
 			return 1;
 		}
 		while (i < len) {
-			if (std::isalnum(upload_place[i])) {
+			if (isPrintable(upload_place[i])) {
 			} else if (upload_place[i] == '/') {
 				break;
 			} else {
@@ -173,7 +173,7 @@ int ConfigParser::parseAlias(size_t index) {
 			return 1;
 		}
 		while (i < len) {
-			if (std::isalnum(alias_path[i])) {
+			if (isPrintable(alias_path[i])) {
 			} else if (alias_path[i] == '/') {
 				// i++;
 				break;

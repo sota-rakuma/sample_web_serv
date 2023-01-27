@@ -5,9 +5,6 @@ my $buff;
 read (STDIN, $buff, $ENV{'CONTENT_LENGTH'});
 my %param = map { /([^=]+)=(.+)/ } split /&/, $buff;
 
-print 'perl cgi desu';
-print $buff;
-
 if (exists $param{'value'}) {
     print "you input $param{'value'}.";
 } else {

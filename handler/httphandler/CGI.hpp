@@ -13,7 +13,7 @@ class CGI : public HTTPMethodReceiver, public IObserver
 {
 private:
 	static const std::map<std::string, std::string> _commands;
-	const std::vector<std::string> & _extentions;
+	const std::vector<std::string> & _extensions;
 	int _p_to_c[2];
 	int _c_to_p[2];
 	pid_t _pid;

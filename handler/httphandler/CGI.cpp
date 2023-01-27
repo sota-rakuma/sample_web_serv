@@ -26,11 +26,11 @@ CGI::CGI(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
 	AcceptedSocket * as,
-	const std::vector<std::string> &extentions,
+	const std::vector<std::string> &extensions,
 	const std::string & query
 )
 :HTTPMethodReceiver(subject, commands, as),
-_extentions(extentions),
+_extensions(extensions),
 _query(query)
 {
 }
@@ -39,12 +39,12 @@ CGI::CGI(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
 	AcceptedSocket * as,
-	const std::vector<std::string> &extentions,
+	const std::vector<std::string> &extensions,
 	const std::string & path,
 	const std::string & query
 )
 :HTTPMethodReceiver(subject, commands, as, path),
-_extentions(extentions),
+_extensions(extensions),
 _query(query)
 {
 }
@@ -53,14 +53,14 @@ CGI::CGI(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
 	AcceptedSocket * as,
-	const std::vector<std::string> &extentions,
+	const std::vector<std::string> &extensions,
 	HTTPMethod *method,
 	const std::string & path,
 	const std::string & query
 )
 :HTTPMethodReceiver(subject, commands, method, as, path),
 _query(query),
-_extentions(extentions)
+_extensions(extensions)
 {
 }
 
@@ -73,7 +73,7 @@ CGI::CGI(const CGI & another)
 	another.getPath(),
 	another.getContent()
 ),
-_extentions(another._extentions),
+_extensions(another._extensions),
 _query(another._query)
 {
 }
@@ -222,20 +222,20 @@ bool CGI::setMetaVariables(
 	const std::string & method
 )
 {
-	size_t extention = std::string::npos;
-	for (size_t i = 0; i < _extentions.size(); i++) {
-		extention = _path.find(_extentions[i]);
-		if (extention != std::string::npos) {
-			_command = _extentions[i];
-			extention += _extentions[i].size();
+	size_t extension = std::string::npos;
+	for (size_t i = 0; i < _extensions.size(); i++) {
+		extension = _path.find(_extensions[i]);
+		if (extension != std::string::npos) {
+			_command = _extensions[i];
+			extension += _extensions[i].size();
 			break;
 		}
 	}
-	if (extention == std::string::npos) {
+	if (extension == std::string::npos) {
 		entrustCreateResponse(FORBIDDEN);
 		return false;
 	}
-	if (setenv("PATH_INFO", _path.substr(extention).c_str(), 1) == -1) {
+	if (setenv("PATH_INFO", _path.substr(extension).c_str(), 1) == -1) {
 		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		return false;
 	}
@@ -243,7 +243,7 @@ bool CGI::setMetaVariables(
 		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		return false;
 	}
-	_path = _path.substr(0, extention);
+	_path = _path.substr(0, extension);
 	if (setenv("SCRIPT_NAME", _path.c_str(), 1) == -1) {
 		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		return false;

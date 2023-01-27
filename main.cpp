@@ -4,6 +4,7 @@
 int main(int argc, char *argv[])
 {
 	Server sv;
+
 	if (argc != 2) {
 		sv.setConfigPath("test.conf");
 	} else {
@@ -15,7 +16,7 @@ int main(int argc, char *argv[])
 	}
 	catch(const std::exception& e)
 	{
-		std::cerr << e.what() << std::endl;
+		std::cerr << "例外: " << e.what() << std::endl;
 	}
 	return 0;
 }
