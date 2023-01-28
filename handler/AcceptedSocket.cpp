@@ -161,6 +161,7 @@ size_t AcceptedSocket::processRequestLine(
 		_progress = RECEIVE_REQUEST_HEADER;
 		return crlf + 2;
 	}
+	std::cout << "buff: " << _buff << std::endl;
 	_status = BAD_REQUEST;
 	_progress = CREATE_RESPONSE;
 	return 0;

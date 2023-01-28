@@ -219,6 +219,7 @@ int HTTPRequestParser::parseHeaderField(
 		first = last + 2;
 		last = raw.find("\r\n", first);
 	}
+	_state = REQUEST_LINE;
 	return 0;
 }
 

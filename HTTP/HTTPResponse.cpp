@@ -108,7 +108,7 @@ HTTPResponse::StatusLine & HTTPResponse::StatusLine::operator=(
 void HTTPResponse::StatusLine::clear()
 {
 	_version.clear();
-	_code.clear();
+	_code = "default";
 	_reason.clear();
 }
 
