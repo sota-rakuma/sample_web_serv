@@ -90,19 +90,13 @@ CGI::~CGI()
 void CGI::update(int event)
 {
 	if (event & (POLLNVAL | POLLERR)) {
-		if (event == POLLNVAL)
-		{
-			std::cout << "POLLNVAL" << std::endl;
-		} else {
-			std::cout << "POLLERR" << std::endl;
-		}
 		getSubject()->unsubscribe(_p_to_c[OUT], true);
-		getSubject()->unsubscribe(_c_to_p[IN], false);
+		getSubject()->unsubscribe(_c_to_p[IN], true);
 	}
 	if (event & POLLHUP) {
 		entrustCreateResponse(OK);
 		getSubject()->unsubscribe(_p_to_c[OUT], true);
-		getSubject()->unsubscribe(_c_to_p[IN], false);
+		getSubject()->unsubscribe(_c_to_p[IN], true);
 	} else if (event & POLLOUT) {
 		getCommandList()->push_back(getWriteCommand());
 	} else if (event & POLLIN) {
@@ -120,12 +114,12 @@ int CGI::read()
 		::close(_p_to_c[OUT]);
 		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		getSubject()->unsubscribe(_p_to_c[OUT], true);
-		getSubject()->unsubscribe(_c_to_p[IN], false);
+		getSubject()->unsubscribe(_c_to_p[IN], true);
 		return -1;
 	} else if (nb == 0) {
 		entrustCreateResponse(OK);
 		getSubject()->unsubscribe(_p_to_c[OUT], true);
-		getSubject()->unsubscribe(_c_to_p[IN], false);
+		getSubject()->unsubscribe(_c_to_p[IN], true);
 		// レスポンス作成フェーズ
 		//getAcceptedSocket()->processCGIResponse(_buff);
 		return 0;
@@ -139,10 +133,9 @@ int CGI::write()
 {
 	ssize_t nb = ::write(_p_to_c[OUT], _buff.c_str(), _buff.size());
 	if (nb == -1) {
-		// error レスポンス
 		::close(_p_to_c[OUT]);
 		entrustCreateResponse(INTERNAL_SERVER_ERROR);
-		getSubject()->unsubscribe(_c_to_p[IN], false);
+		getSubject()->unsubscribe(_c_to_p[IN], true);
 		getSubject()->unsubscribe(_p_to_c[OUT], true);
 		return -1;
 	}

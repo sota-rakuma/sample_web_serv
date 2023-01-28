@@ -19,6 +19,7 @@ private:
 	HTTPMethod *_method;
 	AcceptedSocket *_as;
 	struct stat _state;
+	struct stat _parent;
 protected:
 	std::string _path;
 	std::string _buff;
@@ -72,6 +73,8 @@ public:
 	bool isDirectory() const;
 	bool isRegularFile() const;
 	bool checkPermission(mode_t) const;
+	bool checkPermissionOfParent(mode_t) const;
+	int execStatForParentDir();
 	void setHTTPStatus(HTTPStatus);
 	void entrustCreateResponse(HTTPStatus);
 };

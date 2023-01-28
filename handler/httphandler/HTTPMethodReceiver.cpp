@@ -14,6 +14,7 @@ HTTPMethodReceiver::HTTPMethodReceiver(const HTTPMethodReceiver & another)
 _method(another._method),
 _as(another._as),
 _state(another._state),
+_parent(another._parent),
 _path(another._path),
 _buff(another._buff)
 {
@@ -156,6 +157,17 @@ bool HTTPMethodReceiver::isRegularFile() const
 bool HTTPMethodReceiver::checkPermission(mode_t perm) const
 {
 	return _state.st_mode & perm;
+}
+
+int HTTPMethodReceiver::execStatForParentDir()
+{
+	const std::string & parent = _path.substr(0, _path.rfind('/'));
+	return stat(parent.c_str(), &_parent);
+}
+
+bool HTTPMethodReceiver::checkPermissionOfParent(mode_t perm) const
+{
+	return _parent.st_mode & perm;
 }
 
 void HTTPMethodReceiver::setHTTPStatus(

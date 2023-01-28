@@ -30,7 +30,6 @@ AcceptedSocket::AcceptedSocket(
 _sockfd(sockfd),
 _body_size(0),
 _buff(""),
-_nb(0),
 _info(info),
 _confs(confs),
 _config(),
@@ -47,7 +46,6 @@ AcceptedSocket::AcceptedSocket(const AcceptedSocket &another)
 _sockfd(another._sockfd),
 _body_size(0),
 _buff(""),
-_nb(0),
 _confs(another._confs),
 _config(another._config),
 _parser_ctx(another._parser_ctx),
@@ -61,6 +59,7 @@ _is_cgi(another._is_cgi)
 
 AcceptedSocket::~AcceptedSocket()
 {
+	delete _receiver;
 	::close(_sockfd);
 }
 
@@ -184,7 +183,7 @@ size_t AcceptedSocket::processRequestHeader(
 		crlf = 3;
 		_buff += "\r\n";
 	} else {
-		crlf += 5;
+		crlf += 4;
 		_buff += raw.substr(0, crlf);
 	}
 	if (_buff.size() > BUFFSIZE) {
@@ -198,7 +197,6 @@ size_t AcceptedSocket::processRequestHeader(
 		return 0;
 	}
 	if (validateRequest() == -1) {
-		std::cout << "validation エラー" << std::endl;
 		_progress = CREATE_RESPONSE;
 		return 0;
 	}
@@ -213,6 +211,7 @@ size_t AcceptedSocket::processRequestHeader(
 		return 0;
 	}
 	if (prepareEvent() == false) {
+		_progress = CREATE_RESPONSE;
 		return 0;
 	}
 	return crlf;
@@ -237,7 +236,6 @@ int AcceptedSocket::validateRequest()
 	}
 	catch(const std::exception& e)
 	{
-		std::cout << "host ヘッダーがない" << std::endl;
 		_status = BAD_REQUEST;
 		return -1;
 	}
@@ -270,7 +268,6 @@ bool AcceptedSocket::prepareEvent()
 {
 	if (_location.getReturn().first != 0) {
 		_status = static_cast<HTTPStatus>(_location.getReturn().first);
-		_progress = CREATE_RESPONSE;
 		return false;
 	}
 	const std::string & method = _req.getRequestLine().getMethod();
@@ -278,16 +275,13 @@ bool AcceptedSocket::prepareEvent()
 		_location.getAllowedMethod().find(method);
 	if (it == _location.getAllowedMethod().end()) {
 		_status = NOT_IMPLEMENTED;
-		_progress = CREATE_RESPONSE;
 		return false;
 	} else if (it->second == false) {
 		_status = METHOD_NOT_ALLOWED;
-		_progress = CREATE_RESPONSE;
 		return false;
 	}
 	if (_location.getCgiExtensions().size() > 0) {
 		if (prepareCGI() == false) {
-			_progress = CREATE_RESPONSE;
 			return false;
 		}
 		_is_cgi = true;
@@ -311,21 +305,20 @@ bool AcceptedSocket::setHTTPMethod()
 	if (rl.getMethod() == POST) {
 		_receiver->setHTTPMethod(new Post(_receiver));
 		return preparePostEvent();
-	} else {
-		std::string path = rl.getPath();
-		if (_location.getAlias() != "default") {
-			path.replace(0,
-			_location.getPath().size(),
-			_location.getAlias());
-		}
-		_receiver->setPath(path);
-		if (rl.getMethod() == GET) {
-			_receiver->setHTTPMethod(new Get(_receiver));
-		} else {
-			_receiver->setHTTPMethod(new Delete(_receiver));
-		}
-		_progress = EXECUTE_METHOD;
 	}
+	std::string path = rl.getPath();
+	if (_location.getAlias() != "default") {
+		path.replace(0,
+		_location.getPath().size(),
+		_location.getAlias());
+	}
+	_receiver->setPath(path);
+	if (rl.getMethod() == GET) {
+		_receiver->setHTTPMethod(new Get(_receiver));
+	} else {
+		_receiver->setHTTPMethod(new Delete(_receiver));
+	}
+	_progress = EXECUTE_METHOD;
 	return true;
 }
 
@@ -358,14 +351,16 @@ bool AcceptedSocket::preparePostEvent()
 	try
 	{
 		const std::string & te = _req.tryGetHeaderValue("content-length");
+		for (size_t i = 0; i < te.size(); i++) {
+			if (isDigit(te[i]) == false) {
+				_status = BAD_REQUEST;
+				_progress = CREATE_RESPONSE;
+				return false;
+			}
+		}
 		std::stringstream ss;
 		ss << te;
 		ss >> _body_size;
-		if (ss) {
-			_status = BAD_REQUEST;
-			_progress = CREATE_RESPONSE;
-			return false;
-		}
 	}
 	catch(const std::exception& e){
 		_body_size = 0;
@@ -388,9 +383,10 @@ size_t AcceptedSocket::processRequestBody(
 		_progress = CREATE_RESPONSE;
 		return 0;
 	}
-	_receiver->addContent(raw.substr(index, _body_size - _buff.size()));
-	if (_body_size == _buff.size()) {
-		addCommand(_receiver->getHTTPMethod());
+	_receiver->addContent(raw.substr(
+								index,
+								_body_size - _receiver->getContent().size()));
+	if (_body_size == _receiver->getContent().size()) {
 		_progress = EXECUTE_METHOD;
 		return 0;
 	}
@@ -415,7 +411,6 @@ size_t AcceptedSocket::processChunkedBody(
 			ss >> tmp;
 			_body_size += tmp;
 			if (_body_size == 0) {
-				addCommand(_receiver->getHTTPMethod());
 				_progress = EXECUTE_METHOD;
 				return 0;
 			}
@@ -476,12 +471,12 @@ int AcceptedSocket::write()
 {
 	ssize_t nb = ::send(_sockfd, _buff.c_str(), _buff.size(), 0);
 	if (nb == -1) {
+		perror("send");
 		getSubject()->unsubscribe(_sockfd, false);
 		return -1;
 	}
-	if (nb < _nb + _buff.size()) {
-		_nb += nb;
-		_buff = _buff.substr(0, nb);
+	if (nb < _buff.size()) {
+		_buff = _buff.substr(nb + 1);
 		return 1;
 	}
 	if (_progress == END) {
@@ -492,8 +487,6 @@ int AcceptedSocket::write()
 			getSubject()->unsubscribe(_sockfd, false);
 		}
 	} else {
-		_buff.clear();
-		_progress = static_cast<Progress>(static_cast<int>(_progress) + 1);
 		processResponse();
 	}
 	return 0;
@@ -624,68 +617,18 @@ void AcceptedSocket::createResponseTemplate()
 void AcceptedSocket::processResponse()
 {
 	std::ostringstream os;
+	_buff.clear();
 	if (_progress == SEND_STATUS_LINE) {
 		os << _res.getStatusLine();
 		_buff = os.str();
+		_progress = SEND_RESPONSE_HEADER;
 	} else if (_progress == SEND_RESPONSE_HEADER) {
 		os << _res.getHeaderField();
 		_buff = os.str();
+		_progress = SEND_RESPONSE_BODY;
 	} else {
 		_buff = _res.getMessageBody();
+		_progress = END;
 	}
 	getSubject()->subscribe(_sockfd, POLLOUT | POLLIN, this);
-}
-
-// for test
-void AcceptedSocket::processTest()
-{
-	char cd[1024];
-	getcwd(cd, 1024);
-	std::string current_dir = cd;
-	//std::string test_file = "handler";
-	//size_t index = current_dir.find(test_file);
-	//current_dir = current_dir.substr(
-	//	0,
-	//	index);
-	//current_dir += "/html/test.html";
-	//current_dir += "/exp/cgi_scripts/perl_post.cgi";
-	current_dir += "/sample";
-
-	//setenv("CONTENT_LENGTH", "24", 1);
-
-	//setenv("QUERY_STRING", "value=aaaa&value_2=bbbb", 1);
-
-	//_req.setRequestLine("GET", "", "");
-	_req.setRequestLine("POST", "", "value=aaaa&value_2=bbbb");
-
-	std::cout << current_dir << std::endl;
-
-	//_receiver = new File(
-	//	getSubject(),
-	//	getCommandList(),
-	//	current_dir,
-	//	O_CLOEXEC,
-	//	this
-	//);
-
-	//_receiver = new File (
-	//	getSubject(),
-	//	getCommandList(),
-	//	current_dir,
-	//	O_RDWR | O_CREAT | O_EXCL,
-	//	S_IWGRP,
-	//	this
-	//);
-
-	//_receiver = new CGI(getSubject(),
-	//					getCommandList(),
-	//					current_dir,
-	//					this);
-	_progress = EXECUTE_METHOD;
-	if (_req.getRequestLine().getMethod() == GET) {
-		_receiver->setHTTPMethod(new Get(_receiver));
-	} else if (_req.getRequestLine().getMethod() == POST) {
-		_receiver->setHTTPMethod(new Post(_receiver));
-	}
-	getCommandList()->push_back(_receiver->getHTTPMethod());
 }

@@ -40,7 +40,6 @@ private:
 	int _sockfd;
 	size_t _body_size;
 	std::string _buff;
-	size_t _nb;
 	sockaddr_in _info;
 	std::map<std::string, ServerConfig> * _confs;
 	ServerConfig _config;

@@ -26,6 +26,8 @@ private:
 	std::string _index_file;
 private:
 	int processAutoindex();
+	bool createFile();
+	bool appendFile();
 public:
 	File();
 	File(

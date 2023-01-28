@@ -50,6 +50,8 @@ EventMonitor::~EventMonitor()
 	}
 }
 
+#include "../utils/utils.hpp"
+
 void EventMonitor::notify(int fd, int event)
 {
 	_storage[fd]->update(event);
@@ -77,23 +79,23 @@ void EventMonitor::subscribe(
 
 void EventMonitor::unsubscribe(
 	int fd,
-	bool is_dup
+	bool wanna_keep
 )
 {
 	std::map<int, IObserver *>::iterator it = _storage.find(fd);
 	if (it == _storage.end()) {
 		return ;
 	}
-	if (is_dup == false) {
-		delete it->second;
-	}
-	_storage.erase(fd);
 	for (size_t i = 0; i < _pollvec.size(); i++) {
 		if (fd == _pollvec[i].fd) {
 			_pollvec.erase(_pollvec.begin() + i);
 			break;
 		}
 	}
+	if (wanna_keep == false) {
+		delete it->second;
+	}
+	_storage.erase(fd);
 }
 
 int EventMonitor::monitor()

@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include <unistd.h>
 Server::Server()
 {
 }
@@ -19,6 +20,9 @@ void Server::run()
 	{
 		if (_evm.monitor() == -1) {
 			throw std::runtime_error("Event Monitor Error");
+		}
+		if (_commands.size() == 0) {
+			continue;
 		}
 		triggerEvent();
 	}

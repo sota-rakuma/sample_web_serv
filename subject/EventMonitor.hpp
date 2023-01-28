@@ -13,7 +13,6 @@ private:
 	int _time;
 	std::vector<pollfd> _pollvec;
 	std::map<int, IObserver *> _storage;
-	std::list<ICommand *> _commands;
 private:
 	void publishEvent(int);
 public:
