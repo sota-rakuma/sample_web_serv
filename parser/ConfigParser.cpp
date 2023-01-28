@@ -99,6 +99,10 @@ int ConfigParser::parseUploadPlace(size_t index) {
 		}
 	}
 	_i = pos + find_word.length();
+	if (upload_place.size() == 0 ||
+		upload_place[upload_place.size() - 1] != '/') {
+			upload_place += '/';
+	}
 	_sc_vec[_server_i].setUploadPlace(index, upload_place);
 	return 0;
 }
