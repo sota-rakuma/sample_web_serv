@@ -341,10 +341,11 @@ bool AcceptedSocket::preparePostEvent()
 	std::string path = _req.getRequestLine().getPath();
 	if (_location.getUploadPlace() != "default")
 	{
-		replacePath(path, _location.getPath(), _location.getAlias());
+		replacePath(path, _location.getPath(), _location.getUploadPlace());
 	} else if (_location.getAlias() != "default") {
 		replacePath(path, _location.getPath(), _location.getAlias());
 	}
+	std::cout << "path: " << path << std::endl;
 	_receiver->setPath(path);
 	try
 	{
@@ -412,12 +413,28 @@ size_t AcceptedSocket::processChunkedBody(
 	{
 		size_t crlf = raw.find("\r\n", i);
 		size_t tmp;
+		std::cout << "raw: "
+		<< raw.substr(i) << std::endl;
 		if (_progress == RECEIVE_CHUNKED_SIZE) {
 			if (crlf == std::string::npos) {
+				_buff = raw.substr(i);
 				crlf = raw.size();
 			}
+			size_t len = crlf;
+			size_t semcolon = raw.find(';', i);
+			if (semcolon != std::string::npos) {
+				len = semcolon;
+			}
+			for (size_t j = i; j < len; j++) {
+				if (isHexDig(raw[j]) == false) {
+					_status = BAD_REQUEST;
+					_progress = CREATE_RESPONSE;
+					return 0;
+				}
+			}
+			std::cout << "size: " << raw.substr(i, len - i) << std::endl;
 			std::stringstream ss;
-			ss << std::dec << std::hex << raw.substr(i, crlf - i);
+			ss << std::dec << std::hex << raw.substr(i, len - i);
 			ss >> tmp;
 			_body_size += tmp;
 			if (_body_size == 0) {
@@ -428,9 +445,15 @@ size_t AcceptedSocket::processChunkedBody(
 		} else if (_progress == RECEIVE_CHUNKED_BODY) {
 			if (crlf == std::string::npos) {
 				_receiver->addContent(raw.substr(i, raw.size() - i));
-				_body_size -= raw.size() - i;
+				if (_body_size < raw.size() - i) {
+					_status = BAD_REQUEST;
+					_progress = CREATE_RESPONSE;
+				} else {
+					_body_size -= raw.size() - i;
+				}
 				return raw.size();
 			}
+			std::cout << "body: " << raw.substr(i, crlf - i) << std::endl;
 			std::string chunked_body = raw.substr(i, crlf - i);
 			if (chunked_body.size() != _body_size) {
 				_status = BAD_REQUEST;
