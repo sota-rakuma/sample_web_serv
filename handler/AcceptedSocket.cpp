@@ -345,7 +345,6 @@ bool AcceptedSocket::preparePostEvent()
 	} else if (_location.getAlias() != "default") {
 		replacePath(path, _location.getPath(), _location.getAlias());
 	}
-	std::cout << "path: " << path << std::endl;
 	_receiver->setPath(path);
 	try
 	{
@@ -387,8 +386,13 @@ size_t AcceptedSocket::processRequestBody(
 )
 {
 	if (raw.size() <= index) {
-		return 0;
+		return index;
 	}
+
+	for (size_t i = 0; i < _receiver->getContent().size(); i++) {
+		std::cout << (int)_receiver->getContent()[i] << std::endl;
+	}
+
 	if (_config.getMaxBodySize() < _body_size) {
 		_status = PAYLOAD_TOO_LARGE;
 		_progress = CREATE_RESPONSE;
@@ -412,9 +416,7 @@ size_t AcceptedSocket::processChunkedBody(
 	for (size_t i = index; i < raw.size();)
 	{
 		size_t crlf = raw.find("\r\n", i);
-		size_t tmp;
-		std::cout << "raw: "
-		<< raw.substr(i) << std::endl;
+		size_t tmp = 0;
 		if (_progress == RECEIVE_CHUNKED_SIZE) {
 			if (crlf == std::string::npos) {
 				_buff = raw.substr(i);
@@ -422,17 +424,20 @@ size_t AcceptedSocket::processChunkedBody(
 			}
 			size_t len = crlf;
 			size_t semcolon = raw.find(';', i);
+			bool f = true;
 			if (semcolon != std::string::npos) {
 				len = semcolon;
 			}
 			for (size_t j = i; j < len; j++) {
 				if (isHexDig(raw[j]) == false) {
-					_status = BAD_REQUEST;
-					_progress = CREATE_RESPONSE;
-					return 0;
+					f = false;
 				}
 			}
-			std::cout << "size: " << raw.substr(i, len - i) << std::endl;
+			if (f == false || len == 0) {
+				_status = BAD_REQUEST;
+				_progress = CREATE_RESPONSE;
+				return 0;
+			}
 			std::stringstream ss;
 			ss << std::dec << std::hex << raw.substr(i, len - i);
 			ss >> tmp;
@@ -453,7 +458,6 @@ size_t AcceptedSocket::processChunkedBody(
 				}
 				return raw.size();
 			}
-			std::cout << "body: " << raw.substr(i, crlf - i) << std::endl;
 			std::string chunked_body = raw.substr(i, crlf - i);
 			if (chunked_body.size() != _body_size) {
 				_status = BAD_REQUEST;
@@ -586,7 +590,7 @@ static void getGMTTime(
 	ptm = gmtime(&now);
 	os << day[ptm->tm_wday] << ", "
 	<< ptm->tm_mday << " " << ptm->tm_mon + 1 << " " << ptm->tm_year + 1900
-	<< " " << ptm->tm_hour << ":" << ptm->tm_min << ":" << ptm->tm_sec << " GMT";
+	<< " " << ptm->tm_hour + 9 << ":" << ptm->tm_min << ":" << ptm->tm_sec << " GMT";
 	date = os.str();
 }
 
