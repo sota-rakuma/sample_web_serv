@@ -114,7 +114,10 @@ int HTTPRequestParser::parseRequestTarget(
 	const std::string & raw
 )
 {
-	return _tp.parse(raw);
+	if (_tp.parse(raw) == -1) {
+		return -1;
+	}
+	return _tp.getScheme() == "http";
 }
 
 int HTTPRequestParser::parseHTTPVersion(
