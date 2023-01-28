@@ -229,7 +229,8 @@ int File::httpDelete()
 			entrustCreateResponse(UNAUTHORIZED);
 		} else if (errno == EBUSY) {
 			entrustCreateResponse(CONFLICT);
-		} else if (errno == EISDIR) {
+		} else if (errno == EISDIR ||
+					errno == EPERM) {
 			entrustCreateResponse(FORBIDDEN);
 		} else {
 			entrustCreateResponse(INTERNAL_SERVER_ERROR);
