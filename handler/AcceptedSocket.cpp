@@ -326,7 +326,6 @@ bool AcceptedSocket::setHTTPMethod()
 	if (_location.getAlias() != "default") {
 		replacePath(path, _location.getPath(), _location.getAlias());
 	}
-	std::cout << "path: " << path << std::endl;
 	_receiver->setPath(path);
 	if (rl.getMethod() == GET) {
 		_receiver->setHTTPMethod(new Get(_receiver));
@@ -346,7 +345,6 @@ bool AcceptedSocket::preparePostEvent()
 	} else if (_location.getAlias() != "default") {
 		replacePath(path, _location.getPath(), _location.getAlias());
 	}
-	std::cout << "path: " << path << std::endl;
 	_receiver->setPath(path);
 	try
 	{
