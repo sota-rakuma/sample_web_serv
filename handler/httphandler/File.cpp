@@ -88,8 +88,6 @@ int File::read()
 	return 1;
 }
 
-#include "../../utils/utils.hpp"
-
 int File::write()
 {
 	ssize_t nb = ::write(_fd, _buff.c_str(), _buff.size());
@@ -231,6 +229,8 @@ int File::httpDelete()
 			entrustCreateResponse(UNAUTHORIZED);
 		} else if (errno == EBUSY) {
 			entrustCreateResponse(CONFLICT);
+		} else if (errno == EISDIR) {
+			entrustCreateResponse(FORBIDDEN);
 		} else {
 			entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		}
