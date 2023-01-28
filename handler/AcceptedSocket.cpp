@@ -299,6 +299,21 @@ bool AcceptedSocket::prepareEvent()
 	return setHTTPMethod();
 }
 
+static void replacePath(
+	std::string & dest,
+	const std::string & target,
+	const std::string & src)
+{
+	if (dest.size() < target.size()) {
+		return ;
+	}
+	size_t len = target.size();
+	if (dest[target.size()] == '/') {
+		len += 1;
+	}
+	dest.replace(0, len, src);
+}
+
 bool AcceptedSocket::setHTTPMethod()
 {
 	const HTTPRequest::RequestLine & rl = _req.getRequestLine();
@@ -306,12 +321,12 @@ bool AcceptedSocket::setHTTPMethod()
 		_receiver->setHTTPMethod(new Post(_receiver));
 		return preparePostEvent();
 	}
+
 	std::string path = rl.getPath();
 	if (_location.getAlias() != "default") {
-		path.replace(0,
-		_location.getPath().size(),
-		_location.getAlias());
+		replacePath(path, _location.getPath(), _location.getAlias());
 	}
+	std::cout << "path: " << path << std::endl;
 	_receiver->setPath(path);
 	if (rl.getMethod() == GET) {
 		_receiver->setHTTPMethod(new Get(_receiver));
@@ -327,14 +342,11 @@ bool AcceptedSocket::preparePostEvent()
 	std::string path = _req.getRequestLine().getPath();
 	if (_location.getUploadPlace() != "default")
 	{
-		path.replace(0,
-				_location.getPath().size(),
-				_location.getUploadPlace());
+		replacePath(path, _location.getPath(), _location.getAlias());
 	} else if (_location.getAlias() != "default") {
-		path.replace(0,
-				_location.getPath().size(),
-				_location.getAlias());
+		replacePath(path, _location.getPath(), _location.getAlias());
 	}
+	std::cout << "path: " << path << std::endl;
 	_receiver->setPath(path);
 	try
 	{
