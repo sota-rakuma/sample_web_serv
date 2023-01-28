@@ -50,8 +50,6 @@ EventMonitor::~EventMonitor()
 	}
 }
 
-#include "../utils/utils.hpp"
-
 void EventMonitor::notify(int fd, int event)
 {
 	_storage[fd]->update(event);

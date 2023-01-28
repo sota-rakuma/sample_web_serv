@@ -142,18 +142,18 @@ size_t AcceptedSocket::processRequestLine(
 	const std::string &raw
 )
 {
+	size_t not_crlf = raw.find_first_not_of("\r\n");
 	size_t crlf = raw.find("\r\n");
-	if (crlf == std::string::npos) {
-		_buff += raw;
+
+	if (not_crlf != std::string::npos) {
+		if (crlf == std::string::npos) {
+			_buff += raw.substr(not_crlf);
+			return raw.size();
+		}
+		_buff += raw.substr(not_crlf, crlf - not_crlf);
+	} else if (_buff.size() == 0) {
 		return raw.size();
 	}
-	size_t start = raw.find_first_not_of("\r\n");
-	if (start == std::string::npos) {
-		return 0;
-	} else if (start != 0) {
-		_buff.erase(0, start);
-	}
-	_buff += raw.substr(start, crlf);
 	if (_parser_ctx.execParse(_buff) == 0) {
 		_buff = raw.substr(crlf + 2);
 		_progress = RECEIVE_REQUEST_HEADER;

@@ -117,7 +117,10 @@ int HTTPRequestParser::parseRequestTarget(
 	if (_tp.parse(raw) == -1) {
 		return -1;
 	}
-	return _tp.getScheme() == "http";
+	if (*(raw.begin()) != '/') {
+		return _tp.getScheme() == "http" && _tp.getAuthority().size() > 0;
+	}
+	return true;
 }
 
 int HTTPRequestParser::parseHTTPVersion(

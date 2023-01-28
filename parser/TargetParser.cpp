@@ -134,6 +134,9 @@ bool TargetParser::parseAuthority(
 	const std::string & raw
 )
 {
+	if (raw.size() == 0) {
+		return true;
+	}
 	size_t first = 0;
 	size_t last = raw.size() - 1;
 	size_t delim = raw.find('@');
