@@ -118,9 +118,9 @@ int HTTPRequestParser::parseRequestTarget(
 		return -1;
 	}
 	if (*(raw.begin()) != '/') {
-		return _tp.getScheme() == "http" && _tp.getAuthority().size() > 0;
+		return _tp.getScheme() == "http" && _tp.getAuthority().size() > 0 ? 0 : -1;
 	}
-	return true;
+	return 0;
 }
 
 int HTTPRequestParser::parseHTTPVersion(
