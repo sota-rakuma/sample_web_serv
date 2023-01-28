@@ -30,6 +30,7 @@ public:
 		StatusLine &setCode(const std::string &);
 		StatusLine & setReason(const std::string &);
 		StatusLine & operator=(const StatusLine &);
+		void clear();
 	};
 private:
 	static std::map<HTTPStatus, const std::string &> _err_msg;
@@ -78,6 +79,7 @@ public:
 	HTTPResponse & addMessageBody(
 		const std::string &
 	);
+	void clear();
 };
 
 std::ostream &operator<<(

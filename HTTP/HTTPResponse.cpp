@@ -105,6 +105,13 @@ HTTPResponse::StatusLine & HTTPResponse::StatusLine::operator=(
 	return *this;
 }
 
+void HTTPResponse::StatusLine::clear()
+{
+	_version.clear();
+	_code.clear();
+	_reason.clear();
+}
+
 HTTPResponse::HTTPResponse()
 :_statl(),
 _hf(),
@@ -296,4 +303,11 @@ std::ostream &operator<<(
 
 	os << res.getMessageBody();
 	return os;
+}
+
+void HTTPResponse::clear()
+{
+	_statl.clear();
+	_hf.clear();
+	_body.clear();
 }

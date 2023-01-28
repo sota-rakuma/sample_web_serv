@@ -199,9 +199,6 @@ bool TargetParser::parseIPv6(
 	const std::string & raw
 )
 {
-	//const std::string &r = raw.substr(first, last - first);
-	//std::cout << "raw: " << r << std::endl;
-
 	unsigned char buf[sizeof(in6_addr)];
 	std::string ip = raw.substr(first, last - first);
 	return inet_pton(AF_INET6, ip.c_str(), buf) == 1;

@@ -59,7 +59,9 @@ _is_cgi(another._is_cgi)
 
 AcceptedSocket::~AcceptedSocket()
 {
-	delete _receiver;
+	if (_receiver != static_cast<HTTPMethodReceiver *>(NULL)) {
+		delete _receiver;
+	}
 	::close(_sockfd);
 }
 
@@ -518,6 +520,11 @@ int AcceptedSocket::write()
 	}
 	if (_progress == END) {
 		if (_res.getHeaderValue("Connection") == "keep-alive") {
+			_buff.clear();
+			_req.clear();
+			_res.clear();
+			delete _receiver;
+			_receiver = static_cast<HTTPMethodReceiver *>(NULL);
 			_progress = RECEIVE_REQUEST_LINE;
 			getSubject()->subscribe(_sockfd, POLLIN, this);
 		} else {

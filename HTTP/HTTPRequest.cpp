@@ -206,6 +206,13 @@ HTTPRequest::RequestLine::operator=(const RequestLine & rhs)
 	return *this;
 }
 
+void HTTPRequest::RequestLine::clear()
+{
+	_method.clear();
+	_path.clear();
+	_version.clear();
+}
+
 HTTPRequest::HTTPRequest()
 :_obs_fold(false)
 {
@@ -333,4 +340,12 @@ std::ostream &operator<<(
 	<< req.getMessageBody();
 
 	return os;
+}
+
+void HTTPRequest::clear()
+{
+	_reql.clear();
+	_hf.clear();
+	_obs_fold = false;
+	_body.clear();
 }

@@ -55,6 +55,7 @@ public:
 		RequestLine & setHTTPVersion(
 			const std::string &
 		);
+		void clear();
 		RequestLine & operator=(const RequestLine &);
 	};
 private:
@@ -92,6 +93,7 @@ public:
 	HTTPRequest & setObsFold(
 		bool
 	);
+	void clear();
 };
 
 std::ostream &operator<<(
