@@ -8,6 +8,10 @@
 #define TIMEOUT 30000 // 30s
 #endif
 
+#ifndef EV_TIMEOUT
+#define EV_TIMEOUT 128
+#endif
+
 class IObserver
 {
 public:
