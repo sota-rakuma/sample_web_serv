@@ -58,9 +58,16 @@ const ServerConfig::Location & ServerConfig::tryGetLocation(
 	const std::string & path
 ) const
 {
+	size_t slash = path.rfind('/');
+	if (slash == std::string::npos) {
+		throw std::runtime_error("this resource is forbidden");
+	}
 	size_t candidate = _locations.size();
 	for (size_t i = 0; i < _locations.size(); i++)
 	{
+		if (slash < _locations[i].getPath().size() - 1) {
+			continue;
+		}
 		if (path.rfind(_locations[i].getPath(),
 					_locations[i].getPath().size() - 1) != std::string::npos)
 		{
