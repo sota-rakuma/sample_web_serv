@@ -32,7 +32,7 @@ _body_size(0),
 _buff(""),
 _info(info),
 _confs(confs),
-_config(),
+_config(confs->begin()->second),
 _progress(RECEIVE_REQUEST_LINE),
 _receiver(static_cast<HTTPMethodReceiver *>(NULL)),
 _is_cgi(false)
@@ -239,9 +239,7 @@ int AcceptedSocket::validateRequest()
 		} else {
 			conf_it = _confs->find(host);
 		}
-		if (conf_it == _confs->end()) {
-			_config = _confs->begin()->second;
-		} else {
+		if (conf_it != _confs->end()) {
 			_config = conf_it->second;
 		}
 	}
@@ -643,7 +641,7 @@ void AcceptedSocket::createErrorResponse()
 	{
 /*
 		_req.setRequestLine("GET", ep->second, "HTTP/1.1");
-		_req.insertHeaderField("Content-Type", "text/html");
+		_res.insertHeaderField("Content-Type", "text/html");
 		_config.eraseDefaultErrorPage(ep->first);
 		_progress = RECEIVE_REQUEST_HEADER;
 		// processRequestHeader();

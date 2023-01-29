@@ -90,8 +90,9 @@ void ServerConfig::setDefaultErrorPages(
 	const std::string &dep
 )
 {
-	for (size_t i = 0; i < status_codes.size(); i++)
+	for (size_t i = 0; i < status_codes.size(); i++) {
 		_default_error_pages.insert(std::make_pair(status_codes[i], dep));
+	}
 }
 
 void ServerConfig::eraseDefaultErrorPage(int status)
