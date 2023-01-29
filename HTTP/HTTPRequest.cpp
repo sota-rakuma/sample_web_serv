@@ -72,7 +72,7 @@ HTTPRequest::RequestLine::setTarget(
 	const std::string & target
 )
 {
-	size_t q = target.rfind('?');
+	size_t q = target.find('?');
 	if (q != std::string::npos) {
 		_path = target.substr(0, q);
 		_query = target.substr(q + 1);

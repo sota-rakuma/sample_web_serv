@@ -5,7 +5,7 @@
 
 std::string TargetParser::_delims = ":/?#";
 std::string TargetParser::_sub_delim = "!$&'()*+,;=";
-std::string TargetParser::_gen_delim = ":/\"?#[]@";
+std::string TargetParser::_gen_delim = ":/\"?#[]{}()<>|\\@";
 
 TargetParser::TargetParser()
 :_progress(0)

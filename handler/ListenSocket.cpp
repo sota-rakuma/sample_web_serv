@@ -169,6 +169,7 @@ int ListenSocket::read()
 	if (fd == -1) {
 		throw ListenSockError("accept");
 	}
+	fcntl(fd, F_SETFL, O_NONBLOCK);
 	new AcceptedSocket(getSubject(), getCommandList(), fd, client_info, _confs);
 	return 0;
 }
