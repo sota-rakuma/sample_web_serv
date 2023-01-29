@@ -276,6 +276,8 @@ int File::httpDelete()
 		} else if (errno == EISDIR ||
 					errno == EPERM) {
 			entrustCreateResponse(FORBIDDEN);
+		} else if (errno == ENOENT) {
+			entrustCreateResponse(NOT_FOUND);
 		} else {
 			entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		}
