@@ -281,7 +281,7 @@ int File::httpDelete()
 		}
 		return -1;
 	}
-	entrustCreateResponse(OK);
+	entrustCreateResponse(NO_CONTENT);
 	return 0;
 }
 
