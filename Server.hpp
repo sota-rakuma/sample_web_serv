@@ -18,7 +18,7 @@ private:
 	std::list<ListenSocket *> _ls;
 	std::list<ICommand *> _commands;
 private:
-	void init();
+	int init();
 	void setUpListenSocket();
 public:
 	Server();

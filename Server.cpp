@@ -15,7 +15,9 @@ Server::~Server()
 
 void Server::run()
 {
-	init();
+	if (init() == -1) {
+		throw std::runtime_error("Server Initiation failed");
+	}
 	while (true)
 	{
 		if (_evm.monitor() == -1) {
@@ -28,17 +30,26 @@ void Server::run()
 	}
 }
 
-void Server::init()
+int Server::init()
 {
-	if (_p.parse(_config_file) == -1) {
-		return ;
+	if (_p.parse(_config_file) == 1) {
+		return -1;
 	}
 	const std::vector<ServerConfig> & configs = _p.getScVec();
 	for (size_t i = 0; i < configs.size(); i++) {
 		const std::string & lis = configs[i].getListen();
 		_confs[lis].insert(std::make_pair(configs[i].getServerName(), configs[i]));
 	}
-	setUpListenSocket();
+	try
+	{
+		setUpListenSocket();
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
+		return -1;
+	}
+	return 0;
 }
 
 void Server::setUpListenSocket()
