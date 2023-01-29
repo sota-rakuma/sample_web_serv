@@ -230,6 +230,10 @@ int AcceptedSocket::validateRequest()
 		_status = HTTP_VERSION_NOT_SUPPORTED;
 		return -1;
 	}
+	if (_req.getHeaderField().find("expect") != _req.getHeaderField().end()) {
+		_status = EXPECTAION_FAILED;
+		return -1;
+	}
 	try
 	{
 		const std::string & host = _req.tryGetHeaderValue("host");
