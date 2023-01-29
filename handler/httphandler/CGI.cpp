@@ -108,7 +108,7 @@ void CGI::update(int event)
 int CGI::read()
 {
 	char buff[BUFSIZE];
-	ssize_t nb = ::read(_c_to_p[IN], buff, BUFSIZE);
+	ssize_t nb = ::read(_c_to_p[IN], buff, BUFSIZE - 1);
 	if (nb < 0) {
 		// error レスポンス
 		::close(_p_to_c[OUT]);

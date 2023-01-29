@@ -73,7 +73,7 @@ void File::update(int event)
 int File::read()
 {
 	char buff[BUFSIZE];
-	ssize_t nb = ::read(_fd, buff, BUFSIZE);
+	ssize_t nb = ::read(_fd, buff, BUFSIZE - 1);
 	if (nb < 0) {
 		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		getSubject()->unsubscribe(_fd, true);
