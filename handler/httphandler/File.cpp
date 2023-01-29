@@ -57,6 +57,50 @@ File::~File()
 	::close(_fd);
 }
 
+int File::processAutoindex() {
+	DIR *dir;
+	struct dirent *entry;
+	std::string buff = "";
+	bool slash_end_flag;
+
+	size_t pos = _path.rfind("/");
+	if (pos == std::string::npos) {
+		std::cout << "slash not found" << std::endl;
+		return -1;
+	} else if (pos == _path.length() - 1)
+		slash_end_flag = true;
+	else
+		slash_end_flag = false;
+	buff += "<!DOCTYPE html>\n<html>\n<head>\n<title>autoindex</title>\n<meta charset=\"UTF-8\">\n</head>\n<body>\n";
+	if ((dir = opendir(_path.c_str())) == NULL)
+		return -1;
+	else {
+		buff += "<h1>contents of root:</h1>\n";
+		while ((entry = readdir(dir)) != NULL) {
+			if (entry->d_type == DT_DIR) {
+				buff += "<a href=\"";
+				if (slash_end_flag == true)
+					buff += (_path + entry->d_name);
+				else
+					buff += (_path + "/" + entry->d_name);
+				buff += "\">";
+				buff += entry->d_name;
+				buff += "</a>\n";
+			} else {
+				buff += "<p>";
+				buff += entry->d_name;
+				buff += "</p>\n";
+			}
+		}
+		if (closedir(dir) == -1)
+			return -1;
+	}
+	buff += "</body>\n</html>";
+	addContent(buff);
+	entrustCreateResponse(OK);
+	return 0;
+}
+
 void File::update(int event)
 {
 	if (event & (POLLHUP | POLLERR | POLLNVAL)) {
@@ -127,7 +171,7 @@ int File::httpGet()
 			_path.push_back('/');
 		}
 		if (_autoindex == true) {
-			//return processAutoindex();
+			return processAutoindex();
 		} else if (_index_file.size() > 0) {
 			_path += _index_file;
 		} else {

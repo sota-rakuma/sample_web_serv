@@ -8,6 +8,7 @@
 #include <string>
 #include <stdexcept>
 #include <list>
+#include <dirent.h>
 
 class File : public HTTPMethodReceiver, public IObserver
 {
