@@ -516,7 +516,6 @@ int AcceptedSocket::write()
 {
 	ssize_t nb = ::send(_sockfd, _buff.c_str(), _buff.size(), 0);
 	if (nb == -1) {
-		perror("send");
 		getSubject()->unsubscribe(_sockfd, false);
 		return -1;
 	}

@@ -74,8 +74,8 @@ HTTPRequest::RequestLine::setTarget(
 {
 	size_t q = target.rfind('?');
 	if (q != std::string::npos) {
-		_path = target.substr(0, q + 1);
-		_query = target.substr(q);
+		_path = target.substr(0, q);
+		_query = target.substr(q + 1);
 		normalizeTarget(true, _query);
 	} else {
 		_path = target;
