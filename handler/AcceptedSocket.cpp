@@ -161,7 +161,6 @@ size_t AcceptedSocket::processRequestLine(
 		_progress = RECEIVE_REQUEST_HEADER;
 		return crlf + 2;
 	}
-	std::cout << "buff: " << _buff << std::endl;
 	_status = BAD_REQUEST;
 	_progress = CREATE_RESPONSE;
 	return 0;
@@ -175,19 +174,23 @@ size_t AcceptedSocket::processRequestHeader(
 	if (raw.size() <= index) {
 		return index;
 	}
-	size_t crlf = raw.find("\r\n\r\n");
-	if (crlf == std::string::npos) {
-		if (raw.rfind("\r\n") != 0 ||
-			_buff.rfind("\r\n") != _buff.size() - 2)
+
+	size_t crlf2 = raw.find("\r\n\r\n");
+	if (crlf2 == std::string::npos) {
+		size_t crlf = raw.rfind("\r\n");
+		size_t bufflen = _buff.size();
+		if (crlf != 0 ||
+			(0 < bufflen && bufflen < 2) ||
+			(bufflen > 2 && _buff.rfind("\r\n") != bufflen - 2))
 		{
 			_buff += raw;
 			return raw.size();
 		}
-		crlf = 3;
+		crlf2 = crlf + 2;
 		_buff += "\r\n";
 	} else {
-		crlf += 4;
-		_buff += raw.substr(0, crlf);
+		crlf2 += 4;
+		_buff += raw.substr(0, crlf2);
 	}
 	if (_buff.size() > BUFFSIZE) {
 		_status = REQUEST_HEADER_FIELD_TOO_LARGE;
@@ -217,7 +220,7 @@ size_t AcceptedSocket::processRequestHeader(
 		_progress = CREATE_RESPONSE;
 		return 0;
 	}
-	return crlf;
+	return crlf2;
 }
 
 int AcceptedSocket::validateRequest()
@@ -231,10 +234,16 @@ int AcceptedSocket::validateRequest()
 	{
 		const std::string & host = _req.tryGetHeaderValue("host");
 		size_t colon = host.find(':');
+		std::map<std::string, ServerConfig>::iterator conf_it;
 		if (colon != std::string::npos) {
-			_config = _confs->find(host.substr(0, colon))->second;
+			conf_it = _confs->find(host.substr(0, colon));
 		} else {
-			_config = _confs->find(host)->second;
+			conf_it = _confs->find(host);
+		}
+		if (conf_it == _confs->end()) {
+			_config = _confs->begin()->second;
+		} else {
+			_config = conf_it->second;
 		}
 	}
 	catch(const std::exception& e)

@@ -201,7 +201,7 @@ int HTTPRequestParser::parseHeaderField(
 	{
 		size_t colon = raw.find(':', first);
 		std::string val;
-		if (colon == std::string::npos) {
+		if (last < colon) {
 			if (raw[first] != ' ' && raw[first] != '\t') {
 				return -1;
 			} else {
