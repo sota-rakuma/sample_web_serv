@@ -23,5 +23,6 @@ bool isLowerCase(char);
 bool isHexDig(char);
 bool isPrintable(char);
 char toLower(char);
+long get_mtime(void);
 
 #endif /* UTILS_HPP */

@@ -4,6 +4,10 @@
 #include "../command/ICommand.hpp"
 #include <list>
 
+#ifndef TIMEOUT
+#define TIMEOUT 30000 // 30s
+#endif
+
 class IObserver
 {
 public:
