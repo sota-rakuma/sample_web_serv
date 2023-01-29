@@ -606,7 +606,7 @@ static void getGMTTime(
 	ptm = gmtime(&now);
 	os << day[ptm->tm_wday] << ", "
 	<< ptm->tm_mday << " " << ptm->tm_mon + 1 << " " << ptm->tm_year + 1900
-	<< " " << (ptm->tm_hour + 9) % 24 << ":" << ptm->tm_min << ":" << ptm->tm_sec << " GMT";
+	<< " " << ptm->tm_hour << ":" << ptm->tm_min << ":" << ptm->tm_sec << " GMT";
 	date = os.str();
 }
 
