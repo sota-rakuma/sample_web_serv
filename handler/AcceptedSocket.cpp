@@ -297,13 +297,15 @@ bool AcceptedSocket::prepareEvent()
 		_receiver = new CGI(getSubject(),
 							getCommandList(),
 							this,
-							_location.getCgiExtensions(),
-							_req.getRequestLine().getQuery());
+							_location.getCgiExtensions());
 	} else {
 		_receiver = new File(getSubject(), getCommandList(),
 						this,
 						_location.getAutoIndex(),
 						_location.getIndexFile());
+	}
+	if (_req.getRequestLine().getQuery().size() > 0) {
+		_receiver->setQuery(_req.getRequestLine().getQuery());
 	}
 	return setHTTPMethod();
 }

@@ -22,6 +22,7 @@ private:
 	struct stat _parent;
 protected:
 	std::string _path;
+	std::string _query;
 	std::string _buff;
 public:
 	HTTPMethodReceiver();
@@ -39,6 +40,13 @@ public:
 	HTTPMethodReceiver(
 		ISubject *,
 		std::list<ICommand *> *,
+		AcceptedSocket *,
+		const std::string &,
+		const std::string &
+	);
+	HTTPMethodReceiver(
+		ISubject *,
+		std::list<ICommand *> *,
 		HTTPMethod *,
 		AcceptedSocket *,
 		const std::string &
@@ -51,14 +59,25 @@ public:
 		const std::string &,
 		const std::string &
 	);
+	HTTPMethodReceiver(
+		ISubject *,
+		std::list<ICommand *> *,
+		HTTPMethod *,
+		AcceptedSocket *,
+		const std::string &,
+		const std::string &,
+		const std::string &
+	);
 	HTTPMethodReceiver(const HTTPMethodReceiver &);
 	virtual ~HTTPMethodReceiver();
 	HTTPMethod *getHTTPMethod() const;
 	AcceptedSocket *getAcceptedSocket() const;
 	const std::string & getPath() const;
+	const std::string & getQuery() const;
 	void setHTTPMethod(HTTPMethod *);
 	void setAcceptedSocket(AcceptedSocket *);
 	void setPath(const std::string &);
+	void setQuery(const std::string &);
 	void setContent(
 		const std::string &
 	);

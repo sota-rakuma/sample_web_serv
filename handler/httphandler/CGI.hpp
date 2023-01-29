@@ -18,7 +18,6 @@ private:
 	int _c_to_p[2];
 	pid_t _pid;
 	size_t _nb;
-	std::string _query;
 	std::string _command;
 private:
 	bool isExecutable();
@@ -31,8 +30,7 @@ public:
 		ISubject *,
 		std::list<ICommand *> *,
 		AcceptedSocket *,
-		const std::vector<std::string> &,
-		const std::string &
+		const std::vector<std::string> &
 	);
 	CGI(
 		ISubject *,

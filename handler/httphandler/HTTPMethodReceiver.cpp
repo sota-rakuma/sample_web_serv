@@ -16,6 +16,7 @@ _as(another._as),
 _state(another._state),
 _parent(another._parent),
 _path(another._path),
+_query(another._query),
 _buff(another._buff)
 {
 }
@@ -29,6 +30,7 @@ HTTPMethodReceiver::HTTPMethodReceiver(
 _method(static_cast<HTTPMethod *>(NULL)),
 _as(as),
 _path(),
+_query(),
 _buff()
 {
 }
@@ -43,6 +45,22 @@ HTTPMethodReceiver::HTTPMethodReceiver(
 _method(static_cast<HTTPMethod *>(NULL)),
 _as(as),
 _path(path),
+_buff()
+{
+}
+
+HTTPMethodReceiver::HTTPMethodReceiver(
+	ISubject *subject,
+	std::list<ICommand *> *commands,
+	AcceptedSocket *as,
+	const std::string &path,
+	const std::string &query
+)
+:IOEventHandler(subject, commands),
+_method(static_cast<HTTPMethod *>(NULL)),
+_as(as),
+_path(path),
+_query(query),
 _buff()
 {
 }
@@ -68,12 +86,31 @@ HTTPMethodReceiver::HTTPMethodReceiver(
 	HTTPMethod *method,
 	AcceptedSocket *as,
 	const std::string &path,
+	const std::string & query
+)
+:IOEventHandler(subject, commands),
+_method(method),
+_as(as),
+_path(path),
+_query(query),
+_buff()
+{
+}
+
+HTTPMethodReceiver::HTTPMethodReceiver(
+	ISubject *subject,
+	std::list<ICommand *> *commands,
+	HTTPMethod *method,
+	AcceptedSocket *as,
+	const std::string &path,
+	const std::string &query,
 	const std::string &buff
 )
 :IOEventHandler(subject, commands),
 _method(method),
 _as(as),
 _path(path),
+_query(query),
 _buff(buff)
 {
 }
@@ -98,6 +135,11 @@ const std::string & HTTPMethodReceiver::getPath() const
 	return _path;
 }
 
+const std::string & HTTPMethodReceiver::getQuery() const
+{
+	return _query;
+}
+
 void HTTPMethodReceiver::setHTTPMethod(
 	HTTPMethod *method
 )
@@ -118,6 +160,13 @@ void HTTPMethodReceiver::setAcceptedSocket(
 void HTTPMethodReceiver::setPath(const std::string & path)
 {
 	_path = path;
+}
+
+void HTTPMethodReceiver::setQuery(
+	const std::string & q
+)
+{
+	_query = q;
 }
 
 void HTTPMethodReceiver::setContent(

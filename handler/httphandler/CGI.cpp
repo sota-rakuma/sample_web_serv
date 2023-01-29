@@ -26,12 +26,10 @@ CGI::CGI(
 	ISubject * subject,
 	std::list<ICommand *> * commands,
 	AcceptedSocket * as,
-	const std::vector<std::string> &extensions,
-	const std::string & query
+	const std::vector<std::string> &extensions
 )
 :HTTPMethodReceiver(subject, commands, as),
-_extensions(extensions),
-_query(query)
+_extensions(extensions)
 {
 }
 
@@ -43,9 +41,8 @@ CGI::CGI(
 	const std::string & path,
 	const std::string & query
 )
-:HTTPMethodReceiver(subject, commands, as, path),
-_extensions(extensions),
-_query(query)
+:HTTPMethodReceiver(subject, commands, as, path, query),
+_extensions(extensions)
 {
 }
 
@@ -58,8 +55,7 @@ CGI::CGI(
 	const std::string & path,
 	const std::string & query
 )
-:HTTPMethodReceiver(subject, commands, method, as, path),
-_query(query),
+:HTTPMethodReceiver(subject, commands, method, as, path, query),
 _extensions(extensions)
 {
 }
@@ -71,10 +67,10 @@ CGI::CGI(const CGI & another)
 	another.getHTTPMethod(),
 	another.getAcceptedSocket(),
 	another.getPath(),
+	another.getQuery(),
 	another.getContent()
 ),
-_extensions(another._extensions),
-_query(another._query)
+_extensions(another._extensions)
 {
 }
 
