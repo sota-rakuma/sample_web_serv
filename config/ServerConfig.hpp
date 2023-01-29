@@ -17,7 +17,7 @@ public:
 		std::string _alias;
 		std::string _index_file;
 		std::string _upload_place;
-		std::string _autoindex;
+		bool _autoindex;
 		std::pair<int, std::string> _return;
 		std::vector<std::string> _cgi_extensions;
 	public:
@@ -35,7 +35,7 @@ public:
 		void setLocationAlias(const std::string &alias_path);
 		void setLocationIndex(const std::string &index_file);
 		void setLocationUploadPlace(const std::string &upload_place);
-		void setLocationAutoIndex(const std::string &on);
+		void setLocationAutoIndex(bool on);
 		void setLocationReturn(const int, const std::string &);
 		void setLocationExtension(const std::vector<std::string> &);
 		// for test
@@ -43,7 +43,7 @@ public:
 		const std::string & getAlias() const;
 		const std::string & getIndexFile() const;
 		const std::string & getUploadPlace() const;
-		const std::string & getAutoIndex() const;
+		bool getAutoIndex() const;
 		const std::map<std::string, bool> &getAllowedMethod() const;
 		const std::vector<std::string> & getCgiExtensions() const;
 		const std::pair<int, std::string>& getReturn() const;
@@ -85,7 +85,7 @@ public:
 	void setIndex(size_t, const std::string &);
 	void setAlias(size_t, const std::string &);
 	void setUploadPlace(size_t, const std::string&);
-	void setAutoIndex(size_t, const std::string &);
+	void setAutoIndex(size_t, bool);
 	void setReturn(size_t, const int, const std::string&);
 	void setExtension(size_t, const std::vector<std::string> &);
 	void setPath(

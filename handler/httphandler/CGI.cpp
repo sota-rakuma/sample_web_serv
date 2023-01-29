@@ -100,7 +100,6 @@ void CGI::update(int event)
 	} else if (event & POLLOUT) {
 		getCommandList()->push_back(getWriteCommand());
 	} else if (event & POLLIN) {
-		std::cout << "read " << std::endl;
 		getCommandList()->push_back(getReadCommand());
 	}
 }

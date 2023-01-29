@@ -19,7 +19,7 @@ ServerConfig::~ServerConfig()
 }
 
 ServerConfig::Location::Location()
-:_alias("default"), _index_file("default"), _upload_place("default"), _autoindex("off"),
+:_alias(), _index_file(), _upload_place(), _autoindex(false),
 _cgi_extensions()
 {
 	_allowed_method["GET"] = false;
@@ -140,7 +140,7 @@ void ServerConfig::setUploadPlace(
 
 void ServerConfig::setAutoIndex(
 	size_t index,
-	 const std::string &on
+	bool on
 ) {
 	_locations[index].setLocationAutoIndex(on);
 }
@@ -216,7 +216,7 @@ void ServerConfig::Location::setLocationUploadPlace(
 }
 
 void ServerConfig::Location::setLocationAutoIndex(
-	const std::string &on
+	bool on
 ) {
 	_autoindex = on;
 }
@@ -256,7 +256,7 @@ const std::string & ServerConfig::Location::getUploadPlace() const
 	return _upload_place;
 };
 
-const std::string & ServerConfig::Location::getAutoIndex() const
+bool ServerConfig::Location::getAutoIndex() const
 {
 	return _autoindex;
 };

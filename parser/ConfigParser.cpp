@@ -156,7 +156,7 @@ int ConfigParser::parseAutoIndex(size_t index) {
 		return 1;
 	}
 	_i = pos + find_word.length();
-	_sc_vec[_server_i].setAutoIndex(index, auto_index);
+	_sc_vec[_server_i].setAutoIndex(index, auto_index == "on");
 	return 0;
 }
 

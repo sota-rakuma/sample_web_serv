@@ -304,7 +304,7 @@ bool AcceptedSocket::prepareEvent()
 	} else {
 		_receiver = new File(getSubject(), getCommandList(),
 						this,
-						_location.getAutoIndex() == "on",
+						_location.getAutoIndex(),
 						_location.getIndexFile());
 	}
 	return setHTTPMethod();
@@ -334,7 +334,7 @@ bool AcceptedSocket::setHTTPMethod()
 	}
 
 	std::string path = rl.getPath();
-	if (_location.getAlias() != "default") {
+	if (_location.getAlias().size() > 0) {
 		replacePath(path, _location.getPath(), _location.getAlias());
 	}
 	_receiver->setPath(path);
@@ -350,10 +350,10 @@ bool AcceptedSocket::setHTTPMethod()
 bool AcceptedSocket::preparePostEvent()
 {
 	std::string path = _req.getRequestLine().getPath();
-	if (_location.getUploadPlace() != "default")
+	if (_location.getUploadPlace().size() > 0)
 	{
 		replacePath(path, _location.getPath(), _location.getUploadPlace());
-	} else if (_location.getAlias() != "default") {
+	} else if (_location.getAlias().size() > 0) {
 		replacePath(path, _location.getPath(), _location.getAlias());
 	}
 	_receiver->setPath(path);
@@ -401,7 +401,6 @@ size_t AcceptedSocket::processRequestBody(
 	}
 
 	for (size_t i = 0; i < _receiver->getContent().size(); i++) {
-		std::cout << (int)_receiver->getContent()[i] << std::endl;
 	}
 
 	if (_config.getMaxBodySize() < _body_size) {
@@ -642,10 +641,18 @@ void AcceptedSocket::createErrorResponse()
 	std::map<int, std::string>::const_iterator ep = _config.getDefaultErrorPage().find(static_cast<int>(_status));
 	if (ep != _config.getDefaultErrorPage().end())
 	{
+/*
+		_req.setRequestLine("GET", ep->second, "HTTP/1.1");
+		_req.insertHeaderField("Content-Type", "text/html");
+		_config.eraseDefaultErrorPage(ep->first);
+		_progress = RECEIVE_REQUEST_HEADER;
+		// processRequestHeader();
+*/
 		delete _receiver;
 		_res.insertHeaderField("Content-Type", "text/html");
 		_receiver = new File(getSubject(), getCommandList(), this,
-							false, ep->second);
+							false, "");
+		_receiver->setPath(ep->second);
 		_config.eraseDefaultErrorPage(ep->first);
 		_receiver->setHTTPMethod(new Get(_receiver));
 		addCommand(_receiver->getHTTPMethod());

@@ -240,7 +240,6 @@ int HTTPRequestParser::parseHeaderValue(
 	for (size_t i = 0; i < raw.size(); i++)
 	{
 		if (raw[i] > 0 && isPrintable(raw[i]) == false) {
-			std::cout << addColorText(raw[i], YELLOW) << std::endl;
 			return -1;
 		}
 	}

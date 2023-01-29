@@ -128,7 +128,7 @@ int File::httpGet()
 		}
 		if (_autoindex == true) {
 			//return processAutoindex();
-		} else if (_index_file != "default") {
+		} else if (_index_file.size() > 0) {
 			_path += _index_file;
 		} else {
 			entrustCreateResponse(NOT_FOUND);
