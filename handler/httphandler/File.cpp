@@ -109,7 +109,7 @@ int File::write()
 int File::httpGet()
 {
 	if (execStat() == -1) {
-		if (errno == ENOENT) {
+		if (errno == ENOENT || errno == ENOTDIR) {
 			entrustCreateResponse(NOT_FOUND);
 		} else if(errno == EACCES) {
 			entrustCreateResponse(FORBIDDEN);
