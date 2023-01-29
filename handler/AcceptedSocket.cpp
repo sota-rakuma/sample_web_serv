@@ -399,10 +399,6 @@ size_t AcceptedSocket::processRequestBody(
 	if (raw.size() <= index) {
 		return index;
 	}
-
-	for (size_t i = 0; i < _receiver->getContent().size(); i++) {
-	}
-
 	if (_config.getMaxBodySize() < _body_size) {
 		_status = PAYLOAD_TOO_LARGE;
 		_progress = CREATE_RESPONSE;
