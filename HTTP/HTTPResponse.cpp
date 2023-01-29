@@ -107,7 +107,6 @@ HTTPResponse::StatusLine & HTTPResponse::StatusLine::operator=(
 
 void HTTPResponse::StatusLine::clear()
 {
-	_version.clear();
 	_code = "default";
 	_reason.clear();
 }
@@ -269,6 +268,7 @@ std::ostream &operator<<(
 	const HTTPResponse::StatusLine & rhs
 )
 {
+	std::cout << "VER: " << rhs.getHTTPVersion() << std::endl;
 	os << rhs.getHTTPVersion() << " "
 	<< rhs.getCode() << " "
 	<< rhs.getReason() << "\r\n";
