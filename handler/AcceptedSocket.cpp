@@ -156,8 +156,8 @@ size_t AcceptedSocket::processRequestLine(
 		return raw.size();
 	}
 	if (_parser_ctx.execParse(_buff) == 0) {
-		_buff = raw.substr(crlf + 2);
 		_progress = RECEIVE_REQUEST_HEADER;
+		_buff.clear();
 		return crlf + 2;
 	}
 	_status = BAD_REQUEST;
@@ -189,8 +189,9 @@ size_t AcceptedSocket::processRequestHeader(
 		_buff += "\r\n";
 	} else {
 		crlf2 += 4;
-		_buff += raw.substr(0, crlf2);
+		_buff += raw.substr(index, crlf2);
 	}
+
 	if (_buff.size() > BUFFSIZE) {
 		_status = REQUEST_HEADER_FIELD_TOO_LARGE;
 		_progress = CREATE_RESPONSE;
@@ -542,6 +543,7 @@ int AcceptedSocket::write()
 void AcceptedSocket::createResponse()
 {
 	int ret;
+	_buff.clear();
 	if (isCGI() == true) {
 		ret = _parser_ctx.execParse(_receiver->getContent());
 		if (ret == LOCAL_REDIR_RESPONSE) {
