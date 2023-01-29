@@ -14,7 +14,7 @@
 #include <netinet/in.h>
 
 #ifndef BUFFSIZE
-#define BUFFSIZE 8192
+#define BUFFSIZE 20
 #endif
 
 enum Progress

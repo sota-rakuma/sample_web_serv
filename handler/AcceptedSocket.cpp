@@ -102,12 +102,11 @@ int AcceptedSocket::read()
 {
 	char buff[BUFFSIZE];
 
-	ssize_t nb = ::recv(_sockfd, buff, BUFFSIZE, 0);
+	ssize_t nb = ::recv(_sockfd, buff, BUFFSIZE - 1, 0);
 	if (nb == -1) {
 		getSubject()->unsubscribe(_sockfd, false);
 		return -1;
 	} else if (nb == 0) {
-		// ソケットストリームが正しく閉じられた場合
 		getSubject()->unsubscribe(_sockfd, false);
 		return 0;
 	}
