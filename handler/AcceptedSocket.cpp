@@ -91,8 +91,7 @@ void AcceptedSocket::update(int event)
 	}
 
 	if (event == EV_TIMEOUT) {
-		_status = REQUEST_TIMEOUT;
-		createErrorResponse();
+		createErrorResponse(REQUEST_TIMEOUT);
 	} else if (event & POLLOUT) {
 		getCommandList()->push_back(getWriteCommand());
 	}
@@ -135,10 +134,6 @@ void AcceptedSocket::processRequest(const std::string & raw)
 			addCommand(_receiver->getHTTPMethod());
 			break;
 		}
-		if (_progress == CREATE_RESPONSE) {
-			createResponse();
-			break;
-		}
 	}
 }
 
@@ -163,9 +158,9 @@ size_t AcceptedSocket::processRequestLine(
 		_buff.clear();
 		return crlf + 2;
 	}
-	_status = BAD_REQUEST;
-	_progress = CREATE_RESPONSE;
-	return 0;
+	std::cout << "buff: " << _buff << std::endl;
+	createErrorResponse(BAD_REQUEST);
+	return raw.size();
 }
 
 size_t AcceptedSocket::processRequestHeader(
@@ -196,18 +191,15 @@ size_t AcceptedSocket::processRequestHeader(
 	}
 
 	if (_buff.size() > BUFFSIZE) {
-		_status = REQUEST_HEADER_FIELD_TOO_LARGE;
-		_progress = CREATE_RESPONSE;
-		return 0;
+		createErrorResponse(REQUEST_HEADER_FIELD_TOO_LARGE);
+		return raw.size();
 	}
 	if (_parser_ctx.execParse(_buff) == -1) {
-		_status = BAD_REQUEST;
-		_progress = CREATE_RESPONSE;
-		return 0;
+		createErrorResponse(BAD_REQUEST);
+		return raw.size();
 	}
 	if (validateRequest() == -1) {
-		_progress = CREATE_RESPONSE;
-		return 0;
+		return raw.size();
 	}
 	try
 	{
@@ -215,13 +207,11 @@ size_t AcceptedSocket::processRequestHeader(
 	}
 	catch(const std::exception& e)
 	{
-		_status = FORBIDDEN;
-		_progress = CREATE_RESPONSE;
-		return 0;
+		createErrorResponse(FORBIDDEN);
+		return raw.size();
 	}
 	if (prepareEvent() == false) {
-		_progress = CREATE_RESPONSE;
-		return 0;
+		return raw.size();
 	}
 	return crlf2;
 }
@@ -230,11 +220,11 @@ int AcceptedSocket::validateRequest()
 {
 	const HTTPRequest::RequestLine & rl = _req.getRequestLine();
 	if (rl.getHTTPVersion() != "HTTP/1.1") {
-		_status = HTTP_VERSION_NOT_SUPPORTED;
+		createErrorResponse( HTTP_VERSION_NOT_SUPPORTED);
 		return -1;
 	}
 	if (_req.getHeaderField().find("expect") != _req.getHeaderField().end()) {
-		_status = EXPECTAION_FAILED;
+		createErrorResponse(EXPECTAION_FAILED);
 		return -1;
 	}
 	try
@@ -253,7 +243,7 @@ int AcceptedSocket::validateRequest()
 	}
 	catch(const std::exception& e)
 	{
-		_status = BAD_REQUEST;
+		createErrorResponse(BAD_REQUEST);
 		return -1;
 	}
 	if (_req.hasObsFold() == true) {
@@ -268,33 +258,35 @@ int AcceptedSocket::processObsFold()
 	{
 		if (_req.tryGetHeaderValue("content-type") != "message/http")
 		{
-			_status = BAD_REQUEST;
+			createErrorResponse( BAD_REQUEST);
 			return -1;
 		}
 	}
 	catch(const std::exception& e)
 	{
-		_status = BAD_REQUEST;
+		createErrorResponse(BAD_REQUEST);
 		return -1;
 	}
-	_status = UNSUPPORTED_MEDIA_TYPE;
+	createErrorResponse(UNSUPPORTED_MEDIA_TYPE);
 	return -1;
 }
 
 bool AcceptedSocket::prepareEvent()
 {
 	if (_location.getReturn().first != 0) {
-		_status = static_cast<HTTPStatus>(_location.getReturn().first);
+		createRedirectResponse(
+			static_cast<HTTPStatus>(_location.getReturn().first)
+		);
 		return false;
 	}
 	const std::string & method = _req.getRequestLine().getMethod();
 	const std::map<std::string, bool>::const_iterator it = \
 		_location.getAllowedMethod().find(method);
 	if (it == _location.getAllowedMethod().end()) {
-		_status = NOT_IMPLEMENTED;
+		createErrorResponse(NOT_IMPLEMENTED);
 		return false;
 	} else if (it->second == false) {
-		_status = METHOD_NOT_ALLOWED;
+		createErrorResponse(METHOD_NOT_ALLOWED);
 		return false;
 	}
 	if (_location.getCgiExtensions().size() > 0) {
@@ -369,8 +361,7 @@ bool AcceptedSocket::preparePostEvent()
 	{
 		const std::string & te = _req.tryGetHeaderValue("transfer-encoding");
 		if (te != "chunked") {
-			_status = NOT_IMPLEMENTED;
-			_progress = CREATE_RESPONSE;
+			createErrorResponse(NOT_IMPLEMENTED);
 			return false;
 		}
 		_progress = RECEIVE_CHUNKED_SIZE;
@@ -382,8 +373,7 @@ bool AcceptedSocket::preparePostEvent()
 		const std::string & te = _req.tryGetHeaderValue("content-length");
 		for (size_t i = 0; i < te.size(); i++) {
 			if (isDigit(te[i]) == false) {
-				_status = BAD_REQUEST;
-				_progress = CREATE_RESPONSE;
+				createErrorResponse(BAD_REQUEST);
 				return false;
 			}
 		}
@@ -408,8 +398,7 @@ size_t AcceptedSocket::processRequestBody(
 		return index;
 	}
 	if (_config.getMaxBodySize() < _body_size) {
-		_status = PAYLOAD_TOO_LARGE;
-		_progress = CREATE_RESPONSE;
+		createErrorResponse(PAYLOAD_TOO_LARGE);
 		return 0;
 	}
 	_receiver->addContent(raw.substr(
@@ -448,8 +437,7 @@ size_t AcceptedSocket::processChunkedBody(
 				}
 			}
 			if (f == false || len == 0) {
-				_status = BAD_REQUEST;
-				_progress = CREATE_RESPONSE;
+				createErrorResponse(BAD_REQUEST);
 				return 0;
 			}
 			std::stringstream ss;
@@ -465,8 +453,7 @@ size_t AcceptedSocket::processChunkedBody(
 			if (crlf == std::string::npos) {
 				_receiver->addContent(raw.substr(i, raw.size() - i));
 				if (_body_size < raw.size() - i) {
-					_status = BAD_REQUEST;
-					_progress = CREATE_RESPONSE;
+					createErrorResponse(BAD_REQUEST);
 				} else {
 					_body_size -= raw.size() - i;
 				}
@@ -474,14 +461,13 @@ size_t AcceptedSocket::processChunkedBody(
 			}
 			std::string chunked_body = raw.substr(i, crlf - i);
 			if (chunked_body.size() != _body_size) {
-				_status = BAD_REQUEST;
+				createErrorResponse(BAD_REQUEST);
 				_progress = CREATE_RESPONSE;
 				return 0;
 			}
 			_receiver->addContent(chunked_body);
 			if (_config.getMaxBodySize() < _receiver->getContent().size()) {
-				_status = PAYLOAD_TOO_LARGE;
-				_progress = CREATE_RESPONSE;
+				createErrorResponse(PAYLOAD_TOO_LARGE);
 				return 0;
 			}
 			_progress = RECEIVE_CHUNKED_SIZE;
@@ -504,14 +490,14 @@ bool AcceptedSocket::prepareCGI()
 	ss << _buff.size();
 	ss >> len;
 	if (setenv("CONTENT_LENGTH", len.c_str(), 1) == -1) {
-		_status = INTERNAL_SERVER_ERROR;
+		createErrorResponse(INTERNAL_SERVER_ERROR);
 		return false;
 	}
 	if (setenv("SERVER_NAME", _config.getServerName().c_str(), 1) == -1 ||
 		setenv("SERVER_PORT", _config.getListen().c_str(), 1) == -1 ||
 		setenv("REMOTE_ADDR", inet_ntoa(_info.sin_addr), 1) == -1)
 	{
-		_status = INTERNAL_SERVER_ERROR;
+		createErrorResponse(INTERNAL_SERVER_ERROR);
 		return false;
 	}
 	_parser_ctx.transitionTo(new CGIResponseParser(&_res));
@@ -547,35 +533,35 @@ int AcceptedSocket::write()
 	return 0;
 }
 
-void AcceptedSocket::createResponse()
+void AcceptedSocket::createNormalResponse()
 {
 	int ret;
 	_buff.clear();
 	if (isCGI() == true) {
 		ret = _parser_ctx.execParse(_receiver->getContent());
 		if (ret == LOCAL_REDIR_RESPONSE) {
+			HTTPMethodReceiver * cgi = new CGI(
+				getSubject(),
+				getCommandList(),
+				this,
+				_location.getCgiExtensions()
+			);
+			internalRedirect(cgi,
+					_req.getRequestLine().getMethod(),
+					_res.getHeaderValue("Location"));
 			return ;
 		}
 	} else {
 		int status = static_cast<int>(_status);
-		if (400 <= status && status < 600) {
-			_res.insertHeaderField("Connection", "close");
-			return createErrorResponse();
-		} else if (300 <= status && status < 400) {
-			createRedirectResponse();
-		} else {
-			if (_status == CREATED) {
-				_res.insertHeaderField(
-					"Location",
-					_req.getRequestLine().getPath());
-			}
-			_res.setStatusCode(_status);
-			_res.setMessageBody(_receiver->getContent());
+		if (_status == CREATED) {
+			_res.insertHeaderField(
+				"Location",
+				_req.getRequestLine().getPath());
 		}
+		_res.setStatusCode(_status);
+		_res.setMessageBody(_receiver->getContent());
 	}
-
 	createGeneralHeader();
-
 	if (_res.getHeaderField().find("Transfer-Encoding") == _res.getHeaderField().end()) {
 		std::stringstream ss;
 		ss << _res.getMessageBody().size();
@@ -631,35 +617,31 @@ void AcceptedSocket::createGeneralHeader()
 	}
 }
 
-void AcceptedSocket::createRedirectResponse()
+void AcceptedSocket::createRedirectResponse(
+	HTTPStatus status
+)
 {
-	_res.setStatusCode(_status);
+	_res.setStatusCode(status);
 	_res.insertHeaderField("Location", _location.getReturn().second);
+	createGeneralHeader();
 	createResponseTemplate();
 }
 
-void AcceptedSocket::createErrorResponse()
+void AcceptedSocket::createErrorResponse(
+	HTTPStatus status
+)
 {
-	_res.setStatusCode(_status);
-	std::map<int, std::string>::const_iterator ep = _config.getDefaultErrorPage().find(static_cast<int>(_status));
+	_res.setStatusCode(status);
+	std::map<int, std::string>::const_iterator ep = _config.getDefaultErrorPage().find(static_cast<int>(status));
 	_res.insertHeaderField("Connection", "close");
 	if (ep != _config.getDefaultErrorPage().end())
 	{
-/*
-		_req.setRequestLine("GET", ep->second, "HTTP/1.1");
 		_res.insertHeaderField("Content-Type", "text/html");
+		HTTPMethodReceiver *hr = new File(getSubject(), getCommandList(), this,
+							_location.getAutoIndex(),
+							_location.getIndexFile());
+		internalRedirect(hr, GET, ep->second);
 		_config.eraseDefaultErrorPage(ep->first);
-		_progress = RECEIVE_REQUEST_HEADER;
-		// processRequestHeader();
-*/
-		delete _receiver;
-		_res.insertHeaderField("Content-Type", "text/html");
-		_receiver = new File(getSubject(), getCommandList(), this,
-							false, "");
-		_receiver->setPath(ep->second);
-		_config.eraseDefaultErrorPage(ep->first);
-		_receiver->setHTTPMethod(new Get(_receiver));
-		addCommand(_receiver->getHTTPMethod());
 		return ;
 	}
 	createGeneralHeader();
@@ -677,6 +659,9 @@ void AcceptedSocket::createResponseTemplate()
 	_res.addMessageBody(statusline);
 	_res.addMessageBody("</h1></center>\n<hr><center>42WebServ</center>\n</body>\n</html>");
 	_res.insertHeaderField("Content-Type", "text/html");
+	std::stringstream ss;
+	ss << _res.getMessageBody().size();
+	_res.insertHeaderField("Content-Length", ss.str());
 }
 
 void AcceptedSocket::processResponse()
@@ -696,4 +681,54 @@ void AcceptedSocket::processResponse()
 		_progress = END;
 	}
 	getSubject()->subscribe(_sockfd, POLLOUT | POLLIN, this, 0);
+}
+
+void AcceptedSocket::internalRedirect(
+	HTTPMethodReceiver * receiver,
+	const std::string & method_name,
+	const std::string & path,
+	const std::string & query
+)
+{
+	delete _receiver;
+	_receiver = receiver;
+	_receiver->setPath(path);
+	_receiver->setQuery(query);
+	HTTPMethod * method = static_cast<HTTPMethod *>(NULL);
+	if (method_name == GET) {
+		method = new Get(receiver);
+	} else if (method_name == POST) {
+		method = new Post(receiver);
+	} else {
+		method = new Delete(receiver);
+	}
+	_receiver->setHTTPMethod(method);
+	addCommand(method);
+}
+
+void AcceptedSocket::internalRedirect(
+	HTTPMethodReceiver * receiver,
+	const std::string & method_name,
+	const std::string & path
+)
+{
+	delete _receiver;
+	_receiver = receiver;
+	size_t q = path.find('?');
+	if (q != std::string::npos) {
+		_receiver->setPath(path.substr(0, q));
+		_receiver->setQuery(path.substr(q + 1));
+	} else {
+		_receiver->setPath(path);
+	}
+	HTTPMethod * method = static_cast<HTTPMethod *>(NULL);
+	if (method_name == GET) {
+		method = new Get(receiver);
+	} else if (method_name == POST) {
+		method = new Post(receiver);
+	} else {
+		method = new Delete(receiver);
+	}
+	_receiver->setHTTPMethod(method);
+	addCommand(method);
 }

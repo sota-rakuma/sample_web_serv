@@ -230,6 +230,14 @@ void HTTPMethodReceiver::entrustCreateResponse(
 	HTTPStatus status
 )
 {
-	_as->setStatus(status);
-	_as->createResponse();
+	int s = static_cast<int>(status);
+	if (400 <= s && s < 600) {
+		return _as->createErrorResponse(status);
+	}
+	_as->setStatus(status).createNormalResponse();
+}
+
+void HTTPMethodReceiver::entrustCreateResponse()
+{
+	_as->createNormalResponse();
 }

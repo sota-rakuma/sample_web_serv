@@ -29,6 +29,7 @@ enum Progress
 	SEND_STATUS_LINE,
 	SEND_RESPONSE_HEADER,
 	SEND_RESPONSE_BODY,
+	ERROR,
 	END,
 };
 
@@ -76,10 +77,22 @@ private:
 	bool isCGI() const;
 	bool prepareCGI();
 	void createGeneralHeader();
-	void createErrorResponse();
-	void createRedirectResponse();
+	void createRedirectResponse(
+		HTTPStatus
+	);
 	void createResponseTemplate();
 	void processResponse();
+	void internalRedirect(
+		HTTPMethodReceiver *,
+		const std::string &,
+		const std::string &,
+		const std::string &
+	);
+	void internalRedirect(
+		HTTPMethodReceiver *,
+		const std::string &,
+		const std::string &
+	);
 public:
 	AcceptedSocket();
 	AcceptedSocket(
@@ -97,8 +110,10 @@ public:
 	virtual void update(int);
 	virtual int read();
 	virtual int write();
-	void createResponse();
-	void processTest();
+	void createErrorResponse(
+		HTTPStatus
+	);
+	void createNormalResponse();
 };
 
 #endif /* ACCEPTEDSOCKET_HPP */

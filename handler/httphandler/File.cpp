@@ -124,7 +124,7 @@ int File::read()
 		getSubject()->unsubscribe(_fd, true);
 		return -1;
 	} else if (nb == 0) {
-		getAcceptedSocket()->createResponse();
+		entrustCreateResponse();
 		getSubject()->unsubscribe(_fd, true);
 		return 0;
 	}
@@ -147,7 +147,7 @@ int File::write()
 	}
 	//_buff = "";
 	getSubject()->unsubscribe(_fd, true);
-	getAcceptedSocket()->createResponse();
+	entrustCreateResponse();
 	return 0;
 }
 

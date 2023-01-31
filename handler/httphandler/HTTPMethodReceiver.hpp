@@ -96,6 +96,7 @@ public:
 	int execStatForParentDir();
 	void setHTTPStatus(HTTPStatus);
 	void entrustCreateResponse(HTTPStatus);
+	void entrustCreateResponse();
 };
 
 #endif /* HTTPMETHODRECIEVER_HPP */
