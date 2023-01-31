@@ -6,6 +6,7 @@
 
 static std::pair<HTTPStatus, std::string> temp[] = {
 	std::make_pair(OK, "OK"),
+	std::make_pair(NO_CONTENT, "NO Content"),
 	std::make_pair(MOVED_PERMANENTLY, "moved permanently"),
 	std::make_pair(FOUND, "Found"),
 	std::make_pair(SEE_OTHER, "see other"),
