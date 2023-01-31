@@ -4,6 +4,7 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sstream>
 
 extern char **environ;
 
@@ -93,12 +94,14 @@ void CGI::update(int event)
 	}
 
 	if (event & POLLHUP) {
-		entrustCreateResponse(OK);
-		getSubject()->unsubscribe(_p_to_c[OUT], true);
-		getSubject()->unsubscribe(_c_to_p[IN], true);
-	} else if (event & POLLOUT) {
+		if (!(event & POLLIN)) {
+			getSubject()->unsubscribe(_p_to_c[OUT], true);
+		}
+	}
+
+	if (event & POLLOUT ) {
 		getCommandList()->push_back(getWriteCommand());
-	} else if (event & POLLIN) {
+	} else if (event & POLLIN ) {
 		getCommandList()->push_back(getReadCommand());
 	}
 }
@@ -108,15 +111,14 @@ int CGI::read()
 	char buff[BUFSIZE];
 	ssize_t nb = ::read(_c_to_p[IN], buff, BUFSIZE - 1);
 	if (nb < 0) {
-		// error レスポンス
+		perror("read");
 		::close(_p_to_c[OUT]);
 		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		getSubject()->unsubscribe(_p_to_c[OUT], true);
 		getSubject()->unsubscribe(_c_to_p[IN], true);
 		return -1;
 	} else if (nb == 0) {
-		entrustCreateResponse(OK);
-		getSubject()->unsubscribe(_p_to_c[OUT], true);
+		entrustCreateResponse();
 		getSubject()->unsubscribe(_c_to_p[IN], true);
 		return 0;
 	}
@@ -129,20 +131,20 @@ int CGI::write()
 {
 	ssize_t nb = ::write(_p_to_c[OUT], _buff.c_str(), _buff.size());
 	if (nb == -1) {
+		perror("write");
 		::close(_p_to_c[OUT]);
 		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		getSubject()->unsubscribe(_c_to_p[IN], true);
 		getSubject()->unsubscribe(_p_to_c[OUT], true);
 		return -1;
 	}
-	if (nb < _nb + _buff.size()) {
-		_nb += nb;
+	if (nb < _buff.size()) {
 		_buff = _buff.substr(0, nb);
 		return 1;
 	}
 	::close(_p_to_c[OUT]);
 	getSubject()->unsubscribe(_p_to_c[OUT], true);
-	_buff = "";
+	_buff.clear();
 	return 0;
 }
 
@@ -155,7 +157,6 @@ int CGI::httpGet()
 		return -1;
 	}
 	getSubject()->subscribe(_c_to_p[IN], POLLIN, this, 0);
-	setHTTPStatus(OK);
 	return 0;
 }
 
@@ -167,10 +168,8 @@ int CGI::httpPost()
 	if (executeCGI(POST) == false) {
 		return -1;
 	}
-	//_buff = "value=aaaa&value_2=bbbb";
 	getSubject()->subscribe(_p_to_c[OUT], POLLOUT, this, 0);
 	getSubject()->subscribe(_c_to_p[IN], POLLIN, this, 0);
-	setHTTPStatus(OK);
 	return 0;
 }
 
@@ -183,7 +182,6 @@ int CGI::httpDelete()
 		return -1;
 	}
 	getSubject()->subscribe(_c_to_p[IN], POLLIN, this, 0);
-	entrustCreateResponse(OK);
 	return 0;
 }
 
@@ -241,13 +239,20 @@ bool CGI::setMetaVariables(
 		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		return false;
 	}
+	std::stringstream ss;
+	ss << _buff.size();
+	if(setenv("CONTENT_LENGTH", ss.str().c_str(), 1) == -1) {
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
+		return false;
+	}
 	return true;
 }
 
 bool CGI::executeCGI(const std::string & method)
 {
-	if (pipe(_c_to_p) < 0 &&
+	if (pipe(_c_to_p) < 0 ||
 		(method == POST && pipe(_p_to_c) < 0)) {
+		perror("pipe");
 		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		return false;
 	}

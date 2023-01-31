@@ -158,7 +158,6 @@ size_t AcceptedSocket::processRequestLine(
 		_buff.clear();
 		return crlf + 2;
 	}
-	std::cout << "buff: " << _buff << std::endl;
 	createErrorResponse(BAD_REQUEST);
 	return raw.size();
 }
@@ -520,6 +519,7 @@ int AcceptedSocket::write()
 			_buff.clear();
 			_req.clear();
 			_res.clear();
+			_parser_ctx.transitionTo(new HTTPRequestParser(&_req));
 			delete _receiver;
 			_receiver = static_cast<HTTPMethodReceiver *>(NULL);
 			_progress = RECEIVE_REQUEST_LINE;
@@ -538,20 +538,7 @@ void AcceptedSocket::createNormalResponse()
 	int ret;
 	_buff.clear();
 	if (isCGI() == true) {
-		std::cout << "receiver BUFF: " << _receiver->getContent() << std::endl;
-		ret = _parser_ctx.execParse(_receiver->getContent());
-		if (ret == LOCAL_REDIR_RESPONSE) {
-			HTTPMethodReceiver * cgi = new CGI(
-				getSubject(),
-				getCommandList(),
-				this,
-				_location.getCgiExtensions()
-			);
-			internalRedirect(cgi,
-					_req.getRequestLine().getMethod(),
-					_res.getHeaderValue("Location"));
-			return ;
-		}
+		processCGIResponse();
 	} else {
 		int status = static_cast<int>(_status);
 		if (_status == CREATED) {
@@ -575,6 +562,28 @@ void AcceptedSocket::createNormalResponse()
 	}
 	_progress = SEND_STATUS_LINE;
 	processResponse();
+}
+
+void AcceptedSocket::processCGIResponse()
+{
+	std::cout << "receiver BUFF: " << _receiver->getContent() << std::endl;
+	int ret = _parser_ctx.execParse(_receiver->getContent());
+	if (ret == LOCAL_REDIR_RESPONSE) {
+		HTTPMethodReceiver * cgi = new CGI(
+			getSubject(),
+			getCommandList(),
+			this,
+			_location.getCgiExtensions()
+		);
+		internalRedirect(cgi,
+				_req.getRequestLine().getMethod(),
+				_res.getHeaderValue("Location"));
+		return ;
+	}
+	if (ret == ERROR) {
+		_buff.clear();
+		createErrorResponse(INTERNAL_SERVER_ERROR);
+	}
 }
 
 static void getGMTTime(

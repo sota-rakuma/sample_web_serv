@@ -93,6 +93,7 @@ private:
 		const std::string &,
 		const std::string &
 	);
+	void processCGIResponse();
 public:
 	AcceptedSocket();
 	AcceptedSocket(
