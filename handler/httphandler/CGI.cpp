@@ -17,7 +17,8 @@ extern char **environ;
 
 static const std::pair<std::string, std::string> tmp[] = {
 	std::make_pair(".perl", "/usr/bin/perl"),
-	std::make_pair(".pl", "/usr/bin/perl")
+	std::make_pair(".pl", "/usr/bin/perl"),
+	std::make_pair(".sh", "/bin/bash")
 };
 
 std::map<std::string, std::string> CGI::_commands(tmp, tmp + getSize(tmp));
@@ -117,8 +118,6 @@ int CGI::read()
 		entrustCreateResponse(OK);
 		getSubject()->unsubscribe(_p_to_c[OUT], true);
 		getSubject()->unsubscribe(_c_to_p[IN], true);
-		// レスポンス作成フェーズ
-		//getAcceptedSocket()->processCGIResponse(_buff);
 		return 0;
 	}
 	buff[nb] = '\0';

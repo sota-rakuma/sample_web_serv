@@ -5,7 +5,10 @@
 #include <string>
 
 EventMonitor::EventMonitor()
-:_time(300)
+:_time(300),
+_pollvec(),
+_storage(),
+_time_manager()
 {
 	if (setenv("GATEWAY_INTERFACE", "CGI/1.1", 1) == -1 ||
 		setenv("SERVER_PROTOCOL", "HTTP/1.1", 1) == -1 ||
@@ -17,7 +20,10 @@ EventMonitor::EventMonitor()
 }
 
 EventMonitor::EventMonitor(int time)
-:_time(time)
+:_time(time),
+_pollvec(),
+_storage(),
+_time_manager()
 {
 }
 
