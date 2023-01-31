@@ -258,7 +258,7 @@ int CGIResponseParser::parseLocalRedirResponse() {
 		location_value = location_value.substr(pos);
 	std::pair<std::string, std::string> location_pair = std::make_pair("Location", location_value);
 	_http_res->insertHeaderField(location_pair);
-	_http_res->setStatusLine("HTTP/1.1", "302", "Moved Temporarily");
+	_http_res->setStatusLine("HTTP/1.1", "301", "Moved Temporarily");
 	return 0;
 }
 
