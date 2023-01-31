@@ -265,13 +265,12 @@ bool CGI::executeCGI(const std::string & method)
 		if (method == POST) {
 			close(_p_to_c[OUT]);
 			if (dup2(_p_to_c[IN], STDIN_FILENO) == -1)
-	 			exit(1);
+				exit(1);
 		}
-		//std::cout << "command: " << _command << std::endl;
-		//std::cout << "path: " << getPath().c_str() << std::endl;
-		//char * const arg[2] = {const_cast<char *>(getPath().c_str()), NULL};
-		char *arg[3] = {"perl", "/Users/macbookpro/42/sample_server/exp/cgi_scripts/perl.perl", NULL};
-		if (execve(_command.c_str(), arg, environ) == -1) {
+		char *arg[3] = {const_cast<char *>(_command.c_str()),
+						const_cast<char *>(getPath().c_str()),
+						NULL};
+		if (execve(arg[0], arg, environ) == -1) {
 			// INTERNAL_SERVER_ERROR
 			exit(1);
 		}
