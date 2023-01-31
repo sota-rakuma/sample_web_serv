@@ -7,7 +7,8 @@ CGIResponseParser::CGIResponseParser() : _i(0) {
 CGIResponseParser::CGIResponseParser(
 	HTTPResponse *res
 )
-:_http_res(res)
+:_http_res(res),
+_i(0)
 {
 }
 
@@ -137,7 +138,8 @@ int CGIResponseParser::parseStatus() {
     std::string find_word = "Status:";
 	size_t pos = _raw.find(find_word, _i);
 	if (pos != _i) {
-		std::cout << "status not exist" << std::endl;
+		//std::cout << "status not exist" << std::endl;
+		_http_res->setStatusLine("HTTP/1.1", "200", "OK");
 		return 0;
 	}
 	_i = pos + find_word.length();

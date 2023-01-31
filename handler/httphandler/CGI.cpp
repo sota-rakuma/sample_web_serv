@@ -20,7 +20,7 @@ static const std::pair<std::string, std::string> tmp[] = {
 	std::make_pair(".pl", "/usr/bin/perl")
 };
 
-const std::map<std::string, std::string> CGI::_commands(tmp, tmp + getSize(tmp));
+std::map<std::string, std::string> CGI::_commands(tmp, tmp + getSize(tmp));
 
 CGI::CGI(
 	ISubject * subject,
@@ -216,7 +216,7 @@ bool CGI::setMetaVariables(
 	for (size_t i = 0; i < _extensions.size(); i++) {
 		extension = _path.find(_extensions[i]);
 		if (extension != std::string::npos) {
-			_command = _extensions[i];
+			_command = _commands[_extensions[i]];
 			extension += _extensions[i].size();
 			break;
 		}
@@ -260,15 +260,19 @@ bool CGI::executeCGI(const std::string & method)
 	}
 	if (_pid == 0) {
 		close(_c_to_p[IN]);
-		if (dup2(_p_to_c[OUT], STDOUT_FILENO) == -1)
+		if (dup2(_c_to_p[OUT], STDOUT_FILENO) == -1)
 			exit(1);
 		if (method == POST) {
 			close(_p_to_c[OUT]);
 			if (dup2(_p_to_c[IN], STDIN_FILENO) == -1)
 	 			exit(1);
 		}
-		char * const arg[1] = {const_cast<char *>(getPath().c_str())};
+		//std::cout << "command: " << _command << std::endl;
+		//std::cout << "path: " << getPath().c_str() << std::endl;
+		//char * const arg[2] = {const_cast<char *>(getPath().c_str()), NULL};
+		char *arg[3] = {"perl", "/Users/macbookpro/42/sample_server/exp/cgi_scripts/perl.perl", NULL};
 		if (execve(_command.c_str(), arg, environ) == -1) {
+			// INTERNAL_SERVER_ERROR
 			exit(1);
 		}
 	} else {

@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-print "Content-type: text/html\n";
+print "Content-Type: text/html\n";
 print "\n";
 print "<html>\n";
 print "<head>\n";

@@ -538,6 +538,7 @@ void AcceptedSocket::createNormalResponse()
 	int ret;
 	_buff.clear();
 	if (isCGI() == true) {
+		std::cout << "receiver BUFF: " << _receiver->getContent() << std::endl;
 		ret = _parser_ctx.execParse(_receiver->getContent());
 		if (ret == LOCAL_REDIR_RESPONSE) {
 			HTTPMethodReceiver * cgi = new CGI(
