@@ -152,6 +152,9 @@ int EventMonitor::findTimer()
 		if (timer <= 0) {
 			notify(_time_manager.begin()->second, EV_TIMEOUT);
 		}
+		if (_time_manager.begin() == _time_manager.end()) {
+			return -1;
+		}
 	}
 
 	if (timer > INT_MAX) {
