@@ -88,7 +88,9 @@ void CGI::update(int event)
 	if (event & (POLLNVAL | POLLERR)) {
 		getSubject()->unsubscribe(_p_to_c[OUT], true);
 		getSubject()->unsubscribe(_c_to_p[IN], true);
+		return ;
 	}
+
 	if (event & POLLHUP) {
 		entrustCreateResponse(OK);
 		getSubject()->unsubscribe(_p_to_c[OUT], true);
@@ -153,7 +155,7 @@ int CGI::httpGet()
 	if (executeCGI(GET) == false) {
 		return -1;
 	}
-	getSubject()->subscribe(_c_to_p[IN], POLLIN, this);
+	getSubject()->subscribe(_c_to_p[IN], POLLIN, this, 0);
 	setHTTPStatus(OK);
 	return 0;
 }
@@ -167,8 +169,8 @@ int CGI::httpPost()
 		return -1;
 	}
 	//_buff = "value=aaaa&value_2=bbbb";
-	getSubject()->subscribe(_p_to_c[OUT], POLLOUT, this);
-	getSubject()->subscribe(_c_to_p[IN], POLLIN, this);
+	getSubject()->subscribe(_p_to_c[OUT], POLLOUT, this, 0);
+	getSubject()->subscribe(_c_to_p[IN], POLLIN, this, 0);
 	setHTTPStatus(OK);
 	return 0;
 }
@@ -181,7 +183,7 @@ int CGI::httpDelete()
 	if (executeCGI(DELETE) == false) {
 		return -1;
 	}
-	getSubject()->subscribe(_c_to_p[IN], POLLIN, this);
+	getSubject()->subscribe(_c_to_p[IN], POLLIN, this, 0);
 	entrustCreateResponse(OK);
 	return 0;
 }

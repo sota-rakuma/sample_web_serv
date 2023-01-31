@@ -38,7 +38,7 @@ _receiver(static_cast<HTTPMethodReceiver *>(NULL)),
 _is_cgi(false)
 {
 	_parser_ctx.setParser(new HTTPRequestParser(&this->_req));
-	getSubject()->subscribe(_sockfd, POLLIN, this);
+	getSubject()->subscribe(_sockfd, POLLIN, this, getMilliTime() + (TIMEOUT * 1000));
 }
 
 AcceptedSocket::AcceptedSocket(const AcceptedSocket &another)
@@ -54,7 +54,7 @@ _progress(another._progress),
 _receiver(static_cast<HTTPMethodReceiver *>(NULL)),
 _is_cgi(another._is_cgi)
 {
-	getSubject()->subscribe(_sockfd, POLLIN, this);
+	getSubject()->subscribe(_sockfd, POLLIN, this, getMilliTime() + (TIMEOUT * 1000));
 }
 
 AcceptedSocket::~AcceptedSocket()
@@ -90,7 +90,10 @@ void AcceptedSocket::update(int event)
 		return ;
 	}
 
-	if (event & POLLOUT) {
+	if (event == EV_TIMEOUT) {
+		_status = REQUEST_TIMEOUT;
+		createErrorResponse();
+	} else if (event & POLLOUT) {
 		getCommandList()->push_back(getWriteCommand());
 	}
 	else if (event & POLLIN) {
@@ -534,7 +537,7 @@ int AcceptedSocket::write()
 			delete _receiver;
 			_receiver = static_cast<HTTPMethodReceiver *>(NULL);
 			_progress = RECEIVE_REQUEST_LINE;
-			getSubject()->subscribe(_sockfd, POLLIN, this);
+			getSubject()->subscribe(_sockfd, POLLIN, this, getMilliTime() + (TIMEOUT * 1000));
 		} else {
 			getSubject()->unsubscribe(_sockfd, false);
 		}
@@ -637,9 +640,9 @@ void AcceptedSocket::createRedirectResponse()
 
 void AcceptedSocket::createErrorResponse()
 {
-	createGeneralHeader();
 	_res.setStatusCode(_status);
 	std::map<int, std::string>::const_iterator ep = _config.getDefaultErrorPage().find(static_cast<int>(_status));
+	_res.insertHeaderField("Connection", "close");
 	if (ep != _config.getDefaultErrorPage().end())
 	{
 /*
@@ -659,6 +662,7 @@ void AcceptedSocket::createErrorResponse()
 		addCommand(_receiver->getHTTPMethod());
 		return ;
 	}
+	createGeneralHeader();
 	createResponseTemplate();
 	_progress = SEND_STATUS_LINE;
 	processResponse();
@@ -691,5 +695,5 @@ void AcceptedSocket::processResponse()
 		_buff = _res.getMessageBody();
 		_progress = END;
 	}
-	getSubject()->subscribe(_sockfd, POLLOUT | POLLIN, this);
+	getSubject()->subscribe(_sockfd, POLLOUT | POLLIN, this, 0);
 }

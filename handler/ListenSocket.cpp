@@ -125,7 +125,7 @@ _confs(confs)
 	if (::listen(_sockfd, LISTEN_BACKLOG) == -1) {
 		throw ListenSockError("listen");
 	}
-	getSubject()->subscribe(_sockfd, POLLIN, this);
+	getSubject()->subscribe(_sockfd, POLLIN, this, 0);
 }
 
 ListenSocket::ListenSocket(
@@ -156,7 +156,7 @@ void ListenSocket::listen()
 	if (::listen(_sockfd, LISTEN_BACKLOG) == -1) {
 		throw ListenSockError("listen");
 	}
-	getSubject()->subscribe(_sockfd, POLLIN, this);
+	getSubject()->subscribe(_sockfd, POLLIN, this, 0);
 }
 
 int ListenSocket::read()

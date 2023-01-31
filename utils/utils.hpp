@@ -23,6 +23,6 @@ bool isLowerCase(char);
 bool isHexDig(char);
 bool isPrintable(char);
 char toLower(char);
-long getMilliTime(void);
+long getMilliTime();
 
 #endif /* UTILS_HPP */

@@ -4,7 +4,6 @@
 #include <typeinfo>
 #include <string>
 
-// for test
 EventMonitor::EventMonitor()
 :_time(300)
 {
@@ -17,7 +16,6 @@ EventMonitor::EventMonitor()
 	}
 }
 
-// for test
 EventMonitor::EventMonitor(int time)
 :_time(time)
 {
@@ -27,7 +25,6 @@ EventMonitor::EventMonitor(const EventMonitor &another)
 :_time(another._time),
 _pollvec(another._pollvec),
 _storage(another._storage)
-//_commands(another._commands)
 {
 }
 
@@ -58,12 +55,16 @@ void EventMonitor::notify(int fd, int event)
 void EventMonitor::subscribe(
 	int fd,
 	int event,
-	IObserver * target
+	IObserver * target,
+	long timeout
 )
 {
 	if (_storage.find(fd) == _storage.end()) {
 		_storage[fd] = target;
 		_pollvec.push_back((pollfd){fd, event, 0});
+		if (timeout > 0) {
+			_time_manager[timeout] = fd;
+		}
 		return ;
 	}
 
@@ -72,6 +73,20 @@ void EventMonitor::subscribe(
 			_pollvec[i].events = event;
 			break ;
 		}
+	}
+
+	for (std::map<long, int>::iterator it = _time_manager.begin();
+		it != _time_manager.end();
+		it++)
+	{
+		if (fd == it->second) {
+			_time_manager.erase(it);
+			break;
+		}
+	}
+
+	if (timeout > 0) {
+		_time_manager.insert(std::make_pair(timeout, fd));
 	}
 }
 
@@ -94,17 +109,27 @@ void EventMonitor::unsubscribe(
 		delete it->second;
 	}
 	_storage.erase(fd);
+
+	for (std::map<long, int>::iterator it = _time_manager.begin();
+		it != _time_manager.end();
+		it++)
+	{
+		if (fd == it->second) {
+			_time_manager.erase(it);
+			break;
+		}
+	}
 }
 
 int EventMonitor::monitor()
 {
 	int ready;
 
-	ready = poll(_pollvec.data(), _pollvec.size(), _time);
+	//ready = poll(_pollvec.data(), _pollvec.size(), _time);
+	ready = poll(_pollvec.data(), _pollvec.size(), findTimer());
 	if (ready <= 0) {
-		if (ready == 0 || errno != EINTR) {
-			// タイムアウトはここで実装できる
-			usleep(500);
+		if (ready == 0) {
+			notifyTimeOut();
 			return 0;
 		}
 		perror("poll");
@@ -112,6 +137,42 @@ int EventMonitor::monitor()
 	}
 	publishEvent(ready);
 	return 0;
+}
+
+int EventMonitor::findTimer()
+{
+	long timer = 0;
+
+	if (_time_manager.size() == 0) {
+		return -1;
+	}
+	while (timer <= 0)
+	{
+		timer = _time_manager.begin()->first - getMilliTime();
+		if (timer <= 0) {
+			notify(_time_manager.begin()->second, EV_TIMEOUT);
+		}
+	}
+
+	if (timer > INT_MAX) {
+		return -1;
+	}
+	return (static_cast<int>(timer));
+}
+
+void EventMonitor::notifyTimeOut()
+{
+	long now = getMilliTime();
+
+	for (std::map<long, int>::iterator it =_time_manager.begin();
+		it != _time_manager.end();)
+	{
+		if (it->first <= now) {
+			notify((it++)->second, EV_TIMEOUT);
+		} else {
+			++it;
+		}
+	}
 }
 
 void EventMonitor::publishEvent(int ready)

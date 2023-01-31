@@ -2,6 +2,7 @@
 #define IOEVENTHANDLER_HPP
 
 #include "../subject/ISubject.hpp"
+#include "../utils/utils.hpp"
 #include <poll.h>
 #include <list>
 

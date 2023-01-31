@@ -107,6 +107,7 @@ void File::update(int event)
 		getSubject()->unsubscribe(_fd, true);
 		return ;
 	}
+
 	if (event & POLLOUT) {
 		getCommandList()->push_back(getWriteCommand());
 	} else if (event == POLLIN) {
@@ -185,7 +186,7 @@ int File::httpGet()
 		return -1;
 	}
 	setHTTPStatus(OK);
-	getSubject()->subscribe(_fd, POLLIN, this);
+	getSubject()->subscribe(_fd, POLLIN, this, 0);
 	return 0;
 }
 
@@ -212,7 +213,7 @@ int File::httpPost()
 		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		return -1;
 	}
-	getSubject()->subscribe(_fd, POLLOUT, this);
+	getSubject()->subscribe(_fd, POLLOUT, this, 0);
 	return 0;
 }
 

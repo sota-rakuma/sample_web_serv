@@ -4,7 +4,7 @@
 #include <cstring>
 #include <cerrno>
 
-long getMilliTime(void)
+long getMilliTime()
 {
 	struct timeval tv;
 	long num;
