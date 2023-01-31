@@ -46,6 +46,10 @@ CGI::CGI(
 :HTTPMethodReceiver(subject, commands, as, path, query),
 _extensions(extensions)
 {
+	_c_to_p[IN] = -1;
+	_c_to_p[OUT] = -1;
+	_p_to_c[IN] = -1;
+	_p_to_c[OUT] = -1;
 }
 
 CGI::CGI(
@@ -60,6 +64,10 @@ CGI::CGI(
 :HTTPMethodReceiver(subject, commands, method, as, path, query),
 _extensions(extensions)
 {
+	_c_to_p[IN] = -1;
+	_c_to_p[OUT] = -1;
+	_p_to_c[IN] = -1;
+	_p_to_c[OUT] = -1;
 }
 
 CGI::CGI(const CGI & another)
@@ -82,6 +90,12 @@ CGI::~CGI()
 	pid_t ret = ::waitpid(_pid, &status, WNOHANG);
 	if (ret == 0) {
 		::kill(_pid, SIGKILL);
+	}
+	close(_c_to_p[IN]);
+	getSubject()->unsubscribe(_c_to_p[IN], true);
+	if (_p_to_c[OUT] != -1) {
+		close(_p_to_c[OUT]);
+		getSubject()->unsubscribe(_p_to_c[OUT], true);
 	}
 }
 

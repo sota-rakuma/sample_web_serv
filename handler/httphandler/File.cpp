@@ -55,6 +55,7 @@ _index_file(index_file)
 File::~File()
 {
 	::close(_fd);
+	getSubject()->unsubscribe(_fd, true);
 }
 
 int File::processAutoindex() {
