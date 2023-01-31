@@ -1,5 +1,3 @@
-#!/usr/bin/perl
-
 print "Content-Type: text/html\n";
 print "\n";
 print "<html>\n";

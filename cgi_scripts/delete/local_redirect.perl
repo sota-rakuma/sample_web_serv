@@ -1,0 +1,1 @@
+print "/cgi/get/test.sh?valu1=ya-yaya-ya-&value2=yayaya-\n";

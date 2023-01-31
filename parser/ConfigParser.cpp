@@ -210,7 +210,7 @@ int ConfigParser::parseIndex(size_t index) {
 	size_t len = index_file.length();
 	size_t i = 0;
 	while (i < len) {
-		if (std::isalnum(index_file[i]) == 0 && index_file[i] != '.') {
+		if (isPrintable(index_file[i]) == 0 && index_file[i] != '.') {
 			std::cout << "index invalid" << std::endl;
 			return 1;
 		}
@@ -475,7 +475,7 @@ int ConfigParser::parseErrorPage() {
 		if (vec_pos == std::string::npos) {
 			vec.push_back(default_error_page.substr(i, len));
 			while (i < len) {
-				if (std::isalnum(default_error_page[i]) == 0 && default_error_page[i] != '.') {
+				if (isPrintable(default_error_page[i]) == 0 && default_error_page[i] != '.') {
 					std::cout << "default_error_page invalid" << std::endl;
 					return 1;
 				}
@@ -531,7 +531,7 @@ int ConfigParser::parseServerName() {
 	size_t len = server_name.length();
 	size_t i = 0;
 	while (i < len) {
-		if (std::isalnum(server_name[i++]) == 0) {
+		if (isPrintable(server_name[i++]) == 0) {
 			std::cout << "server_name invalid" << std::endl;
 			return 1;
 		}
