@@ -337,9 +337,7 @@ static void replacePath(
 	if (dest[target.size()] == '/') {
 		len += 1;
 	}
-	std::cout << "b4 replace: " << dest << std::endl;
 	dest.replace(0, len, src);
-	std::cout << "after replace path: " << dest << std::endl;
 }
 
 bool AcceptedSocket::setHTTPMethod(
