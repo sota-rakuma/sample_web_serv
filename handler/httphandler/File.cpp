@@ -121,12 +121,12 @@ int File::read()
 	char buff[BUFSIZE];
 	ssize_t nb = ::read(_fd, buff, BUFSIZE - 1);
 	if (nb < 0) {
-		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		getSubject()->unsubscribe(_fd, true);
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		return -1;
 	} else if (nb == 0) {
-		entrustCreateResponse();
 		getSubject()->unsubscribe(_fd, true);
+		entrustCreateResponse();
 		return 0;
 	}
 	buff[nb] = '\0';
@@ -138,8 +138,8 @@ int File::write()
 {
 	ssize_t nb = ::write(_fd, _buff.c_str(), _buff.size());
 	if (nb == -1) {
-		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		getSubject()->unsubscribe(_fd, true);
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		return -1;
 	}
 	if (nb < _buff.size()) {
@@ -147,8 +147,8 @@ int File::write()
 		return 1;
 	}
 	//_buff = "";
-	getSubject()->unsubscribe(_fd, true);
 	entrustCreateResponse();
+	getSubject()->unsubscribe(_fd, true);
 	return 0;
 }
 
