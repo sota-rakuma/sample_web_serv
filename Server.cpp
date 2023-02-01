@@ -64,9 +64,13 @@ void Server::setUpListenSocket()
 
 void Server::triggerEvent()
 {
+	ICommand *temp = static_cast<ICommand *>(NULL);
 	while (_commands.size() > 0) {
+		temp = *(_commands.begin());
 		(*(_commands.begin()))->execute();
-		_commands.pop_front();
+		if (temp == *(_commands.begin())) {
+			_commands.pop_front();
+		}
 	}
 }
 

@@ -111,11 +111,10 @@ void CGI::update(int event)
 		if (!(event & POLLIN)) {
 			getSubject()->unsubscribe(_p_to_c[OUT], true);
 		}
-	}
-
-	if (event & POLLOUT ) {
+	} else if (event & POLLOUT) {
 		getCommandList()->push_back(getWriteCommand());
-	} else if (event & POLLIN ) {
+	}
+	if (event & POLLIN) {
 		getCommandList()->push_back(getReadCommand());
 	}
 }
@@ -127,13 +126,13 @@ int CGI::read()
 	if (nb < 0) {
 		perror("read");
 		::close(_p_to_c[OUT]);
-		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		getSubject()->unsubscribe(_p_to_c[OUT], true);
 		getSubject()->unsubscribe(_c_to_p[IN], true);
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		return -1;
 	} else if (nb == 0) {
-		entrustCreateResponse();
 		getSubject()->unsubscribe(_c_to_p[IN], true);
+		entrustCreateResponse();
 		return 0;
 	}
 	buff[nb] = '\0';
@@ -147,9 +146,9 @@ int CGI::write()
 	if (nb == -1) {
 		perror("write");
 		::close(_p_to_c[OUT]);
-		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		getSubject()->unsubscribe(_c_to_p[IN], true);
 		getSubject()->unsubscribe(_p_to_c[OUT], true);
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		return -1;
 	}
 	if (nb < _buff.size()) {

@@ -117,6 +117,15 @@ _buff(buff)
 
 HTTPMethodReceiver::~HTTPMethodReceiver()
 {
+	for (std::list<ICommand *>::iterator it = getCommandList()->begin();
+		it != getCommandList()->end();)
+	{
+		if (*it == _method) {
+			getCommandList()->erase(it++);
+		} else {
+			++it;
+		}
+	}
 	delete _method;
 }
 
