@@ -1,1 +1,1 @@
-print "/cgi/get/test.sh?valu1=ya-yaya-ya-&value2=yayaya-\n";
+print "Location: /cgi/get/test.sh?valu1=ya-yaya-ya-&value2=yayaya-\n\n";

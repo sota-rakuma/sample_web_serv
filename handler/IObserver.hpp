@@ -5,7 +5,7 @@
 #include <list>
 
 #ifndef TIMEOUT
-#define TIMEOUT 5
+#define TIMEOUT 60
 #endif
 
 #ifndef EV_TIMEOUT
