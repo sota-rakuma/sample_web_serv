@@ -189,11 +189,6 @@ int ConfigParser::parseAlias(size_t index) {
 		}
 	}
 	_i = pos + find_word.length();
-	if (alias_path.size() == 0
-		|| alias_path[alias_path.size() - 1] != '/')
-	{
-		alias_path += '/';
-	}
 	_sc_vec[_server_i].setAlias(index, alias_path);
 	return 0;
 }

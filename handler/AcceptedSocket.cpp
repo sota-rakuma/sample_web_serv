@@ -334,9 +334,6 @@ static void replacePath(
 		return ;
 	}
 	size_t len = target.size();
-	if (dest[target.size()] == '/') {
-		len += 1;
-	}
 	dest.replace(0, len, src);
 }
 
