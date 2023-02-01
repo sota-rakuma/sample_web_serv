@@ -176,6 +176,10 @@ int File::httpGet()
 			return processAutoindex();
 		} else if (_index_file.size() > 0) {
 			_path += _index_file;
+			if (execStat() == -1) {
+				entrustCreateResponse(FORBIDDEN);
+				return -1;
+			}
 			return httpGet();
 		} else {
 			entrustCreateResponse(FORBIDDEN);
