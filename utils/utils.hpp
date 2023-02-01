@@ -24,5 +24,9 @@ bool isHexDig(char);
 bool isPrintable(char);
 char toLower(char);
 long getMilliTime();
+void strToLow(
+	std::string & target,
+	const std::string & raw
+);
 
 #endif /* UTILS_HPP */

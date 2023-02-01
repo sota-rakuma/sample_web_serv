@@ -592,7 +592,6 @@ void AcceptedSocket::createNormalResponse()
 
 int AcceptedSocket::processCGIResponse()
 {
-	std::cout << "receiver BUFF: " << _receiver->getContent() << std::endl;
 	int ret = _parser_ctx.execParse(_receiver->getContent());
 	if (ret == LOCAL_REDIR_RESPONSE) {
 		std::string path = _res.getHeaderValue("Location");

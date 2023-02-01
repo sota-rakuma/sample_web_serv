@@ -24,6 +24,7 @@ void Server::run()
 			throw std::runtime_error("Event Monitor Error");
 		}
 		if (_commands.size() == 0) {
+			usleep(100);
 			continue;
 		}
 		triggerEvent();
