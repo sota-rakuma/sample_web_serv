@@ -67,13 +67,9 @@ const ServerConfig::Location & ServerConfig::tryGetLocation(
 			candidate = i;
 			break;
 		}
-		size_t match = path.rfind(_locations[i].getPath(),
-					_locations[i].getPath().size() - 1);
-		if (match != std::string::npos &&
-			_locations[i].getPath().size() <= path.size() &&
-			(path[_locations[i].getPath().size()] == '/' ||
-				path[_locations[i].getPath().size()] == '\0'))
-		{
+
+		size_t match = path.find(_locations[i].getPath());
+		if (match == 0) {
 			candidate = i;
 		}
 	}
