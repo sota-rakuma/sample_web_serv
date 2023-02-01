@@ -337,8 +337,9 @@ static void replacePath(
 	if (dest[target.size()] == '/') {
 		len += 1;
 	}
+	std::cout << "b4 replace: " << dest << std::endl;
 	dest.replace(0, len, src);
-	std::cout << "path: " << dest << std::endl;
+	std::cout << "after replace path: " << dest << std::endl;
 }
 
 bool AcceptedSocket::setHTTPMethod(
@@ -773,7 +774,6 @@ void AcceptedSocket::internalRedirect(
 	delete _receiver;
 	setMethodReceiver();
 	translatePath(path, method_name);
-	std::cout << "path: " << path << std::endl;
 	size_t q = path.find('?');
 	if (q != std::string::npos) {
 		_receiver->setPath(path.substr(0, q));

@@ -66,8 +66,11 @@ void Server::triggerEvent()
 {
 	while (_commands.size() > 0) {
 		(*(_commands.begin()))->execute();
-		_commands.pop_front();
+		if (_commands.size() > 0) {
+			_commands.pop_front();
+		}
 	}
+	// _commands.clear();
 }
 
 const std::string & Server::getConfigPath() const

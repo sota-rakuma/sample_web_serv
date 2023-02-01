@@ -167,7 +167,10 @@ int ListenSocket::read()
 
 	fd = ::accept(_sockfd, (sockaddr *)&client_info, &len);
 	if (fd == -1) {
-		throw ListenSockError("accept");
+		if (errno != EAGAIN && errno == EWOULDBLOCK) {
+			throw ListenSockError("accept");
+		}
+		return 1;
 	}
 	fcntl(fd, F_SETFL, O_NONBLOCK);
 	new AcceptedSocket(getSubject(), getCommandList(), fd, client_info, _confs);

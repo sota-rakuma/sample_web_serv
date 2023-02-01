@@ -28,6 +28,15 @@ _write(new Write(this))
 
 IOEventHandler::~IOEventHandler()
 {
+	for (std::list<ICommand *>::iterator it = getCommandList()->begin();
+		it != getCommandList()->end();)
+	{
+		if (*it == _read || *it == _write) {
+			getCommandList()->erase(it++);
+		} else {
+			++it;
+		}
+	}
 	delete _read;
 	delete _write;
 }
