@@ -28,30 +28,30 @@
 #endif
 
 class CGIResponseParser : public Parser {
-    private:
-        std::string _raw;
-        size_t  _i;
-        int _res_type;
-        HTTPResponse *_http_res;
-    public:
-        CGIResponseParser();
-        CGIResponseParser(
-            HTTPResponse *
-        );
-        virtual ~CGIResponseParser();
-        virtual int parse(const std::string &);
-        int getResponseType();
-        int parseDocumentResponse();
-        int parseLocalRedirResponse();
-        int parseClientRedirResponse();
-        int parseClientRedirDocResponse();
-        int parseContentType();
-        int parseStatus();
-        int parseOtherField();
-        int parseClientLocation();
-        int parseResponseBody();
-        int treatNL(std::string &, size_t &, size_t &);
-        HTTPResponse *getHTTPResponse() const {return _http_res;};
+	private:
+		std::string _raw;
+		size_t  _i;
+		int _res_type;
+		HTTPResponse *_http_res;
+	public:
+		CGIResponseParser();
+		CGIResponseParser(
+			HTTPResponse *
+		);
+		virtual ~CGIResponseParser();
+		virtual int parse(const std::string &);
+		int getResponseType();
+		int parseDocumentResponse();
+		int parseLocalRedirResponse();
+		int parseClientRedirResponse();
+		int parseClientRedirDocResponse();
+		int parseContentType();
+		int parseStatus();
+		int parseOtherField();
+		int parseClientLocation();
+		int parseResponseBody();
+		int treatNL(std::string &, size_t &, size_t &);
+		HTTPResponse *getHTTPResponse() const {return _http_res;};
 };
 
 #endif /* CGIRESPONSEPARSER_HPP */

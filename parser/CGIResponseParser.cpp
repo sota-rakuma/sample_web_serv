@@ -347,5 +347,7 @@ int CGIResponseParser::parse(const std::string &raw) {
 			return -1;
 			break;
 	}
+	_raw.clear();
+	_i = 0;
 	return _res_type;
 }
