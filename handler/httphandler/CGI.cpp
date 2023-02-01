@@ -122,7 +122,6 @@ void CGI::update(int event)
 int CGI::read()
 {
 	char buff[BUFSIZE];
-	std::cout << addColorText("READ 開始", BLUE) << std::endl;
 	ssize_t nb = ::read(_c_to_p[IN], buff, BUFSIZE - 1);
 	if (nb < 0) {
 		perror("read");
@@ -132,7 +131,6 @@ int CGI::read()
 		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		return -1;
 	} else if (nb == 0) {
-		std::cout << addColorText("READ 終わり", GREEN) << std::endl;
 		getSubject()->unsubscribe(_c_to_p[IN], true);
 		entrustCreateResponse();
 		return 0;

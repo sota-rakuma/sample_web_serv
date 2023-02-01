@@ -64,13 +64,14 @@ void Server::setUpListenSocket()
 
 void Server::triggerEvent()
 {
+	ICommand *temp = static_cast<ICommand *>(NULL);
 	while (_commands.size() > 0) {
+		temp = *(_commands.begin());
 		(*(_commands.begin()))->execute();
-		if (_commands.size() > 0) {
+		if (temp == *(_commands.begin())) {
 			_commands.pop_front();
 		}
 	}
-	// _commands.clear();
 }
 
 const std::string & Server::getConfigPath() const
