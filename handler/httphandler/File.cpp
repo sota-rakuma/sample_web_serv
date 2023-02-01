@@ -105,6 +105,7 @@ int File::processAutoindex() {
 void File::update(int event)
 {
 	if (event & (POLLHUP | POLLERR | POLLNVAL)) {
+		perror("poll");
 		getSubject()->unsubscribe(_fd, true);
 		return ;
 	}

@@ -7,7 +7,7 @@
 #include <unistd.h>
 
 #ifndef LISTEN_BACKLOG
-#define LISTEN_BACKLOG 50
+#define LISTEN_BACKLOG 100
 #endif
 
 ListenSocket::ListenSockError::ListenSockError()
@@ -167,7 +167,8 @@ int ListenSocket::read()
 
 	fd = ::accept(_sockfd, (sockaddr *)&client_info, &len);
 	if (fd == -1) {
-		if (errno != EAGAIN && errno == EWOULDBLOCK) {
+		perror("accept");
+		if (errno != EAGAIN && errno == EWOULDBLOCK && errno != ECONNABORTED) {
 			throw ListenSockError("accept");
 		}
 		return 1;
