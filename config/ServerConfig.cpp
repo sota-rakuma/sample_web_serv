@@ -20,7 +20,7 @@ ServerConfig::~ServerConfig()
 
 ServerConfig::Location::Location()
 :_alias(), _index_file(), _upload_place(), _autoindex(false),
-_cgi_extensions()
+_cgi_extensions(),_is_exact(false)
 {
 	_allowed_method["GET"] = false;
 	_allowed_method["POST"] = false;
@@ -36,7 +36,8 @@ _upload_place(another._upload_place),
 _autoindex(another._autoindex),
 _allowed_method(another._allowed_method),
 _return(another._return),
-_cgi_extensions(another._cgi_extensions)
+_cgi_extensions(another._cgi_extensions),
+_is_exact(another._is_exact)
 {
 }
 
@@ -58,18 +59,20 @@ const ServerConfig::Location & ServerConfig::tryGetLocation(
 	const std::string & path
 ) const
 {
-	size_t slash = path.rfind('/');
-	if (slash == std::string::npos) {
-		throw std::runtime_error("this resource is forbidden");
-	}
 	size_t candidate = _locations.size();
 	for (size_t i = 0; i < _locations.size(); i++)
 	{
-		if (slash < _locations[i].getPath().size() - 1) {
-			continue;
+		if (_locations[i].isExact() == true &&
+			path == _locations[i].getPath()) {
+			candidate = i;
+			break;
 		}
-		if (path.rfind(_locations[i].getPath(),
-					_locations[i].getPath().size() - 1) != std::string::npos)
+		size_t match = path.rfind(_locations[i].getPath(),
+					_locations[i].getPath().size() - 1);
+		if (match != std::string::npos &&
+			_locations[i].getPath().size() <= path.size() &&
+			(path[_locations[i].getPath().size()] == '/' ||
+				path[_locations[i].getPath().size()] == '\0'))
 		{
 			candidate = i;
 		}
@@ -176,10 +179,19 @@ void ServerConfig::setPath(
 	_locations[index].setLocationPath(path);
 }
 
+void ServerConfig::setExact(
+	size_t index,
+	bool f
+)
+{
+	_locations[index].setExact(f);
+}
+
 void ServerConfig::addLocation()
 {
 	_locations.push_back(Location());
 }
+
 
 void ServerConfig::Location::setLocationAllowedMethod(const std::map<std::string, bool> &method_map) {
 	for (std::map<std::string, bool>::const_iterator it = method_map.begin();
@@ -245,6 +257,13 @@ void ServerConfig::Location::setLocationExtension(
 	}
 }
 
+void ServerConfig::Location::setExact(
+	bool f
+)
+{
+	_is_exact = f;
+}
+
 const std::string & ServerConfig::Location::getPath() const
 {
 	return _path;
@@ -277,7 +296,12 @@ const std::map<std::string, bool> &ServerConfig::Location::getAllowedMethod() co
 const std::vector<std::string> & ServerConfig::Location::getCgiExtensions() const
 {
 	return _cgi_extensions;
-};
+}
+
+bool ServerConfig::Location::isExact() const
+{
+	return _is_exact;
+}
 
 const std::pair<int, std::string>& ServerConfig::Location::getReturn() const
 {

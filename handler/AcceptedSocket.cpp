@@ -278,7 +278,25 @@ bool AcceptedSocket::prepareEvent()
 		);
 		return false;
 	}
+	if (checMethodAllowed(_req.getRequestLine().getMethod()) == false) {
+		return false;
+	}
+	setMethodReceiver();
+	if (_is_cgi == true && prepareCGI() == false) {
+		return false;
+	}
+	if (_req.getRequestLine().getQuery().size() > 0) {
+		_receiver->setQuery(_req.getRequestLine().getQuery());
+	}
 	const std::string & method = _req.getRequestLine().getMethod();
+	std::string path = _req.getRequestLine().getPath();
+	return setHTTPMethod(method, path);
+}
+
+bool AcceptedSocket::checMethodAllowed(
+	const std::string & method
+)
+{
 	const std::map<std::string, bool>::const_iterator it = \
 		_location.getAllowedMethod().find(method);
 	if (it == _location.getAllowedMethod().end()) {
@@ -288,25 +306,23 @@ bool AcceptedSocket::prepareEvent()
 		createErrorResponse(METHOD_NOT_ALLOWED);
 		return false;
 	}
+	return true;
+}
+
+void AcceptedSocket::setMethodReceiver()
+{
 	if (_location.getCgiExtensions().size() > 0) {
-		if (prepareCGI() == false) {
-			return false;
-		}
 		_is_cgi = true;
 		_receiver = new CGI(getSubject(),
 							getCommandList(),
 							this,
 							_location.getCgiExtensions());
-	} else {
-		_receiver = new File(getSubject(), getCommandList(),
-						this,
-						_location.getAutoIndex(),
-						_location.getIndexFile());
+		return ;
 	}
-	if (_req.getRequestLine().getQuery().size() > 0) {
-		_receiver->setQuery(_req.getRequestLine().getQuery());
-	}
-	return setHTTPMethod();
+	_receiver = new File(getSubject(), getCommandList(),
+					this,
+					_location.getAutoIndex(),
+					_location.getIndexFile());
 }
 
 static void replacePath(
@@ -322,22 +338,21 @@ static void replacePath(
 		len += 1;
 	}
 	dest.replace(0, len, src);
+	std::cout << "path: " << dest << std::endl;
 }
 
-bool AcceptedSocket::setHTTPMethod()
+bool AcceptedSocket::setHTTPMethod(
+	const std::string & method,
+	std::string & path
+)
 {
-	const HTTPRequest::RequestLine & rl = _req.getRequestLine();
-	if (rl.getMethod() == POST) {
+	if (method == POST) {
 		_receiver->setHTTPMethod(new Post(_receiver));
-		return preparePostEvent();
+		return preparePostEvent(path);
 	}
 
-	std::string path = rl.getPath();
-	if (_location.getAlias().size() > 0) {
-		replacePath(path, _location.getPath(), _location.getAlias());
-	}
-	_receiver->setPath(path);
-	if (rl.getMethod() == GET) {
+	translatePath(path, method);
+	if (method == GET) {
 		_receiver->setHTTPMethod(new Get(_receiver));
 	} else {
 		_receiver->setHTTPMethod(new Delete(_receiver));
@@ -346,16 +361,11 @@ bool AcceptedSocket::setHTTPMethod()
 	return true;
 }
 
-bool AcceptedSocket::preparePostEvent()
+bool AcceptedSocket::preparePostEvent(
+	std::string & path
+)
 {
-	std::string path = _req.getRequestLine().getPath();
-	if (_location.getUploadPlace().size() > 0)
-	{
-		replacePath(path, _location.getPath(), _location.getUploadPlace());
-	} else if (_location.getAlias().size() > 0) {
-		replacePath(path, _location.getPath(), _location.getAlias());
-	}
-	_receiver->setPath(path);
+	translatePath(path, POST);
 	try
 	{
 		const std::string & te = _req.tryGetHeaderValue("transfer-encoding");
@@ -386,6 +396,24 @@ bool AcceptedSocket::preparePostEvent()
 	_progress = RECEIVE_REQUEST_BODY;
 	_buff.clear();
 	return true;
+}
+
+void AcceptedSocket::translatePath(
+	std::string & path,
+	const std::string &method_name
+)
+{
+	if (method_name == POST &&
+		_location.getUploadPlace().size() > 0) {
+		replacePath(path,
+					_location.getPath(),
+					_location.getUploadPlace());
+	} else if (_location.getAlias().size() > 0) {
+		replacePath(path,
+					_location.getPath(),
+					_location.getAlias());
+	}
+	_receiver->setPath(path);
 }
 
 size_t AcceptedSocket::processRequestBody(
@@ -538,7 +566,9 @@ void AcceptedSocket::createNormalResponse()
 	int ret;
 	_buff.clear();
 	if (isCGI() == true) {
-		processCGIResponse();
+		if (processCGIResponse() == 1) {
+			return ;
+		}
 	} else {
 		int status = static_cast<int>(_status);
 		if (_status == CREATED) {
@@ -564,26 +594,21 @@ void AcceptedSocket::createNormalResponse()
 	processResponse();
 }
 
-void AcceptedSocket::processCGIResponse()
+int AcceptedSocket::processCGIResponse()
 {
 	std::cout << "receiver BUFF: " << _receiver->getContent() << std::endl;
 	int ret = _parser_ctx.execParse(_receiver->getContent());
 	if (ret == LOCAL_REDIR_RESPONSE) {
-		HTTPMethodReceiver * cgi = new CGI(
-			getSubject(),
-			getCommandList(),
-			this,
-			_location.getCgiExtensions()
-		);
-		internalRedirect(cgi,
-				_req.getRequestLine().getMethod(),
-				_res.getHeaderValue("Location"));
-		return ;
+		std::string path = _res.getHeaderValue("Location");
+		internalRedirect(_req.getRequestLine().getMethod(),
+						path);
+		return 1;
 	}
 	if (ret == ERROR) {
 		_buff.clear();
 		createErrorResponse(INTERNAL_SERVER_ERROR);
 	}
+	return 0;
 }
 
 static void getGMTTime(
@@ -635,6 +660,8 @@ void AcceptedSocket::createRedirectResponse(
 	_res.insertHeaderField("Location", _location.getReturn().second);
 	createGeneralHeader();
 	createResponseTemplate();
+	_progress = SEND_STATUS_LINE;
+	processResponse();
 }
 
 void AcceptedSocket::createErrorResponse(
@@ -647,10 +674,8 @@ void AcceptedSocket::createErrorResponse(
 	if (ep != _config.getDefaultErrorPage().end())
 	{
 		_res.insertHeaderField("Content-Type", "text/html");
-		HTTPMethodReceiver *hr = new File(getSubject(), getCommandList(), this,
-							_location.getAutoIndex(),
-							_location.getIndexFile());
-		internalRedirect(hr, GET, ep->second);
+		std::string path = ep->second;
+		internalRedirect(GET, path);
 		_config.eraseDefaultErrorPage(ep->first);
 		return ;
 	}
@@ -694,36 +719,61 @@ void AcceptedSocket::processResponse()
 }
 
 void AcceptedSocket::internalRedirect(
-	HTTPMethodReceiver * receiver,
 	const std::string & method_name,
-	const std::string & path,
+	std::string & path,
 	const std::string & query
 )
 {
+	try
+	{
+		_location = _config.tryGetLocation(path);
+	}
+	catch(const std::exception& e)
+	{
+		createErrorResponse(FORBIDDEN);
+		return ;
+	}
+	if (checMethodAllowed(method_name) == false) {
+		return ;
+	}
 	delete _receiver;
-	_receiver = receiver;
+	setMethodReceiver();
+	translatePath(path, method_name);
 	_receiver->setPath(path);
 	_receiver->setQuery(query);
 	HTTPMethod * method = static_cast<HTTPMethod *>(NULL);
 	if (method_name == GET) {
-		method = new Get(receiver);
+		method = new Get(_receiver);
 	} else if (method_name == POST) {
-		method = new Post(receiver);
+		method = new Post(_receiver);
 	} else {
-		method = new Delete(receiver);
+		method = new Delete(_receiver);
 	}
 	_receiver->setHTTPMethod(method);
 	addCommand(method);
 }
 
 void AcceptedSocket::internalRedirect(
-	HTTPMethodReceiver * receiver,
 	const std::string & method_name,
-	const std::string & path
+	std::string & path
 )
 {
+	try
+	{
+		_location = _config.tryGetLocation(path);
+	}
+	catch(const std::exception& e)
+	{
+		createErrorResponse(FORBIDDEN);
+		return ;
+	}
+	if (checMethodAllowed(method_name) == false) {
+		return ;
+	}
 	delete _receiver;
-	_receiver = receiver;
+	setMethodReceiver();
+	translatePath(path, method_name);
+	std::cout << "path: " << path << std::endl;
 	size_t q = path.find('?');
 	if (q != std::string::npos) {
 		_receiver->setPath(path.substr(0, q));
@@ -733,11 +783,11 @@ void AcceptedSocket::internalRedirect(
 	}
 	HTTPMethod * method = static_cast<HTTPMethod *>(NULL);
 	if (method_name == GET) {
-		method = new Get(receiver);
+		method = new Get(_receiver);
 	} else if (method_name == POST) {
-		method = new Post(receiver);
+		method = new Post(_receiver);
 	} else {
-		method = new Delete(receiver);
+		method = new Delete(_receiver);
 	}
 	_receiver->setHTTPMethod(method);
 	addCommand(method);

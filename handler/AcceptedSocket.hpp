@@ -72,8 +72,21 @@ private:
 	int validateRequest();
 	int processObsFold();
 	bool prepareEvent();
-	bool preparePostEvent();
-	bool setHTTPMethod();
+	bool checMethodAllowed(
+		const std::string &
+	);
+	bool preparePostEvent(
+		std::string &
+	);
+	void setMethodReceiver();
+	bool setHTTPMethod(
+		const std::string &,
+		std::string &
+	);
+	void translatePath(
+		std::string &,
+		const std::string &
+	);
 	bool isCGI() const;
 	bool prepareCGI();
 	void createGeneralHeader();
@@ -83,17 +96,15 @@ private:
 	void createResponseTemplate();
 	void processResponse();
 	void internalRedirect(
-		HTTPMethodReceiver *,
 		const std::string &,
-		const std::string &,
+		std::string &,
 		const std::string &
 	);
 	void internalRedirect(
-		HTTPMethodReceiver *,
 		const std::string &,
-		const std::string &
+		std::string &
 	);
-	void processCGIResponse();
+	int processCGIResponse();
 public:
 	AcceptedSocket();
 	AcceptedSocket(

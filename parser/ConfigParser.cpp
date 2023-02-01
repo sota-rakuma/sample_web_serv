@@ -372,10 +372,15 @@ int ConfigParser::parseArrangedLocationDirectives
 
 int ConfigParser::parseLocation() {
 	std::string find_word = " {\n";
+	bool is_exact = false;
 	size_t pos = _raw.find(find_word, _i);
 	if (pos == std::string::npos) {
 		std::cout << "find() in parseLocation failed" << std::endl;
 		return 1;
+	}
+	if (_raw[_i] == '=') {
+		is_exact = true;
+		_i += 1;
 	}
 	std::string path = _raw.substr(_i, pos - _i);
 	size_t len = path.length();
@@ -405,6 +410,7 @@ int ConfigParser::parseLocation() {
 	_sc_vec[_server_i].addLocation();
 	size_t index = _sc_vec[_server_i].getLocationVec().size() - 1;
 	_sc_vec[_server_i].setPath(index, path);
+	_sc_vec[_server_i].setExact(index, is_exact);
 	_i = pos + find_word.length();
 
 	if (parseArrangedLocationDirectives(index) != 0) {

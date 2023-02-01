@@ -20,6 +20,7 @@ public:
 		bool _autoindex;
 		std::pair<int, std::string> _return;
 		std::vector<std::string> _cgi_extensions;
+		bool _is_exact;
 	public:
 		Location();
 		Location(const ServerConfig::Location & another);
@@ -38,6 +39,7 @@ public:
 		void setLocationAutoIndex(bool on);
 		void setLocationReturn(const int, const std::string &);
 		void setLocationExtension(const std::vector<std::string> &);
+		void setExact(bool);
 		// for test
 		const std::string & getPath() const;
 		const std::string & getAlias() const;
@@ -47,6 +49,7 @@ public:
 		const std::map<std::string, bool> &getAllowedMethod() const;
 		const std::vector<std::string> & getCgiExtensions() const;
 		const std::pair<int, std::string>& getReturn() const;
+		bool isExact() const;
 	};
 private:
 	std::string _listen;
@@ -92,6 +95,7 @@ public:
 		size_t,
 		const std::string &
 	);
+	void setExact(size_t, bool);
 	void addLocation();
 	 // for test
 	const std::string &getListen() const;
