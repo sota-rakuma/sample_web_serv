@@ -30,6 +30,7 @@
 class CGIResponseParser : public Parser {
 	private:
 		std::string _raw;
+		std::string _raw_low;
 		size_t  _i;
 		int _res_type;
 		HTTPResponse *_http_res;
