@@ -61,11 +61,15 @@ void EventMonitor::insertTimer(
 	int fd
 )
 {
+	if (_tm.size() == 0) {
+		_tm.push_back(std::make_pair(timeout, fd));
+		return ;
+	}
 	for (std::list<std::pair<long, int> >::iterator it = _tm.begin();
 		it != _tm.end();
 		it++)
 	{
-		if (it->first < timeout) {
+		if (it->first <= timeout) {
 			_tm.insert(it, std::make_pair(timeout, fd));
 			break;
 		}
@@ -166,15 +170,17 @@ int EventMonitor::findTimer()
 	if (_tm.size() == 0) {
 		return -1;
 	}
-	while (timer <= 0)
+	while (_tm.begin() != _tm.end())
 	{
 		timer = _tm.begin()->first - getMilliTime();
 		if (timer <= 0) {
 			notify(_tm.begin()->second, EV_TIMEOUT);
+		} else {
+			break;
 		}
-		if (_tm.begin() == _tm.end()) {
-			return -1;
-		}
+	}
+	if (_tm.begin() == _tm.end()) {
+		return -1;
 	}
 
 	if (timer > INT_MAX) {
