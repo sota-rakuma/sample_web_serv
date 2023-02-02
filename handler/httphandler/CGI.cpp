@@ -104,6 +104,7 @@ void CGI::update(int event)
 	if (event & (POLLNVAL | POLLERR)) {
 		getSubject()->unsubscribe(_p_to_c[OUT], true);
 		getSubject()->unsubscribe(_c_to_p[IN], true);
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		return ;
 	}
 

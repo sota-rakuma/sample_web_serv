@@ -112,6 +112,7 @@ void File::update(int event)
 
 	if (event & POLLOUT) {
 		getCommandList()->push_back(getWriteCommand());
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 	} else if (event == POLLIN) {
 		getCommandList()->push_back(getReadCommand());
 	}
