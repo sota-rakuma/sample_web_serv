@@ -107,12 +107,12 @@ void File::update(int event)
 	if (event & (POLLHUP | POLLERR | POLLNVAL)) {
 		perror("poll");
 		getSubject()->unsubscribe(_fd, true);
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		return ;
 	}
 
 	if (event & POLLOUT) {
 		getCommandList()->push_back(getWriteCommand());
-		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 	} else if (event == POLLIN) {
 		getCommandList()->push_back(getReadCommand());
 	}
@@ -140,6 +140,7 @@ int File::write()
 {
 	ssize_t nb = ::write(_fd, _buff.c_str(), _buff.size());
 	if (nb == -1) {
+		perror("write");
 		getSubject()->unsubscribe(_fd, true);
 		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		return -1;
