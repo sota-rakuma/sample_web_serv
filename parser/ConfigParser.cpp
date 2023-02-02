@@ -2,7 +2,6 @@
 #include "../utils/utils.hpp"
 #include <cstdlib>
 
-// ConfigParser::ConfigParser() : _i(0), _server_index(0) {
 ConfigParser::ConfigParser() : _i(0), _server_i(0){
 	std::string sd_tmp[] = {"\tlisten ", "\tserver_name ", "\tmax_body_size ", "\terror_page ", "\n\tlocation "};
 	for (size_t i = 0; i < sizeof(sd_tmp) / sizeof(std::string); i++) {
@@ -53,7 +52,6 @@ int ConfigParser::parseExtension(
 				i++;
 			}
 			vec.push_back(extension.substr(i_tmp, i));
-			// i = vec_pos + separator.length();
 			break;
 		} else {
 			while (i < vec_pos) {
@@ -130,9 +128,7 @@ int ConfigParser::parseReturn(size_t index) {
 		return 1;
 	}
 	int status_code = std::atoi((ret.substr(0, 3)).c_str());
-	// TargetParserでパースする　（今のところALPHAしか許可してない）
 	std::string return_uri = ret.substr(i, pos - _i - i);
-	// size_t len = return_uri.length();
 	TargetParser tp;
 	if (tp.parse(return_uri) == -1) {
 		std::cout << "return_uri invalid" << std::endl;
@@ -380,10 +376,6 @@ int ConfigParser::parseLocation() {
 	}
 	std::string path = _raw.substr(_i, pos - _i);
 	size_t len = path.length();
-	// pathの文字数に制限をつける場合
-	// if (len >= ??) {
-	// }
-
 	size_t i = 0;
 	while (i < len) {
 		if (path[i++] != '/') {
@@ -433,7 +425,6 @@ int ConfigParser::parseErrorPage() {
 	}
 	status_code_tmp = std::atoi((_raw.substr(_i - 4, 3)).c_str());
 	status_codes.push_back(status_code_tmp);
-	// size_t status_codes_len = 4;
 	while (std::isdigit(_raw[_i])) {
 		i = 0;
 		while (i < 3) {
@@ -449,7 +440,6 @@ int ConfigParser::parseErrorPage() {
 			std::cout << "status_code in parseErrorPage invalid" << std::endl;
 			return 1;
 		}
-		// status_codes_len += 4;
 		status_code_tmp = std::atoi((_raw.substr(_i - 4, 3)).c_str());
 		status_codes.push_back(status_code_tmp);
 	}
@@ -461,9 +451,6 @@ int ConfigParser::parseErrorPage() {
 	}
 	std::string default_error_page = _raw.substr(_i, pos - _i);
 	size_t len = default_error_page.length();
-	// default_error_pageの文字数に制限をつける場合
-	// if (len >= ??) {
-	// }
 	i = 0;
 	std::vector<std::string> vec;
 	std::string separator = "/";
@@ -688,7 +675,7 @@ int ConfigParser::parse(const std::string &file) {
 			std::cout << "parseServer() failed" << std::endl;
 			return 1;
 		}
-		if (_raw[_i] == '\n') {// 改行分
+		if (_raw[_i] == '\n') {
 			_i++;
 		}
 	}
@@ -699,41 +686,3 @@ const std::vector<ServerConfig> & ConfigParser::getScVec() const
 {
 	return _sc_vec;
 }
-
-// int main() {
-//     ConfigParser cp;
-//     if (cp.parse("zzz.conf") != 0) {
-//         std::cout << "parse() failed" << std::endl;
-//         return 1;
-//     }
-//     // for test
-//     std::cout << "parse() successed" << std::endl;
-//     std::cout << "sc_vec_size = " << cp.getScVecSize() << std::endl;
-//     std::cout << "-----------------------------------------" << std::endl;
-//     for (size_t i = 0; i < cp.getScVecSize(); i++) {
-//         std::cout << "_listen[" << i << "] = " << cp.getListen(i) << std::endl;
-//         std::cout << "_server_name[" << i << "] = " << cp.getServerName(i) << std::endl;
-//         std::cout << "_max_body_size[" << i << "] = " << cp.getMaxBodySize(i) << std::endl;
-//         std::cout << "_default_error_page[" << "0" << "][400] = " << cp.getDefaultErrorPage(0)[400] << std::endl;
-//         std::cout << "_default_error_page[" << "0" << "][404] = " << cp.getDefaultErrorPage(0)[404] << std::endl;
-//         std::cout << "_default_error_page[" << "0" << "][500] = " << cp.getDefaultErrorPage(0)[500] << std::endl;
-//         std::cout << "_default_error_page[" << "1" << "][404] = " << cp.getDefaultErrorPage(1)[404] << std::endl;
-//         std::cout << "alias[/] = " << cp.getLocationVec(i)["/"].getAlias() << std::endl;
-//         std::cout << "alias[/bbb] = " << cp.getLocationVec(i)["/bbb"].getAlias() << std::endl;
-//         std::cout << "index_file[/] = " << cp.getLocationVec(i)["/"].getIndexFile() << std::endl;
-//         std::cout << "index_file[/bbb] = " << cp.getLocationVec(i)["/bbb"].getIndexFile() << std::endl;
-//         std::cout << "upload_place[/] = " << cp.getLocationVec(i)["/"].getUploadPlace() << std::endl;
-//         std::cout << "autoindex[/] = " << cp.getLocationVec(i)["/"].getAutoIndex() << std::endl;
-//         std::cout << cp.getLocationVec(i)["/"].getAllowedMethod().size() << std::endl;
-//         for (size_t j = 0; j < cp.getLocationVec(i)["/"].getAllowedMethod().size(); j++) {
-//             std::cout << "allowed_method[/] = " << cp.getLocationVec(i)["/"].getAllowedMethod()[j] << std::endl;
-//         }
-//         for (size_t j = 0; j < cp.getLocationVec(i)["/"].getCgiExtensions().size(); j++) {
-//             std::cout << "extension[/] = " << cp.getLocationVec(i)["/"].getCgiExtensions()[j] << std::endl;
-//         }
-//         std::cout << "return.key = " << cp.getLocationVec(i)["/"].getReturn().first << std::endl;
-//         std::cout << "return.value = " << cp.getLocationVec(i)["/"].getReturn().second << std::endl;
-//         std::cout << "-----------------------------------------" << std::endl;
-//     }
-//     return 0;
-// }
