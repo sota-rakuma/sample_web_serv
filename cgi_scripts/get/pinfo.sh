@@ -1,6 +1,6 @@
 #!/bin/sh
 
-echo "Content-Type: text/html"
+echo "content-Type: text/html"
 echo "" 
 echo "<html><head><title>test</title></head>"
 echo "<body>"
