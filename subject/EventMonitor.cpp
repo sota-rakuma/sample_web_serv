@@ -1,7 +1,7 @@
 #include "EventMonitor.hpp"
-#include <cstddef>
 #include <unistd.h>
-#include <typeinfo>
+#include <climits>
+#include <cstdlib>
 #include <string>
 
 EventMonitor::EventMonitor()
@@ -14,7 +14,7 @@ _storage()
 		setenv("SERVER_SOFTWARE", "42WebServ", 1) == -1)
 	{
 		perror("setenv");
-		exit(1);
+		std::exit(1);
 	}
 }
 

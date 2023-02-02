@@ -1,6 +1,5 @@
 CXX:=c++
-CXXFLAGS:=-MMD -MP -std=c++98 -fsanitize=address
-# -Wall -Werror -Wextra
+CXXFLAGS:=-MMD -MP -std=c++98 -Wall -Werror -Wextra #-fsanitize=address
 NAME:=server
 SRCS_WITH_TEST:=$(wildcard *.cpp */*.cpp */*/*.cpp)
 SRCS=$(filter-out $(wildcard test/*.cpp), $(SRCS_WITH_TEST))

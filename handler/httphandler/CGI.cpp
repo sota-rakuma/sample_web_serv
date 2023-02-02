@@ -5,6 +5,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sstream>
+#include <cstdlib>
+#include <cerrno>
 
 extern char **environ;
 
@@ -279,18 +281,18 @@ bool CGI::executeCGI(const std::string & method)
 	if (_pid == 0) {
 		close(_c_to_p[IN]);
 		if (dup2(_c_to_p[OUT], STDOUT_FILENO) == -1)
-			exit(1);
+			std::exit(1);
 		if (method == POST) {
 			close(_p_to_c[OUT]);
 			if (dup2(_p_to_c[IN], STDIN_FILENO) == -1)
-				exit(1);
+				std::exit(1);
 		}
 		char *arg[3] = {const_cast<char *>(_command.c_str()),
 						const_cast<char *>(getPath().c_str()),
 						NULL};
 		if (execve(arg[0], arg, environ) == -1) {
 			// INTERNAL_SERVER_ERROR
-			exit(1);
+			std::exit(1);
 		}
 	} else {
 		close(_c_to_p[OUT]);

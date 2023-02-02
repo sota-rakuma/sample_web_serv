@@ -243,13 +243,16 @@ HTTPRequest::getHeaderField() const
 	return _hf;
 }
 
-// 全て小文字
 const std::string &
 HTTPRequest::tryGetHeaderValue(
 	const std::string & key
 ) const
 {
-	return _hf.at(key);
+	std::map<std::string, std::string>::const_iterator it = _hf.find(key);
+	if (it == _hf.end()) {
+		throw std::runtime_error("not found");
+	}
+	return it->second;
 }
 
 const std::string &

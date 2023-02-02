@@ -13,6 +13,7 @@
 #include <arpa/inet.h>
 #include <cstdio>
 #include <ctime>
+#include <cstdlib>
 
 AcceptedSocket::AcceptedSocket()
 :IOEventHandler()

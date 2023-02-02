@@ -1,5 +1,6 @@
 #include "ConfigParser.hpp"
 #include "../utils/utils.hpp"
+#include <cstdlib>
 
 // ConfigParser::ConfigParser() : _i(0), _server_index(0) {
 ConfigParser::ConfigParser() : _i(0), _server_i(0){
@@ -665,7 +666,7 @@ int ConfigParser::parseServer() {
 }
 
 int ConfigParser::checkPermission(const std::string &file) {
-	std::ifstream ifs(file);
+	std::ifstream ifs(file.c_str());
 	if (!ifs.is_open()) {
 		std::cout << "open failed" << std::endl;
 		return 1;

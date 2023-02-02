@@ -28,7 +28,7 @@ static std::pair<HTTPStatus, std::string> temp[] = {
 	std::make_pair(HTTP_VERSION_NOT_SUPPORTED, "HTTP Version Not Supported")
 };
 
-std::map<HTTPStatus, const std::string &> HTTPResponse::_err_msg(temp, temp + getSize(temp));
+std::map<HTTPStatus, const std::string> HTTPResponse::_err_msg(temp, temp + getSize(temp));
 
 HTTPResponse::StatusLine::StatusLine()
 :_version("HTTP/1.1"),
@@ -148,7 +148,11 @@ const std::string & HTTPResponse::getHeaderValue(
 	const std::string & key
 ) const
 {
-	return _hf.at(key);
+	std::map<std::string, std::string>::const_iterator it = _hf.find(key);
+	if (it == _hf.end()) {
+		throw std::runtime_error("not found");
+	}
+	return it->second;
 }
 
 const std::string & HTTPResponse::getMessageBody() const
@@ -163,7 +167,7 @@ HTTPResponse & HTTPResponse::setStatusCode(
 	if (_statl.getCode() != "default") {
 		return *this;
 	}
-	std::map<HTTPStatus, const std::string &>::const_iterator reason = _err_msg.find(status);
+	std::map<HTTPStatus, const std::string>::const_iterator reason = _err_msg.find(status);
 	std::stringstream ss;
 	ss << status;
 	_statl.setCode(ss.str());
@@ -190,7 +194,7 @@ HTTPResponse & HTTPResponse::setStatusCode(
 	if (ss) {
 		return *this;
 	}
-	std::map<HTTPStatus, const std::string &>::const_iterator reason = _err_msg.find(static_cast<HTTPStatus>(s));
+	std::map<HTTPStatus, const std::string>::const_iterator reason = _err_msg.find(static_cast<HTTPStatus>(s));
 	if (reason == _err_msg.end()) {
 		return *this;
 	}
