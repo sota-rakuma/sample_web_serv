@@ -2,7 +2,8 @@
 #include "../utils/utils.hpp"
 #include <cstdlib>
 
-ConfigParser::ConfigParser() : _i(0), _server_i(0){
+ConfigParser::ConfigParser() : _server_i(0), _i(0)
+{
 	std::string sd_tmp[] = {"\tlisten ", "\tserver_name ", "\tmax_body_size ", "\terror_page ", "\n\tlocation "};
 	for (size_t i = 0; i < sizeof(sd_tmp) / sizeof(std::string); i++) {
 		_searched_directives.push_back(sd_tmp[i]);
@@ -685,4 +686,49 @@ int ConfigParser::parse(const std::string &file) {
 const std::vector<ServerConfig> & ConfigParser::getScVec() const
 {
 	return _sc_vec;
+}
+
+size_t ConfigParser::getScVecSize() const
+{
+	return _sc_vec.size();
+};
+
+const std::string & ConfigParser::getListen(
+	size_t i
+) const
+{
+	return _sc_vec[i].getListen();
+}
+
+const std::string & ConfigParser::getServerName(
+	size_t i
+) const
+{
+	return _sc_vec[i].getServerName();
+}
+
+int ConfigParser::getMaxBodySize(size_t i) const
+{
+	return _sc_vec[i].getMaxBodySize();
+}
+
+const std::map<int, std::string> &
+ConfigParser::getDefaultErrorPage(size_t i) const
+{
+	return _sc_vec[i].getDefaultErrorPage();
+}
+
+const std::vector<ServerConfig::Location> &
+ConfigParser::getLocationVec(size_t i) const
+{
+	return _sc_vec[i].getLocationVec();
+}
+
+const ServerConfig::Location & ConfigParser::getLocation(
+	size_t index,
+	const std::string & path
+
+) const
+{
+	return _sc_vec[index].tryGetLocation(path);
 }

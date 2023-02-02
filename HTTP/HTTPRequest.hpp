@@ -17,7 +17,6 @@ public:
 	{
 	private:
 		std::string _method;
-		// targetは権限とかのチェックを行っときたい
 		std::string _path;
 		std::string _query;
 		std::string _version;

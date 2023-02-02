@@ -29,7 +29,7 @@ public:
 	EventMonitor(const EventMonitor &);
 	~EventMonitor();
 	virtual void notify(int, int);
-	virtual void subscribe(int, int, IObserver *, long);
+	virtual void subscribe(int, short, IObserver *, long);
 	virtual void unsubscribe(int, bool);
 	int monitor();
 };

@@ -64,23 +64,19 @@ class ConfigParser
 		void initLocationDirectiveFlag();
 		const std::vector<ServerConfig> &
 		getScVec() const;
-		size_t getScVecSize() const {return _sc_vec.size();};
-		std::string getListen(size_t i) const {return _sc_vec[i].getListen();};
-		std::string getServerName(size_t i) const {return _sc_vec[i].getServerName();};
-		int getMaxBodySize(size_t i) const {return _sc_vec[i].getMaxBodySize();};
-
+		size_t getScVecSize() const;
+		const std::string &getListen(size_t i) const;
+		const std::string & getServerName(size_t i) const;
+		int getMaxBodySize(size_t i) const;
 		const std::map<int, std::string> &
-		getDefaultErrorPage(size_t i) const {return _sc_vec[i].getDefaultErrorPage();};
+		getDefaultErrorPage(size_t i) const ;
 
-		const std::vector<ServerConfig::Location> &getLocationVec(size_t i) {return _sc_vec[i].getLocationVec();};
+		const std::vector<ServerConfig::Location> &getLocationVec(size_t i) const;
 		const ServerConfig::Location & getLocation
 		(
 			size_t index,
 			const std::string & path
-		) const
-		{
-			return _sc_vec[index].tryGetLocation(path);
-		}
+		) const;
 };
 
 #endif /* CONFIGPARSER_HPP */

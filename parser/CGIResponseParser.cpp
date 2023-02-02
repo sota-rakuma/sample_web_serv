@@ -7,8 +7,8 @@ CGIResponseParser::CGIResponseParser() : _i(0) {
 CGIResponseParser::CGIResponseParser(
 	HTTPResponse *res
 )
-:_http_res(res),
-_i(0)
+:_i(0),
+_http_res(res)
 {
 }
 
@@ -152,7 +152,6 @@ int CGIResponseParser::parseStatus() {
 		return -1;
 	}
 	size_t i = 0;
-	size_t len = status_values.length();
 	while (i < 3) {
 		if (isDigit(status_values[pos + i]) == false) {
 			std::cout << "status_code in parseStatus invalid" << std::endl;
@@ -350,4 +349,9 @@ int CGIResponseParser::parse(const std::string &raw) {
 	_raw_low.clear();
 	_i = 0;
 	return _res_type;
+}
+
+HTTPResponse* CGIResponseParser::getHTTPResponse() const
+{
+	return _http_res;
 }

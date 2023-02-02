@@ -132,9 +132,9 @@ ListenSocket::ListenSocket(
 	const ListenSocket & another
 )
 :IOEventHandler(another.getSubject(), another.getCommandList()),
+_sockfd(another._sockfd),
 _host(another._host),
 _port(another._port),
-_sockfd(another._sockfd),
 _confs(another._confs)
 {
 }
@@ -185,6 +185,7 @@ int ListenSocket::write()
 
 void ListenSocket::update(int event)
 {
+	(void)event;
 	addCommand(getReadCommand());
 }
 

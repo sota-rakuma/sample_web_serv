@@ -147,7 +147,7 @@ int File::write()
 		entrustCreateResponse(INTERNAL_SERVER_ERROR);
 		return -1;
 	}
-	if (nb < _buff.size()) {
+	if (static_cast<size_t>(nb) < _buff.size()) {
 		_buff = _buff.substr(nb + 1);
 		return 1;
 	}
@@ -203,7 +203,6 @@ int File::httpGet()
 
 int File::httpPost()
 {
-	bool is_created = false;
 	if (execStat() == -1) {
 		if (errno == ENOENT) {
 			if (createFile() == false) {

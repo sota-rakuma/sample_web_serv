@@ -47,11 +47,15 @@ AcceptedSocket::AcceptedSocket(const AcceptedSocket &another)
 _sockfd(another._sockfd),
 _body_size(0),
 _buff(""),
+_info(another._info),
 _confs(another._confs),
 _config(another._config),
-_parser_ctx(another._parser_ctx),
-_info(another._info),
+_location(another._location),
+_status(another._status),
 _progress(another._progress),
+_req(another._req),
+_res(another._res),
+_parser_ctx(another._parser_ctx),
 _receiver(static_cast<HTTPMethodReceiver *>(NULL)),
 _is_cgi(another._is_cgi)
 {
@@ -425,7 +429,7 @@ size_t AcceptedSocket::processRequestBody(
 	if (raw.size() <= index) {
 		return index;
 	}
-	if (_config.getMaxBodySize() < _body_size) {
+	if (static_cast<size_t>(_config.getMaxBodySize()) < _body_size) {
 		createErrorResponse(PAYLOAD_TOO_LARGE);
 		return raw.size();
 	}
@@ -493,7 +497,7 @@ size_t AcceptedSocket::processChunkedBody(
 				return raw.size();
 			}
 			_receiver->addContent(chunked_body);
-			if (_config.getMaxBodySize() < _receiver->getContent().size()) {
+			if (static_cast<size_t>(_config.getMaxBodySize()) < _receiver->getContent().size()) {
 				createErrorResponse(PAYLOAD_TOO_LARGE);
 				return raw.size();
 			}
@@ -538,7 +542,7 @@ int AcceptedSocket::write()
 		getSubject()->unsubscribe(_sockfd, false);
 		return -1;
 	}
-	if (nb < _buff.size()) {
+	if (static_cast<size_t>(nb) < _buff.size()) {
 		_buff = _buff.substr(nb + 1);
 		return 1;
 	}
@@ -563,14 +567,12 @@ int AcceptedSocket::write()
 
 void AcceptedSocket::createNormalResponse()
 {
-	int ret;
 	_buff.clear();
 	if (isCGI() == true) {
 		if (processCGIResponse() == 1) {
 			return ;
 		}
 	} else {
-		int status = static_cast<int>(_status);
 		if (_status == CREATED) {
 			_res.insertHeaderField(
 				"Location",
@@ -616,7 +618,6 @@ static void getGMTTime(
 {
 	time_t now;
 	struct tm *ptm;
-	char buf[128];
 	std::ostringstream os;
 	const static std::string day[7] = {"Sun",
 									"Mon",

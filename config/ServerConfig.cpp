@@ -9,8 +9,11 @@ ServerConfig::ServerConfig()
 }
 
 ServerConfig::ServerConfig(const ServerConfig & another)
-:_max_body_size(another._max_body_size), _listen(another._listen), _server_name(another._server_name), \
-_default_error_pages(another._default_error_pages), _locations(another._locations)
+:_listen(another._listen),
+_server_name(another._server_name),
+_max_body_size(another._max_body_size),
+_default_error_pages(another._default_error_pages),
+_locations(another._locations)
 {
 }
 
@@ -30,11 +33,11 @@ _cgi_extensions(),_is_exact(false)
 
 ServerConfig::Location::Location(const ServerConfig::Location & another)
 :_path(another._path),
+_allowed_method(another._allowed_method),
 _alias(another._alias),
 _index_file(another._index_file),
 _upload_place(another._upload_place),
 _autoindex(another._autoindex),
-_allowed_method(another._allowed_method),
 _return(another._return),
 _cgi_extensions(another._cgi_extensions),
 _is_exact(another._is_exact)

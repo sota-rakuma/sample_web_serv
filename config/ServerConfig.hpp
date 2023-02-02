@@ -54,17 +54,13 @@ public:
 private:
 	std::string _listen;
 	std::string _server_name;
-	// size_t _max_body_size;
 	int _max_body_size;
 	std::map<int, std::string> _default_error_pages;
-	// std::map<HTTPStatus, std::string> _default_error_pages;
 	std::vector<Location> _locations;
 public:
 	ServerConfig();
 	ServerConfig(const ServerConfig &);
 	~ServerConfig();
-	// size_t getMaxBodySize() const;
-	// ServerConfig & setMaxBodySize(size_t);
 	const Location & tryGetLocation(const std::string &) const;
 	void setListen(const std::string&);
 	void setServerName(const std::string&);
@@ -97,7 +93,6 @@ public:
 	);
 	void setExact(size_t, bool);
 	void addLocation();
-	 // for test
 	const std::string &getListen() const;
 	const std::string &getServerName() const;
 	int getMaxBodySize() const;

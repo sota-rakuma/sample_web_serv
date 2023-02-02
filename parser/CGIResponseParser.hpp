@@ -52,7 +52,7 @@ class CGIResponseParser : public Parser {
 		int parseClientLocation();
 		int parseResponseBody();
 		int treatNL(std::string &, size_t &, size_t &);
-		HTTPResponse *getHTTPResponse() const {return _http_res;};
+		HTTPResponse *getHTTPResponse() const;
 };
 
 #endif /* CGIRESPONSEPARSER_HPP */

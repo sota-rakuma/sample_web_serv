@@ -6,7 +6,7 @@
 
 class Context {
 private:
-	Parser *_p; // stateになる。
+	Parser *_p; 
 public:
 	Context();
 	Context(Parser *);

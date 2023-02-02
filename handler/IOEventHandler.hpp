@@ -12,10 +12,10 @@ class Write;
 class IOEventHandler
 {
 private:
-	Read *_read;
-	Write *_write;
 	ISubject *_subject;
 	std::list<ICommand *> *_commands;
+	Read *_read;
+	Write *_write;
 public:
 	IOEventHandler();
 	IOEventHandler(

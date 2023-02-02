@@ -79,7 +79,7 @@ void EventMonitor::insertTimer(
 
 void EventMonitor::subscribe(
 	int fd,
-	int event,
+	short event,
 	IObserver * target,
 	long timeout
 )

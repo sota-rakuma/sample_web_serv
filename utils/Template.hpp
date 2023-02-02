@@ -6,6 +6,7 @@
 template <typename T, size_t N>
 size_t getSize(const T (&arr)[N])
 {
+	(void)arr;
 	return N;
 }
 
