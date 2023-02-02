@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include <poll.h>
+#include <list>
 
 class EventMonitor : public ISubject
 {
@@ -13,11 +14,16 @@ private:
 	int _time;
 	std::vector<pollfd> _pollvec;
 	std::map<int, IObserver *> _storage;
-	std::map<long, int> _time_manager;
+	//std::map<long, int> _time_manager;
+	std::list<std::pair<long, int> > _tm;
 private:
 	void publishEvent(int);
 	void notifyTimeOut();
 	int findTimer();
+	void insertTimer(
+		long,
+		int
+	);
 public:
 	EventMonitor();
 	EventMonitor(int);

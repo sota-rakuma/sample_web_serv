@@ -7,8 +7,8 @@
 EventMonitor::EventMonitor()
 :_time(300),
 _pollvec(),
-_storage(),
-_time_manager()
+_storage()
+//_time_manager()
 {
 	if (setenv("GATEWAY_INTERFACE", "CGI/1.1", 1) == -1 ||
 		setenv("SERVER_PROTOCOL", "HTTP/1.1", 1) == -1 ||
@@ -22,8 +22,8 @@ _time_manager()
 EventMonitor::EventMonitor(int time)
 :_time(time),
 _pollvec(),
-_storage(),
-_time_manager()
+_storage()
+//_time_manager()
 {
 }
 
@@ -58,6 +58,23 @@ void EventMonitor::notify(int fd, int event)
 	_storage[fd]->update(event);
 }
 
+void EventMonitor::insertTimer(
+	long timeout,
+	int fd
+)
+{
+	for (std::list<std::pair<long, int> >::iterator it = _tm.begin();
+		it != _tm.end();
+		it++)
+	{
+		if (it->first < timeout) {
+			_tm.insert(it, std::make_pair(timeout, fd));
+			break;
+		}
+	}
+}
+
+
 void EventMonitor::subscribe(
 	int fd,
 	int event,
@@ -69,7 +86,8 @@ void EventMonitor::subscribe(
 		_storage[fd] = target;
 		_pollvec.push_back((pollfd){fd, event, 0});
 		if (timeout > 0) {
-			_time_manager[timeout] = fd;
+			//_time_manager[timeout] = fd;
+			insertTimer(timeout, fd);
 		}
 		return ;
 	}
@@ -81,18 +99,29 @@ void EventMonitor::subscribe(
 		}
 	}
 
-	for (std::map<long, int>::iterator it = _time_manager.begin();
-		it != _time_manager.end();
+	//for (std::map<long, int>::iterator it = _time_manager.begin();
+	//	it != _time_manager.end();
+	//	it++)
+	//{
+	//	if (fd == it->second) {
+	//		_time_manager.erase(it);
+	//		break;
+	//	}
+	//}
+
+	for (std::list<std::pair<long, int> >::iterator it = _tm.begin();
+		it != _tm.end();
 		it++)
 	{
 		if (fd == it->second) {
-			_time_manager.erase(it);
+			_tm.erase(it);
 			break;
 		}
 	}
 
 	if (timeout > 0) {
-		_time_manager.insert(std::make_pair(timeout, fd));
+		//_time_manager.insert(std::make_pair(timeout, fd));
+		insertTimer(timeout, fd);
 	}
 }
 
@@ -116,12 +145,22 @@ void EventMonitor::unsubscribe(
 	}
 	_storage.erase(fd);
 
-	for (std::map<long, int>::iterator it = _time_manager.begin();
-		it != _time_manager.end();
+	//for (std::map<long, int>::iterator it = _time_manager.begin();
+	//	it != _time_manager.end();
+	//	it++)
+	//{
+	//	if (fd == it->second) {
+	//		_time_manager.erase(it);
+	//		break;
+	//	}
+	//}
+
+	for (std::list<std::pair<long, int> >::iterator it = _tm.begin();
+		it != _tm.end();
 		it++)
 	{
 		if (fd == it->second) {
-			_time_manager.erase(it);
+			_tm.erase(it);
 			break;
 		}
 	}
@@ -131,7 +170,6 @@ int EventMonitor::monitor()
 {
 	int ready;
 
-	//ready = poll(_pollvec.data(), _pollvec.size(), _time);
 	ready = poll(_pollvec.data(), _pollvec.size(), findTimer());
 	if (ready <= 0) {
 		if (ready == 0) {
@@ -149,16 +187,24 @@ int EventMonitor::findTimer()
 {
 	long timer = 0;
 
-	if (_time_manager.size() == 0) {
+	//if (_time_manager.size() == 0) {
+	//	return -1;
+	//}
+	if (_tm.size() == 0) {
 		return -1;
 	}
 	while (timer <= 0)
 	{
-		timer = _time_manager.begin()->first - getMilliTime();
+		//timer = _time_manager.begin()->first - getMilliTime();
+		timer = _tm.begin()->first - getMilliTime();
 		if (timer <= 0) {
-			notify(_time_manager.begin()->second, EV_TIMEOUT);
+			//notify(_time_manager.begin()->second, EV_TIMEOUT);
+			notify(_tm.begin()->second, EV_TIMEOUT);
 		}
-		if (_time_manager.begin() == _time_manager.end()) {
+		//if (_time_manager.begin() == _time_manager.end()) {
+		//	return -1;
+		//}
+		if (_tm.begin() == _tm.end()) {
 			return -1;
 		}
 	}
@@ -173,8 +219,17 @@ void EventMonitor::notifyTimeOut()
 {
 	long now = getMilliTime();
 
-	for (std::map<long, int>::iterator it =_time_manager.begin();
-		it != _time_manager.end();)
+	//for (std::map<long, int>::iterator it =_time_manager.begin();
+	//	it != _time_manager.end();)
+	//{
+	//	if (it->first <= now) {
+	//		notify((it++)->second, EV_TIMEOUT);
+	//	} else {
+	//		++it;
+	//	}
+	//}
+	for (std::list<std::pair<long, int> >::iterator it =_tm.begin();
+		it != _tm.end();)
 	{
 		if (it->first <= now) {
 			notify((it++)->second, EV_TIMEOUT);
