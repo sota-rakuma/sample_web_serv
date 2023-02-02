@@ -14,7 +14,6 @@ private:
 	int _time;
 	std::vector<pollfd> _pollvec;
 	std::map<int, IObserver *> _storage;
-	//std::map<long, int> _time_manager;
 	std::list<std::pair<long, int> > _tm;
 private:
 	void publishEvent(int);

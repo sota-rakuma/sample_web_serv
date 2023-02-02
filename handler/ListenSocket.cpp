@@ -7,7 +7,7 @@
 #include <unistd.h>
 
 #ifndef LISTEN_BACKLOG
-#define LISTEN_BACKLOG 200
+#define LISTEN_BACKLOG 150
 #endif
 
 ListenSocket::ListenSockError::ListenSockError()
