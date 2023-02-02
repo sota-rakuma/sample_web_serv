@@ -426,7 +426,7 @@ size_t AcceptedSocket::processRequestBody(
 	}
 	if (_config.getMaxBodySize() < _body_size) {
 		createErrorResponse(PAYLOAD_TOO_LARGE);
-		return 0;
+		return raw.size();
 	}
 	_receiver->addContent(raw.substr(
 								index,
@@ -465,7 +465,7 @@ size_t AcceptedSocket::processChunkedBody(
 			}
 			if (f == false || len == 0) {
 				createErrorResponse(BAD_REQUEST);
-				return 0;
+				return raw.size();
 			}
 			std::stringstream ss;
 			ss << std::dec << std::hex << raw.substr(i, len - i);
@@ -489,13 +489,12 @@ size_t AcceptedSocket::processChunkedBody(
 			std::string chunked_body = raw.substr(i, crlf - i);
 			if (chunked_body.size() != _body_size) {
 				createErrorResponse(BAD_REQUEST);
-				_progress = CREATE_RESPONSE;
-				return 0;
+				return raw.size();
 			}
 			_receiver->addContent(chunked_body);
 			if (_config.getMaxBodySize() < _receiver->getContent().size()) {
 				createErrorResponse(PAYLOAD_TOO_LARGE);
-				return 0;
+				return raw.size();
 			}
 			_progress = RECEIVE_CHUNKED_SIZE;
 			_body_size = 0;
