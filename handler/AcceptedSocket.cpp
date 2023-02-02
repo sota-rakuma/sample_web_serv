@@ -389,7 +389,11 @@ bool AcceptedSocket::preparePostEvent(
 	catch(const std::exception& e){
 		_body_size = 0;
 	}
-	_progress = RECEIVE_REQUEST_BODY;
+	if (_body_size == 0) {
+		_progress = EXECUTE_METHOD;
+	} else {
+		_progress = RECEIVE_REQUEST_BODY;
+	}
 	_buff.clear();
 	return true;
 }
