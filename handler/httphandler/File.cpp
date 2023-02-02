@@ -243,6 +243,10 @@ bool File::createFile()
 		return false;
 	}
 	_fd = open(getPath().c_str(), O_RDWR | O_CREAT | O_EXCL | O_CLOEXEC, S_IRWXU | S_IRWXG | S_IRWXO);
+	if (_fd == -1) {
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
+		return false;
+	}
 	setHTTPStatus(CREATED);
 	return true;
 }
@@ -259,6 +263,10 @@ bool File::appendFile()
 	}
 	_fd = open(getPath().c_str(), O_RDWR | O_APPEND | O_CLOEXEC);
 	setHTTPStatus(OK);
+	if (_fd == -1) {
+		entrustCreateResponse(INTERNAL_SERVER_ERROR);
+		return false;
+	}
 	return true;
 }
 
