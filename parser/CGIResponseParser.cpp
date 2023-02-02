@@ -13,7 +13,6 @@ _i(0)
 }
 
 CGIResponseParser::~CGIResponseParser() {
-	//delete _http_res;
 }
 
 int CGIResponseParser::treatNL(std::string &str, size_t &pos, size_t &i) {
@@ -59,8 +58,8 @@ int CGIResponseParser::parseResponseBody() {
 }
 
 int CGIResponseParser::parseClientLocation() {
-	std::string find_word = "Location:";
-	size_t pos = _raw.find(find_word, _i);
+	std::string find_word = "location:";
+	size_t pos = _raw_low.find(find_word, _i);
 	if (pos != _i) {
 		std::cout << "find() in parseClientLocation failed" << std::endl;
 		return -1;
@@ -135,10 +134,9 @@ int CGIResponseParser::parseOtherField() {
 }
 
 int CGIResponseParser::parseStatus() {
-    std::string find_word = "Status:";
-	size_t pos = _raw.find(find_word, _i);
+    std::string find_word = "status:";
+	size_t pos = _raw_low.find(find_word, _i);
 	if (pos != _i) {
-		//std::cout << "status not exist" << std::endl;
 		_http_res->setStatusLine("HTTP/1.1", "200", "OK");
 		return 0;
 	}
@@ -177,8 +175,8 @@ int CGIResponseParser::parseStatus() {
 }
 
 int CGIResponseParser::parseContentType() {
-	std::string find_word = "Content-Type:";
-	size_t pos = _raw.find(find_word, _i);
+	std::string find_word = "content-type:";
+	size_t pos = _raw_low.find(find_word, _i);
 	if (pos != _i) {
 		std::cout << "find() in parseContentType failed" << std::endl;
 		return -1;
@@ -237,8 +235,8 @@ int CGIResponseParser::parseClientRedirResponse() {
 
 int CGIResponseParser::parseLocalRedirResponse() {
 	_res_type = LOCAL_REDIR_RESPONSE;
-	std::string find_word = "Location:";
-	size_t pos = _raw.find(find_word, _i);
+	std::string find_word = "location:";
+	size_t pos = _raw_low.find(find_word, _i);
 	if (pos != _i) {
 		std::cout << "find() in parseLocalRedirResponse failed" << std::endl;
 		return -1;
@@ -258,7 +256,6 @@ int CGIResponseParser::parseLocalRedirResponse() {
 		location_value = location_value.substr(pos);
 	std::pair<std::string, std::string> location_pair = std::make_pair("Location", location_value);
 	_http_res->insertHeaderField(location_pair);
-	//_http_res->setStatusLine("HTTP/1.1", "302", "Moved Temporarily");
 	return 0;
 }
 
@@ -285,12 +282,12 @@ int CGIResponseParser::parseDocumentResponse() {
 }
 
 int CGIResponseParser::getResponseType() {
-	std::string find_word = "Content-Type:";
-	size_t pos = _raw.find(find_word, _i);
+	std::string find_word = "content-type:";
+	size_t pos = _raw_low.find(find_word, _i);
 	if (pos == _i)
 		return DOCUMENT_RESPONSE;
-	find_word = "Location:";
-	pos = _raw.find(find_word, _i);
+	find_word = "location:";
+	pos = _raw_low.find(find_word, _i);
 	if (pos == _i) {
 		pos = _raw.find_first_not_of(" ", _i + find_word.length());
 		if (pos == std::string::npos) {
@@ -311,8 +308,8 @@ int CGIResponseParser::getResponseType() {
 				std::cout << "client_location in getResponseType invalid" << std::endl;
 				return -1;
 			}
-			find_word = "Status:";
-			pos = _raw.find(find_word, i_tmp);
+			find_word = "status:";
+			pos = _raw_low.find(find_word, i_tmp);
 			if (pos == i_tmp)
 				return CLIENT_REDIRDOC_RESPONSE;
 			else
@@ -324,6 +321,8 @@ int CGIResponseParser::getResponseType() {
 
 int CGIResponseParser::parse(const std::string &raw) {
 	_raw = raw;
+	_raw_low = "";
+	strToLow(_raw_low, raw);
 	_res_type = getResponseType();
 	switch (_res_type) {
 		case DOCUMENT_RESPONSE:
@@ -348,6 +347,7 @@ int CGIResponseParser::parse(const std::string &raw) {
 			break;
 	}
 	_raw.clear();
+	_raw_low.clear();
 	_i = 0;
 	return _res_type;
 }
