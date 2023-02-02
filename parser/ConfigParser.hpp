@@ -18,7 +18,6 @@ class ConfigParser
 	private:
 		std::vector<ServerConfig> _sc_vec;
 		size_t _server_i;
-		// ServerConfigFinder _scf;
 		std::string _raw;
 		size_t  _i;
 		std::vector<std::string> _searched_directives;
