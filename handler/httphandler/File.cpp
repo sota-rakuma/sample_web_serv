@@ -239,8 +239,8 @@ bool File::createFile()
 		}
 		return false;
 	}
-	if (checkPermission(S_IWUSR) == false) {
-		setHTTPStatus(FORBIDDEN);
+	if (checkPermissionOfParent(S_IWUSR) == false) {
+		entrustCreateResponse(FORBIDDEN);
 		return false;
 	}
 	_fd = open(getPath().c_str(), O_RDWR | O_CREAT | O_EXCL | O_CLOEXEC, S_IRWXU | S_IRWXG | S_IRWXO);
