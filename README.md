@@ -1,6 +1,6 @@
 # sample_web_serv
 
-## nginxでのテスト方法
+## nginxでの実験方法
 
 - expディレクトリに移動
 ```sh
